@@ -1,4 +1,7 @@
+# Node dependencies
 node_modules/
 
+# Output
 public/index.css
 public/index.js
+dist/
