@@ -1,4 +1,5 @@
 import './index.css'
+import './net/network'
 import vertexShaderSource from './shaders/hello-world.vert'
 import fragmentShaderSource from './shaders/hello-world.frag'
 
