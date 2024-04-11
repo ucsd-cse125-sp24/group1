@@ -8,3 +8,6 @@ declare module "*.frag" {
 }
 
 declare const gl: WebGL2RenderingContext;
+interface Window {
+	gl: WebGL2RenderingContext;
+}

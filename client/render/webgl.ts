@@ -28,6 +28,6 @@ const glContext = canvas.getContext("webgl2");
 if (!glContext) {
 	throw new Error("Failed to get WebGL context");
 }
-globalThis.gl = glContext;
+window.gl = glContext;
 gl.enable(gl.CULL_FACE);
 gl.enable(gl.DEPTH_TEST);
