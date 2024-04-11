@@ -62,23 +62,22 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 	return;
 }
 
-function init() {
+(async () => {
 	let anchor: ServerMessage = {
 		type: "CUBEEEEE",
 		x: 0,
 		y: 0,
 		z: 0,
 	}
-	while (true) {
-		broadcast(wss, anchor);
+	/*while (true) {
+		//broadcast(wss, anchor);
 		// receive input from all clients
 		// update game state
 		// send updated state to all clients
 		// wait until end of tick
 		// broadcast(wss, )
-	}
-}
-init();
+	}*/
+})();
 
 const PORT = 6969;
 server.listen(PORT);
