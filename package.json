@@ -10,10 +10,11 @@
 	"scripts": {
 		"build": "npm run build:server && npm run build:client",
 		"build:server": "esbuild server/index.ts --bundle --platform=node --packages=external --outdir=dist --format=esm",
-		"build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --minify",
+		"build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --minify --sourcemap",
 		"dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --servedir=public --sourcemap",
+		"start": "node dist/index.js",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"watch": "nodemon --watch . --ignore dist --ignore public --exec npm run build",
+		"watch": "npm run watch:server & npm run watch:client & nodemon --watch dist --watch public --exec npm start",
 		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --outdir=dist --format=esm",
 		"watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --outdir=public --sourcemap",
 		"format": "prettier -w ."
