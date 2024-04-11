@@ -1,7 +1,7 @@
 import express from "express";
 import http from "http";
 import path, { dirname } from "path";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, RawData } from "ws";
 import { ClientMessage, ServerMessage } from "../common/messages";
 import { fileURLToPath } from "url";
 
@@ -17,27 +17,29 @@ app.get("/", (req, res) => {
 	res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-wss.on("connection", (ws) => {
-	const response: ServerMessage = {
-		type: "ping",
-	};
-	ws.send(JSON.stringify(response));
-	ws.on("message", (rawData) => {
-		const stringData = Array.isArray(rawData) ? rawData.join("") : rawData.toString();
-
-		let data: ClientMessage;
-		try {
-			data = JSON.parse(stringData);
-		} catch {
-			console.warn("Non-JSON message: ", stringData);
-			return;
-		}
-		const response = handleMessage(data);
+wss.on("connection", ws => {
+	ws.on("message", rawData => {
+		const response = handleMessage(rawData);
 		if (response) {
 			ws.send(JSON.stringify(response));
 		}
 	});
 });
+
+let anchor: ServerMessage = {
+	type: "CUBEEEEE",
+	x: 0,
+	y: 0,
+	z: 0,
+}
+while (true) {
+	broadcast(wss, anchor);
+	// receive input from all clients
+	// update game state
+	// send updated state to all clients
+	// wait until end of tick
+	// broadcast(wss, )
+}
 
 function broadcast(wss: WebSocketServer, message: ServerMessage) {
 	for (const ws of wss.clients) {
@@ -45,7 +47,23 @@ function broadcast(wss: WebSocketServer, message: ServerMessage) {
 	}
 }
 
-function handleMessage(data: ClientMessage): ServerMessage | undefined {
+/**
+ * Parses a raw websocket message, and then generates a 
+ * response to the message if that is needed
+ * @param rawData the raw message data to process
+ * @returns a ServerMessage
+ */
+function handleMessage(rawData: RawData): ServerMessage | undefined {
+	const stringData = Array.isArray(rawData) ? rawData.join("") : rawData.toString();
+
+	let data: ClientMessage;
+	try {
+		data = JSON.parse(stringData);
+	} catch {
+		console.warn("Non-JSON message: ", stringData);
+		return;
+	}
+
 	switch (data.type) {
 		case "ping":
 			return {
@@ -55,8 +73,6 @@ function handleMessage(data: ClientMessage): ServerMessage | undefined {
 			return {
 				type: "ping",
 			};
-		case "set-size":
-			break;
 	}
 	return;
 }

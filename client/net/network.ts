@@ -34,8 +34,6 @@ function handleMessage(data: ServerMessage): ClientMessage | undefined {
 			return {
 				type: "ping",
 			};
-		case "set-size":
-			break;
 	}
 	return;
 }
