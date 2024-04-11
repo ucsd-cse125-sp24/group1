@@ -1,12 +1,15 @@
+import { error } from "console";
 import { mat4, vec3 } from "gl-matrix";
+import { expect } from "../../common/lib/expect";
 
 class Box {
 	position: vec3;
 
-	VAO: WebGLVertexArrayObject | null;
-	VBO_positions: WebGLBuffer | null;
-	VBO_normals: WebGLBuffer | null;
+	VAO: WebGLVertexArrayObject;
+	VBO_positions: WebGLBuffer;
+	VBO_normals: WebGLBuffer;
 	shader: WebGLProgram;
+	transform = mat4.create();
 
 	constructor(position: vec3, size: vec3, shader: WebGLProgram) {
 		this.position = position;
@@ -121,16 +124,16 @@ class Box {
 		const positionAttribLocation = gl.getAttribLocation(shader, "a_position");
 		const normalAttribLocation = gl.getAttribLocation(shader, "a_normal");
 
-		this.VAO = gl.createVertexArray();
+		this.VAO = gl.createVertexArray() ?? expect("Failed to create VAO");
 		gl.bindVertexArray(this.VAO);
 
-		this.VBO_positions = gl.createBuffer();
+		this.VBO_positions = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_positions);
 		gl.bufferData(gl.ARRAY_BUFFER, positionArray, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(positionAttribLocation);
 
-		this.VBO_normals = gl.createBuffer();
+		this.VBO_normals = gl.createBuffer() ?? expect("Failed to create VAO normal buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_normals);
 		gl.bufferData(gl.ARRAY_BUFFER, normalArray, gl.STATIC_DRAW);
 		gl.vertexAttribPointer(normalAttribLocation, 3, gl.FLOAT, false, 0, 0);
@@ -141,10 +144,9 @@ class Box {
 	}
 
 	draw(viewMatrix: mat4) {
-		// TODO: model matrix
 		gl.useProgram(this.shader);
 		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_view"), false, viewMatrix);
-		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_model"), false, mat4.create());
+		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_model"), false, this.transform);
 		gl.bindVertexArray(this.VAO);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
 		gl.bindVertexArray(null);

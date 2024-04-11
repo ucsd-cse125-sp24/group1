@@ -1,5 +1,5 @@
 import { ClientInputs } from "../../common/messages";
-import { send } from "./network";
+import { send } from "./Connection";
 
 const resetInputs = (): ClientInputs => ({
 	forward: false,

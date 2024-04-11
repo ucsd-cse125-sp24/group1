@@ -17,8 +17,8 @@ app.get("/", (req, res) => {
 	res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-wss.on("connection", ws => {
-	ws.on("message", rawData => {
+wss.on("connection", (ws) => {
+	ws.on("message", (rawData) => {
 		const response = handleMessage(rawData);
 		if (response) {
 			ws.send(JSON.stringify(response));
@@ -31,15 +31,16 @@ let anchor: ServerMessage = {
 	x: 0,
 	y: 0,
 	z: 0,
-}
-while (true) {
-	broadcast(wss, anchor);
-	// receive input from all clients
-	// update game state
-	// send updated state to all clients
-	// wait until end of tick
-	// broadcast(wss, )
-}
+};
+// while (true) {
+// 	broadcast(wss, anchor);
+// 	// receive input from all clients
+// 	// update game state
+// 	// send updated state to all clients
+// 	// wait until end of tick
+// 	// broadcast(wss, )
+// }
+setInterval(() => broadcast(wss, anchor));
 
 function broadcast(wss: WebSocketServer, message: ServerMessage) {
 	for (const ws of wss.clients) {
@@ -48,7 +49,7 @@ function broadcast(wss: WebSocketServer, message: ServerMessage) {
 }
 
 /**
- * Parses a raw websocket message, and then generates a 
+ * Parses a raw websocket message, and then generates a
  * response to the message if that is needed
  * @param rawData the raw message data to process
  * @returns a ServerMessage
@@ -73,6 +74,9 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 			return {
 				type: "ping",
 			};
+		case "client-input":
+			console.log(data);
+			break;
 	}
 	return;
 }
