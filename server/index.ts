@@ -13,18 +13,18 @@ const wss = new WebSocketServer({ server });
 
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-app.get("/", (req,res)=>{
+app.get("/", (req, res) => {
 	res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-wss.on("connection", ws => {
+wss.on("connection", (ws) => {
 	const response: ServerMessage = {
-		type: "ping"
+		type: "ping",
 	};
 	ws.send(JSON.stringify(response));
-	ws.on("message", rawData => {
-		let stringData = Array.isArray(rawData) ? rawData.join("") : rawData.toString();
-		console.log(stringData);
+	ws.on("message", (rawData) => {
+		const stringData = Array.isArray(rawData) ? rawData.join("") : rawData.toString();
+
 		let data: ClientMessage;
 		try {
 			data = JSON.parse(stringData);
@@ -32,7 +32,7 @@ wss.on("connection", ws => {
 			console.warn("Non-JSON message: ", stringData);
 			return;
 		}
-		let response = handleMessage(data);
+		const response = handleMessage(data);
 		if (response) {
 			ws.send(JSON.stringify(response));
 		}
@@ -40,7 +40,7 @@ wss.on("connection", ws => {
 });
 
 function broadcast(wss: WebSocketServer, message: ServerMessage) {
-	for (let ws of wss.clients) {
+	for (const ws of wss.clients) {
 		ws.send(JSON.stringify(message));
 	}
 }
@@ -49,15 +49,14 @@ function handleMessage(data: ClientMessage): ServerMessage | undefined {
 	switch (data.type) {
 		case "ping":
 			return {
-				type: "pong"
+				type: "pong",
 			};
 		case "pong":
 			return {
-				type: "ping"
-			}
+				type: "ping",
+			};
 		case "set-size":
-			
-		break;
+			break;
 	}
 	return;
 }

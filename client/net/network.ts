@@ -4,11 +4,11 @@ const params = new URL(window.location.href).searchParams
 const wsUrl = params.get('ws') ?? window.location.href.replace(/^http/, "ws").replace(/\/$/,"");
 const ws = new WebSocket(wsUrl);
 
-ws.addEventListener("open", e => {
+ws.addEventListener("open", () => {
 	console.log("Connected :D");
 });
 
-ws.addEventListener("message", e => {
+ws.addEventListener("message", (e) => {
 	let data: ServerMessage;
 	try {
 		data = JSON.parse(e.data);
@@ -18,7 +18,7 @@ ws.addEventListener("message", e => {
 		return "Oopsie!";
 	}
 
-	let response = handleMessage(data);
+	const response = handleMessage(data);
 	if (response) {
 		ws.send(JSON.stringify(response));
 	}
@@ -28,15 +28,14 @@ function handleMessage(data: ServerMessage): ClientMessage | undefined {
 	switch (data.type) {
 		case "ping":
 			return {
-				type: "pong"
+				type: "pong",
 			};
 		case "pong":
 			return {
-				type: "ping"
-			}
+				type: "ping",
+			};
 		case "set-size":
-			
-		break;
+			break;
 	}
 	return;
 }

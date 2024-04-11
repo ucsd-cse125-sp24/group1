@@ -1,36 +1,38 @@
 {
-  "name": "group1",
-  "version": "1.0.0",
-  "description": "CSE 125 2024 group 1",
-  "main": "dist/index.js",
-  "type": "module",
-  "nodemonConfig": {
-    "ext": "js,ts,html,css"
-  },
-  "scripts": {
-    "build": "npm run build:server && npm run build:client",
-    "build:server": "esbuild server/index.ts --bundle --platform=node --packages=external --outdir=dist --format=esm",
-    "build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --minify --sourcemap",
-    "dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --servedir=public --sourcemap",
-    "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npm run watch:server & npm run watch:client & nodemon --watch dist,public --exec npm start",
+	"name": "group1",
+	"version": "1.0.0",
+	"description": "CSE 125 2024 group 1",
+	"main": "dist/index.js",
+	"type": "module",
+	"nodemonConfig": {
+		"ext": "js,ts,html,css"
+	},
+	"scripts": {
+		"build": "npm run build:server && npm run build:client",
+		"build:server": "esbuild server/index.ts --bundle --platform=node --packages=external --outdir=dist --format=esm",
+		"build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --minify",
+		"dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --servedir=public --sourcemap",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"watch": "nodemon --watch . --ignore dist --ignore public --exec npm run build",
     "watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --outdir=dist --format=esm",
-    "watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --outdir=public --sourcemap"
-  },
-  "keywords": [],
-  "author": "Tyler, Nick, Will, Killian, Kenzo, Sean",
-  "license": "none",
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.12.7",
-    "@types/ws": "^8.5.10",
-    "esbuild": "^0.20.2",
-    "nodemon": "^3.1.0"
-  },
-  "dependencies": {
-    "cannon-es": "^0.20.0",
-    "express": "^4.19.2",
-    "ws": "^8.16.0"
-  }
+    "watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --outdir=public --sourcemap",
+		"format": "prettier -w ."
+	},
+	"keywords": [],
+	"author": "Tyler, Nick, Will, Killian, Kenzo, Sean",
+	"license": "none",
+	"devDependencies": {
+		"@types/express": "^4.17.21",
+		"@types/node": "^20.12.7",
+		"@types/ws": "^8.5.10",
+		"esbuild": "^0.20.2",
+		"nodemon": "^3.1.0",
+		"prettier": "^3.2.5"
+	},
+	"dependencies": {
+		"cannon-es": "^0.20.0",
+		"express": "^4.19.2",
+		"gl-matrix": "^3.4.3",
+		"ws": "^8.16.0"
+	}
 }
