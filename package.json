@@ -12,12 +12,12 @@
 		"build:server": "esbuild server/index.ts --bundle --platform=node --packages=external --outdir=dist --format=esm",
 		"build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --minify --sourcemap",
 		"dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --servedir=public --sourcemap",
+		"format": "prettier -w .",
 		"start": "node dist/index.js",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"watch": "npm run watch:server & npm run watch:client & nodemon --watch dist --watch public --exec npm start",
-		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --outdir=dist --format=esm",
-		"watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --outdir=public --sourcemap",
-		"format": "prettier -w ."
+		"watch": "npm run watch:server & npm run watch:client",
+		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --outdir=dist --format=esm & nodemon --watch dist --exec npm start",
+		"watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --outdir=public --sourcemap"
 	},
 	"keywords": [],
 	"author": "Tyler, Nick, Will, Killian, Kenzo, Sean",
