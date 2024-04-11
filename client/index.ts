@@ -1,7 +1,7 @@
 import "./index.css";
 import "./net/network";
 import "./render/webgl";
-import "./input";
+import "./net/input";
 import GraphicsEngine from "./render/GraphicsEngine";
 
 function main() {

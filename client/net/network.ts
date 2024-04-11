@@ -37,8 +37,18 @@ ws.addEventListener("message", (e) => {
 	lastTime = now;
 });
 
+let wsError = false;
 ws.addEventListener("error", () => {
+	console.log("WebSocket error :(");
 	status.textContent = "❌ Failed to connect";
+	wsError = true;
+});
+
+ws.addEventListener("close", ({ code, reason, wasClean }) => {
+	console.log("Connection closed", { code, reason, wasClean });
+	if (!wsError) {
+		status.textContent = "⛔ Connection closed";
+	}
 });
 
 function handleMessage(data: ServerMessage): ClientMessage | undefined {
@@ -53,4 +63,8 @@ function handleMessage(data: ServerMessage): ClientMessage | undefined {
 			};
 	}
 	return;
+}
+
+export function send(message: ClientMessage): void {
+	ws.send(JSON.stringify(message));
 }
