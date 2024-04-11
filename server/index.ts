@@ -39,7 +39,6 @@ wss.on("connection", (ws) => {
 	});
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function broadcast(wss: WebSocketServer, message: ServerMessage) {
 	for (const ws of wss.clients) {
 		ws.send(JSON.stringify(message));

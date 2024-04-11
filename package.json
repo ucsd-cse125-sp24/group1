@@ -20,16 +20,12 @@
 	"author": "Tyler, Nick, Will, Killian, Kenzo, Sean",
 	"license": "none",
 	"devDependencies": {
-		"@eslint/js": "^9.0.0",
 		"@types/express": "^4.17.21",
 		"@types/node": "^20.12.7",
 		"@types/ws": "^8.5.10",
 		"esbuild": "^0.20.2",
-		"eslint": "^8.57.0",
-		"globals": "^15.0.0",
 		"nodemon": "^3.1.0",
-		"prettier": "^3.2.5",
-		"typescript-eslint": "^7.6.0"
+		"prettier": "^3.2.5"
 	},
 	"dependencies": {
 		"cannon-es": "^0.20.0",
