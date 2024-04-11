@@ -12,7 +12,7 @@
 		"build:server": "esbuild server/index.ts --bundle --platform=node --packages=external --outdir=dist --format=esm",
 		"build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --minify --sourcemap",
 		"dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --servedir=public --sourcemap",
-		"format": "prettier -w .",
+		"format": "prettier -w . --log-level=warn",
 		"start": "node dist/index.js",
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"watch": "npm run watch:server & npm run watch:client",
