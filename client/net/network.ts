@@ -29,7 +29,7 @@ ws.addEventListener("message", (e) => {
 
 	const response = handleMessage(data);
 	if (response) {
-		ws.send(JSON.stringify(response));
+		send(response);
 	}
 
 	const now = performance.now();

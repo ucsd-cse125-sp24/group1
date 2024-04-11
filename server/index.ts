@@ -26,21 +26,6 @@ wss.on("connection", ws => {
 	});
 });
 
-let anchor: ServerMessage = {
-	type: "CUBEEEEE",
-	x: 0,
-	y: 0,
-	z: 0,
-}
-while (true) {
-	broadcast(wss, anchor);
-	// receive input from all clients
-	// update game state
-	// send updated state to all clients
-	// wait until end of tick
-	// broadcast(wss, )
-}
-
 function broadcast(wss: WebSocketServer, message: ServerMessage) {
 	for (const ws of wss.clients) {
 		ws.send(JSON.stringify(message));
@@ -76,6 +61,24 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 	}
 	return;
 }
+
+function init() {
+	let anchor: ServerMessage = {
+		type: "CUBEEEEE",
+		x: 0,
+		y: 0,
+		z: 0,
+	}
+	while (true) {
+		broadcast(wss, anchor);
+		// receive input from all clients
+		// update game state
+		// send updated state to all clients
+		// wait until end of tick
+		// broadcast(wss, )
+	}
+}
+init();
 
 const PORT = 6969;
 server.listen(PORT);
