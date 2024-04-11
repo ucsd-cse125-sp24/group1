@@ -1,68 +1,49 @@
-import { ClientInputs } from "../../common/messages";
-import { send } from "./Connection";
+export type InputListenerOptions<Inputs extends string> = {
+	reset: () => Record<Inputs, boolean>;
+	handleKey: (key: string | number) => Inputs | null;
+	handleInputs: (inputs: Record<Inputs, boolean>) => void;
+};
 
-const resetInputs = (): ClientInputs => ({
-	forward: false,
-	backward: false,
-	right: false,
-	left: false,
-	jump: false,
-	attack: false,
-	use: false,
-	emote: false,
-});
+export class InputListener<Inputs extends string> {
+	options: InputListenerOptions<Inputs>;
+	#inputs: Record<Inputs, boolean>;
 
-let inputs = resetInputs();
+	constructor(options: InputListenerOptions<Inputs>) {
+		this.options = options;
+		this.#inputs = options.reset();
+	}
 
-function keyToInput(key: string | number): keyof ClientInputs | null {
-	switch (typeof key === "string" ? key.toLowerCase() : key) {
-		case "w":
-			return "forward";
-		case "a":
-			return "left";
-		case "s":
-			return "backward";
-		case "d":
-			return "right";
-		case "space":
-			return "jump";
-		case "e":
-			return "emote";
-		case 0: // Left mouse button
-			return "attack";
-		case 1: // Left mouse button
-			return "use";
-		default:
-			return null;
+	#handleInput(key: Inputs | null, pressed: boolean): void {
+		if (!key) {
+			return;
+		}
+		this.#inputs[key] = pressed;
+		this.options.handleInputs(this.#inputs);
+	}
+
+	#handleKeydown = (e: KeyboardEvent) => this.#handleInput(this.options.handleKey(e.key), true);
+	#handleKeyup = (e: KeyboardEvent) => this.#handleInput(this.options.handleKey(e.key), false);
+	#handleMousedown = (e: MouseEvent) => this.#handleInput(this.options.handleKey(e.button), true);
+	#handleMouseup = (e: MouseEvent) => this.#handleInput(this.options.handleKey(e.button), false);
+	/** When the user leaves the page, unpress all keys  */
+	#handleBlur = () => {
+		this.#inputs = this.options.reset();
+		this.options.handleInputs(this.#inputs);
+	};
+
+	listen() {
+		window.addEventListener("keydown", this.#handleKeydown);
+		window.addEventListener("keyup", this.#handleKeyup);
+		window.addEventListener("mousedown", this.#handleMousedown);
+		window.addEventListener("mouseup", this.#handleMouseup);
+		window.addEventListener("blur", this.#handleBlur);
+	}
+
+	disconnect() {
+		window.removeEventListener("keydown", this.#handleKeydown);
+		window.removeEventListener("keyup", this.#handleKeyup);
+		window.removeEventListener("mousedown", this.#handleMousedown);
+		window.removeEventListener("mouseup", this.#handleMouseup);
+		window.removeEventListener("blur", this.#handleBlur);
 	}
 }
-
-function handleInput(key: keyof ClientInputs | null, pressed: boolean): void {
-	if (!key) {
-		return;
-	}
-	inputs[key] = pressed;
-	send({ type: "client-input", ...inputs });
-}
-
-window.addEventListener("keydown", (e) => {
-	handleInput(keyToInput(e.key), true);
-});
-
-window.addEventListener("keyup", (e) => {
-	handleInput(keyToInput(e.key), false);
-});
-
-window.addEventListener("mousedown", (e) => {
-	handleInput(keyToInput(e.button), true);
-});
-
-window.addEventListener("mouseup", (e) => {
-	handleInput(keyToInput(e.button), false);
-});
-
-// When the user leaves the page, unpress all keys
-window.addEventListener("blur", () => {
-	inputs = resetInputs();
-	send({ type: "client-input", ...inputs });
-});
