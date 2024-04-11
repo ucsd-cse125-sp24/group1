@@ -62,4 +62,6 @@ function handleMessage(data: ClientMessage): ServerMessage | undefined {
 	return;
 }
 
-server.listen(6969);
+const PORT = 6969;
+server.listen(PORT);
+console.log(`Listening on http://localhost:${PORT}/`)
