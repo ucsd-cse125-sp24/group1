@@ -14,8 +14,8 @@
 		"dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --outdir=public --servedir=public --sourcemap",
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"watch": "nodemon --watch . --ignore dist --ignore public --exec npm run build",
-    "watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --outdir=dist --format=esm",
-    "watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --outdir=public --sourcemap",
+		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --outdir=dist --format=esm",
+		"watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --outdir=public --sourcemap",
 		"format": "prettier -w ."
 	},
 	"keywords": [],

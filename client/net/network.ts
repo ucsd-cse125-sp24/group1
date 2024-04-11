@@ -1,7 +1,7 @@
 import { ClientMessage, ServerMessage } from "../../common/messages";
 
-const params = new URL(window.location.href).searchParams
-const wsUrl = params.get('ws') ?? window.location.href.replace(/^http/, "ws").replace(/\/$/,"");
+const params = new URL(window.location.href).searchParams;
+const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
 const ws = new WebSocket(wsUrl);
 
 ws.addEventListener("open", () => {
