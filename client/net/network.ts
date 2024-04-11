@@ -1,8 +1,6 @@
 import { ClientMessage, ServerMessage } from "../../common/messages";
 
-const ws = new WebSocket(
-	window.location.href.replace(/^http/, "ws").replace(/\/$/, ""),
-);
+const ws = new WebSocket(window.location.href.replace(/^http/, "ws").replace(/\/$/, ""));
 
 ws.addEventListener("open", () => {
 	console.log("Connected :D");

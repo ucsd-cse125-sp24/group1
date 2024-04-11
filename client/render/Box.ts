@@ -143,16 +143,8 @@ class Box {
 	draw(viewMatrix: mat4) {
 		// TODO: model matrix
 		gl.useProgram(this.shader);
-		gl.uniformMatrix4fv(
-			gl.getUniformLocation(this.shader, "u_view"),
-			false,
-			viewMatrix,
-		);
-		gl.uniformMatrix4fv(
-			gl.getUniformLocation(this.shader, "u_model"),
-			false,
-			mat4.create(),
-		);
+		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_view"), false, viewMatrix);
+		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_model"), false, mat4.create());
 		gl.bindVertexArray(this.VAO);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
 		gl.bindVertexArray(null);

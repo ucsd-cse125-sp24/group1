@@ -23,10 +23,8 @@ wss.on("connection", (ws) => {
 	};
 	ws.send(JSON.stringify(response));
 	ws.on("message", (rawData) => {
-		const stringData = Array.isArray(rawData)
-			? rawData.join("")
-			: rawData.toString();
-		console.log(stringData);
+		const stringData = Array.isArray(rawData) ? rawData.join("") : rawData.toString();
+
 		let data: ClientMessage;
 		try {
 			data = JSON.parse(stringData);

@@ -26,10 +26,7 @@ class GraphicsEngine {
 		);
 	}
 
-	createShaderProgram(
-		vertexShaderSource: string,
-		fragmentShaderSource: string,
-	): WebGLProgram {
+	createShaderProgram(vertexShaderSource: string, fragmentShaderSource: string): WebGLProgram {
 		const vertexShader = this.#createShader("vertex", vertexShaderSource);
 		const fragmentShader = this.#createShader("fragment", fragmentShaderSource);
 		const program = gl.createProgram();
@@ -47,9 +44,7 @@ class GraphicsEngine {
 	}
 
 	#createShader(type: "vertex" | "fragment", source: string): WebGLShader {
-		const shader = gl.createShader(
-			type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER,
-		);
+		const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 		if (shader) {
 			gl.shaderSource(shader, source);
 			gl.compileShader(shader);

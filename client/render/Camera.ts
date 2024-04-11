@@ -29,19 +29,9 @@ class Camera {
 
 	update(transform: mat4): void {
 		vec3.transformMat4(this.position, this.position, transform);
-		const newForwardDir = vec4.fromValues(
-			this.forwardDir[0],
-			this.forwardDir[1],
-			this.forwardDir[2],
-			0,
-		);
+		const newForwardDir = vec4.fromValues(this.forwardDir[0], this.forwardDir[1], this.forwardDir[2], 0);
 		vec4.transformMat4(newForwardDir, newForwardDir, transform);
-		vec3.set(
-			this.forwardDir,
-			newForwardDir[0],
-			newForwardDir[1],
-			newForwardDir[2],
-		);
+		vec3.set(this.forwardDir, newForwardDir[0], newForwardDir[1], newForwardDir[2]);
 	}
 
 	getViewProjectionMatrix(): mat4 {
@@ -51,13 +41,7 @@ class Camera {
 			vec3.add(vec3.create(), this.position, this.forwardDir),
 			this.upDir,
 		);
-		const perspective = mat4.perspective(
-			mat4.create(),
-			this.fovY,
-			this.aspectRatio,
-			this.nearBound,
-			this.farBound,
-		);
+		const perspective = mat4.perspective(mat4.create(), this.fovY, this.aspectRatio, this.nearBound, this.farBound);
 		return mat4.multiply(mat4.create(), perspective, lookAt);
 	}
 }
