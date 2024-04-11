@@ -4,13 +4,13 @@ import "./render/webgl";
 import GraphicsEngine from "./render/GraphicsEngine";
 
 function main() {
-  const graphicsEngine = new GraphicsEngine();
-  const paint = () => {
-    graphicsEngine.update();
-    graphicsEngine.draw();
-    window.requestAnimationFrame(paint);
-  };
-  paint();
+	const graphicsEngine = new GraphicsEngine();
+	const paint = () => {
+		graphicsEngine.update();
+		graphicsEngine.draw();
+		window.requestAnimationFrame(paint);
+	};
+	paint();
 }
 
 main();
