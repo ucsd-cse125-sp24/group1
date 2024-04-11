@@ -4,6 +4,7 @@ import path, { dirname } from "path";
 import { WebSocketServer, RawData } from "ws";
 import { ClientMessage, ServerMessage } from "../common/messages";
 import { fileURLToPath } from "url";
+import { delay } from "../common/lib/delay";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -73,14 +74,16 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 		y: 0,
 		z: 0,
 	};
-	/*while (true) {
-		//broadcast(wss, anchor);
+	while (true) {
+		anchor.z = Math.sin(Date.now() / 500) * 5;
+		broadcast(wss, anchor);
 		// receive input from all clients
 		// update game state
 		// send updated state to all clients
 		// wait until end of tick
 		// broadcast(wss, )
-	}*/
+		await delay(1000 / 25);
+	}
 })();
 
 const PORT = 6969;

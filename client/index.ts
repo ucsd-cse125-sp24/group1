@@ -4,9 +4,12 @@ import { Connection } from "./net/Connection";
 import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import { InputListener } from "./net/input";
 import { getGl } from "./render/webgl";
+import { mat4 } from "gl-matrix";
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
+
+let position = { x: 0, y: 0, z: 0 };
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -18,6 +21,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			return {
 				type: "ping",
 			};
+		case "CUBEEEEE":
+			position = data;
+			break;
 	}
 };
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
@@ -63,6 +69,7 @@ const inputListener = new InputListener({
 const graphicsEngine = new GraphicsEngine(getGl());
 const paint = () => {
 	graphicsEngine.update();
+	graphicsEngine.box.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
 	graphicsEngine.draw();
 	window.requestAnimationFrame(paint);
 };
