@@ -33,6 +33,7 @@
   "dependencies": {
     "cannon-es": "^0.20.0",
     "express": "^4.19.2",
+    "gl-matrix": "^3.4.3",
     "ws": "^8.16.0"
   }
 }
