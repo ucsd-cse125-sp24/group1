@@ -19,6 +19,7 @@ app.get("/", (req, res) => {
 
 wss.on("connection", ws => {
 	ws.on("message", rawData => {
+		console.log(rawData);
 		const response = handleMessage(rawData);
 		if (response) {
 			ws.send(JSON.stringify(response));

@@ -46,11 +46,11 @@ function handleInput(key: keyof ClientInputs | null, pressed: boolean): void {
 }
 
 window.addEventListener("keydown", (e) => {
-	handleInput(keyToInput(e.key), true);
+	handleInput(keyToInput(e.code), true);
 });
 
 window.addEventListener("keyup", (e) => {
-	handleInput(keyToInput(e.key), false);
+	handleInput(keyToInput(e.code), false);
 });
 
 window.addEventListener("mousedown", (e) => {
