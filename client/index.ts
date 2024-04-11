@@ -1,11 +1,9 @@
 import "./index.css";
-import "./net/Connection";
-import "./render/webgl";
-import "./net/input";
 import GraphicsEngine from "./render/GraphicsEngine";
 import { Connection } from "./net/Connection";
 import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import { InputListener } from "./net/input";
+import { getGl } from "./render/webgl";
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
@@ -62,7 +60,7 @@ const inputListener = new InputListener({
 	},
 });
 
-const graphicsEngine = new GraphicsEngine();
+const graphicsEngine = new GraphicsEngine(getGl());
 const paint = () => {
 	graphicsEngine.update();
 	graphicsEngine.draw();

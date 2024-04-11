@@ -5,10 +5,12 @@ import Box from "./Box";
 import Camera from "./Camera";
 
 class GraphicsEngine {
+	gl: WebGL2RenderingContext;
 	camera: Camera;
 	box: Box;
 
-	constructor() {
+	constructor(gl: WebGL2RenderingContext) {
+		this.gl = gl;
 		this.camera = new Camera(
 			vec3.fromValues(5, 5, 5),
 			vec3.normalize(vec3.create(), vec3.fromValues(-1, -1, -1)),
@@ -20,6 +22,7 @@ class GraphicsEngine {
 		);
 
 		this.box = new Box(
+			this,
 			vec3.fromValues(0, 0, 0),
 			vec3.fromValues(2, 2, 2),
 			this.createShaderProgram(basicVertexSource, basicFragmentSource),
@@ -27,6 +30,7 @@ class GraphicsEngine {
 	}
 
 	createShaderProgram(vertexShaderSource: string, fragmentShaderSource: string): WebGLProgram {
+		const gl = this.gl;
 		const vertexShader = this.#createShader("vertex", vertexShaderSource);
 		const fragmentShader = this.#createShader("fragment", fragmentShaderSource);
 		const program = gl.createProgram();
@@ -44,6 +48,7 @@ class GraphicsEngine {
 	}
 
 	#createShader(type: "vertex" | "fragment", source: string): WebGLShader {
+		const gl = this.gl;
 		const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 		if (shader) {
 			gl.shaderSource(shader, source);
@@ -63,6 +68,7 @@ class GraphicsEngine {
 	}
 
 	draw(): void {
+		const gl = this.gl;
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		this.box.draw(this.camera.getViewProjectionMatrix());

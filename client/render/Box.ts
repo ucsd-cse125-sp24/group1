@@ -1,8 +1,9 @@
-import { error } from "console";
 import { mat4, vec3 } from "gl-matrix";
 import { expect } from "../../common/lib/expect";
+import GraphicsEngine from "./GraphicsEngine";
 
 class Box {
+	#engine: GraphicsEngine;
 	position: vec3;
 
 	VAO: WebGLVertexArrayObject;
@@ -11,9 +12,12 @@ class Box {
 	shader: WebGLProgram;
 	transform = mat4.create();
 
-	constructor(position: vec3, size: vec3, shader: WebGLProgram) {
+	constructor(engine: GraphicsEngine, position: vec3, size: vec3, shader: WebGLProgram) {
+		this.#engine = engine;
 		this.position = position;
 		this.shader = shader;
+
+		const gl = engine.gl;
 
 		const dx = size[0] / 2,
 			dy = size[1] / 2,
@@ -144,6 +148,7 @@ class Box {
 	}
 
 	draw(viewMatrix: mat4) {
+		const gl = this.#engine.gl;
 		gl.useProgram(this.shader);
 		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_view"), false, viewMatrix);
 		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_model"), false, this.transform);
