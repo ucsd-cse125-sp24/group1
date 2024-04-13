@@ -8,7 +8,8 @@ import { loadImage } from "../../lib/loadImage";
 const textureLoaded = loadImage(texture);
 
 export class BoxGeometry extends Geometry {
-	VAO: WebGLVertexArrayObject;
+	#VAO: WebGLVertexArrayObject;
+	#texture: WebGLTexture;
 
 	constructor(material: Material, size: vec3) {
 		super(material);
@@ -134,8 +135,8 @@ export class BoxGeometry extends Geometry {
 			),
 		);
 
-		this.VAO = gl.createVertexArray() ?? expect("Failed to create VAO");
-		gl.bindVertexArray(this.VAO);
+		this.#VAO = gl.createVertexArray() ?? expect("Failed to create VAO");
+		gl.bindVertexArray(this.#VAO);
 
 		const VBO_positions = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, VBO_positions);
@@ -155,8 +156,8 @@ export class BoxGeometry extends Geometry {
 		gl.vertexAttribPointer(material.attrib("a_texcoord"), 2, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(material.attrib("a_texcoord"));
 
-		const texture = gl.createTexture() ?? expect("Failed to create texture");
-		gl.bindTexture(gl.TEXTURE_2D, texture);
+		this.#texture = gl.createTexture() ?? expect("Failed to create texture");
+		gl.bindTexture(gl.TEXTURE_2D, this.#texture);
 		// Temporarily use blue pixel while image loads
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 255, 255]));
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -164,7 +165,7 @@ export class BoxGeometry extends Geometry {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		textureLoaded.then((image) => {
-			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.bindTexture(gl.TEXTURE_2D, this.#texture);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 			gl.generateMipmap(gl.TEXTURE_2D);
 		});
@@ -172,7 +173,8 @@ export class BoxGeometry extends Geometry {
 
 	draw() {
 		const gl = this.material.engine.gl;
-		gl.bindVertexArray(this.VAO);
+		gl.bindVertexArray(this.#VAO);
+		gl.bindTexture(gl.TEXTURE_2D, this.#texture);
 		gl.uniform1i(this.material.uniform("u_texture"), 0);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
 	}

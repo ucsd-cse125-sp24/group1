@@ -8,6 +8,7 @@ import GraphicsEngine from "./render/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { ClientEntity } from "./render/ClientEntity";
+import { fish1 } from "../assets/models/fish1";
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
@@ -85,6 +86,14 @@ const camera = new Camera(
 );
 const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
+let draw = () => {};
+fish1(engine.gltfMaterial).then((drawFuncs) => {
+	draw = () => {
+		for (const fn of drawFuncs) {
+			fn();
+		}
+	};
+});
 const paint = () => {
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
 	camera.update(mat4.fromYRotation(mat4.create(), 0.01));
@@ -104,6 +113,14 @@ const paint = () => {
 	for (const entity of entities) {
 		entity.drawWireframe();
 	}
+	engine.gltfMaterial.use();
+	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
+	engine.gl.uniformMatrix4fv(
+		engine.gltfMaterial.uniform("u_model"),
+		false,
+		mat4.fromYRotation(mat4.create(), Date.now() / 1000),
+	);
+	draw();
 
 	window.requestAnimationFrame(paint);
 };

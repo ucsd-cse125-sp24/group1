@@ -1,37 +1,33 @@
-import { BoxGeometry } from "./geometries/BoxGeometry";
-import { Geometry } from "./geometries/Geometry";
-import { HardCodedGeometry } from "./geometries/HardCodedGeometry";
-import { Material } from "./materials/Material";
 import basicFragmentSource from "../shaders/basic.frag";
 import basicVertexSource from "../shaders/basic.vert";
-import wireframeVertexSource from "../shaders/wireframe.vert";
+import gltfFragmentSource from "../shaders/gltf.frag";
+import gltfVertexSource from "../shaders/gltf.vert";
 import wireframeFragmentSource from "../shaders/wireframe.frag";
+import wireframeVertexSource from "../shaders/wireframe.vert";
+import { WebGlUtils } from "./WebGlUtils";
+import { BoxGeometry } from "./geometries/BoxGeometry";
+import { HardCodedGeometry } from "./geometries/HardCodedGeometry";
+import { Material } from "./materials/Material";
 
-class GraphicsEngine {
-	gl: WebGL2RenderingContext;
-	tempMaterial: Material;
-	tempGeometry: Geometry;
-	wireframeBox: Geometry;
-	wireframePlane: Geometry;
-
-	constructor(gl: WebGL2RenderingContext) {
-		this.gl = gl;
-
-		this.tempMaterial = new Material(
-			this,
-			this.createShader("vertex", basicVertexSource, "basic.vert"),
-			this.createShader("fragment", basicFragmentSource, "basic.frag"),
-		);
-		this.tempGeometry = new BoxGeometry(this.tempMaterial, [1, 1, 1]);
-
-		const wireframe = new Material(
-			this,
-			this.createShader("vertex", wireframeVertexSource, "wireframe.vert"),
-			this.createShader("fragment", wireframeFragmentSource, "wireframe.frag"),
-		);
-		this.wireframeBox = new HardCodedGeometry(wireframe, 36);
-		this.wireframePlane = new HardCodedGeometry(wireframe, 6);
-	}
+class GraphicsEngine extends WebGlUtils {
+	tempMaterial = new Material(
+		this,
+		this.createShader("vertex", basicVertexSource, "basic.vert"),
+		this.createShader("fragment", basicFragmentSource, "basic.frag"),
+	);
+	tempGeometry = new BoxGeometry(this.tempMaterial, [1, 1, 1]);
+	#wireframeMaterial = new Material(
+		this,
+		this.createShader("vertex", wireframeVertexSource, "wireframe.vert"),
+		this.createShader("fragment", wireframeFragmentSource, "wireframe.frag"),
+	);
+	wireframeBox = new HardCodedGeometry(this.#wireframeMaterial, 36);
+	wireframePlane = new HardCodedGeometry(this.#wireframeMaterial, 6);
+	gltfMaterial = new Material(
+		this,
+		this.createShader("vertex", gltfVertexSource, "gltf.vert"),
+		this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
+	);
 
 	createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram {
 		const gl = this.gl;

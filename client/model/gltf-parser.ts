@@ -39,41 +39,39 @@ const componentSizes = {
 };
 
 type GltfMesh = {
-	primitives: [
-		{
-			/**
-			 * Values are the index of accessor. Numbers start at 0 (eg `TEXCOORD_0`)
-			 *
-			 * https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#meshes-overview
-			 */
-			attributes: {
-				POSITION?: number;
-				NORMAL?: number;
-				TANGENT?: number;
-			} & Record<`TEXCOORD_${number}`, number> &
-				Record<`COLOR_${number}`, number> &
-				Record<`JOINTS_${number}`, number> &
-				Record<`WEIGHTS_${number}`, number>;
-			/** Accessor of indices */
-			indices?: number;
-			material: number;
-			mode: WebGL2RenderingContext[
-				| "POINTS"
-				| "LINES"
-				| "LINE_LOOP"
-				| "LINE_STRIP"
-				| "TRIANGLES"
-				| "TRIANGLE_STRIP"
-				| "TRIANGLE_FAN"];
-			/** Morph targets */
-			targets?: ({
-				POSITION?: number;
-				NORMAL?: number;
-				TANGENT?: number;
-			} & Record<`TEXCOORD_${number}`, number> &
-				Record<`COLOR_${number}`, number>)[];
-		},
-	];
+	primitives: {
+		/**
+		 * Values are the index of accessor. Numbers start at 0 (eg `TEXCOORD_0`)
+		 *
+		 * https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#meshes-overview
+		 */
+		attributes: {
+			POSITION?: number;
+			NORMAL?: number;
+			TANGENT?: number;
+		} & Record<`TEXCOORD_${number}`, number> &
+			Record<`COLOR_${number}`, number> &
+			Record<`JOINTS_${number}`, number> &
+			Record<`WEIGHTS_${number}`, number>;
+		/** Accessor of indices */
+		indices?: number;
+		material: number;
+		mode: WebGL2RenderingContext[
+			| "POINTS"
+			| "LINES"
+			| "LINE_LOOP"
+			| "LINE_STRIP"
+			| "TRIANGLES"
+			| "TRIANGLE_STRIP"
+			| "TRIANGLE_FAN"];
+		/** Morph targets */
+		targets?: ({
+			POSITION?: number;
+			NORMAL?: number;
+			TANGENT?: number;
+		} & Record<`TEXCOORD_${number}`, number> &
+			Record<`COLOR_${number}`, number>)[];
+	}[];
 	/** For morph targets */
 	weights?: number[];
 };
@@ -96,7 +94,7 @@ type GltfCamera =
 				znear: number;
 			};
 	  };
-type Gltf = {
+export type Gltf = {
 	scenes: {
 		nodes: number[];
 	}[];
@@ -141,7 +139,7 @@ type Gltf = {
 	}[];
 	bufferViews: {
 		buffer: number;
-		byteOffset: number;
+		byteOffset?: number;
 		byteLength: number;
 		/** For vertex attributes only */
 		byteStride?: number;
@@ -168,8 +166,8 @@ type Gltf = {
 				byteOffset: number;
 			};
 		};
-		min: number[];
-		max: number[];
+		min?: number[];
+		max?: number[];
 		normalized?: boolean;
 	}[];
 	/** May be reused */
@@ -224,7 +222,7 @@ type Gltf = {
 		emissiveFactor?: [r: number, g: number, b: number];
 		doubleSided?: boolean;
 	} & ({ alphaMode: "MASK"; alphaCutoff: number } | { alphaMode?: "OPAQUE" | "BLEND" }))[];
-	cameras: GltfCamera[];
+	cameras?: GltfCamera[];
 	animations?: unknown[];
 };
 
@@ -237,7 +235,7 @@ type Node = {
 };
 type Accessor = {
 	buffer: WebGLBuffer;
-	vertexAttribPointerArgs: [size: number, type: number, normalized: boolean, stride: number, offset: number];
+	vertexAttribPointerArgs: [size: number, type: ComponentType, normalized: boolean, stride: number, offset: number];
 	count: number;
 };
 /** A mesh is just a draw function. */
@@ -255,26 +253,26 @@ function getNodes(node: Node): Node[] {
 	return nodes;
 }
 
-export async function parseGltf(material: Material, root: Gltf): Promise<Mesh[]> {
+export async function parseGltf(material: Material, root: Gltf, uriMap: Record<string, string>): Promise<Mesh[]> {
 	const gl = material.engine.gl;
 
 	const buffers = await Promise.all(
 		root.buffers.map(({ uri }) =>
-			fetch(uri).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`HTTP ${r.status}: ${uri}`)))),
+			fetch(uriMap[uri]).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`HTTP ${r.status}: ${uri}`)))),
 		),
 	);
 	const glBuffers = root.accessors.map((accessor): Accessor => {
 		const bufferView = root.bufferViews[accessor.bufferView];
 		const data = new Uint8Array(
 			buffers[bufferView.buffer],
-			bufferView.byteOffset + (accessor.byteOffset ?? 0),
+			(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
 			accessor.count *
 				componentTypeToTypedArray(accessor.componentType).BYTES_PER_ELEMENT *
 				componentSizes[accessor.type],
 		);
 		const glBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
-		gl.bindBuffer(gl.ARRAY_BUFFER, glBuffer);
-		gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+		gl.bindBuffer(bufferView.target, glBuffer);
+		gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
 		return {
 			buffer: glBuffer,
 			vertexAttribPointerArgs: [
@@ -282,7 +280,7 @@ export async function parseGltf(material: Material, root: Gltf): Promise<Mesh[]>
 				accessor.componentType,
 				accessor.normalized ?? false,
 				bufferView.byteStride ?? 0,
-				bufferView.byteOffset,
+				bufferView.byteOffset ?? 0,
 			],
 			count: accessor.count,
 		};
@@ -291,7 +289,7 @@ export async function parseGltf(material: Material, root: Gltf): Promise<Mesh[]>
 	const images = await Promise.all(
 		root.images.map((image) => {
 			if ("uri" in image) {
-				return loadImage(image.uri);
+				return loadImage(uriMap[image.uri]);
 			} else {
 				const bufferView = root.bufferViews[image.bufferView];
 				const data = new Uint8Array(buffers[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength);
@@ -326,7 +324,7 @@ export async function parseGltf(material: Material, root: Gltf): Promise<Mesh[]>
 							node.scale ?? [1, 1, 1],
 						),
 			mesh: node.mesh !== undefined ? root.meshes[node.mesh] : null,
-			camera: node.camera !== undefined ? root.cameras[node.camera] : null,
+			camera: node.camera !== undefined ? root.cameras?.[node.camera] ?? null : null,
 		};
 	});
 	for (const [i, { children = [] }] of root.nodes.entries()) {
@@ -382,14 +380,17 @@ export async function parseGltf(material: Material, root: Gltf): Promise<Mesh[]>
 				}
 			}
 
+			let indices: Accessor | null = null;
+			if (mesh.indices) {
+				indices = glBuffers[mesh.indices];
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices.buffer);
+				count = indices.count;
+			}
+
 			const meshTextures = [
 				pbrMetallicRoughness.baseColorTexture && {
 					texture: textures[pbrMetallicRoughness.baseColorTexture.index],
 					name: "u_texture_color",
-				},
-				pbrMetallicRoughness.metallicRoughnessTexture && {
-					texture: textures[pbrMetallicRoughness.metallicRoughnessTexture.index],
-					name: "u_texture_metallic_roughness",
 				},
 				pbrMetallicRoughness.metallicRoughnessTexture && {
 					texture: textures[pbrMetallicRoughness.metallicRoughnessTexture.index],
@@ -418,7 +419,12 @@ export async function parseGltf(material: Material, root: Gltf): Promise<Mesh[]>
 					gl.uniform1i(material.uniform(name), i);
 				}
 				gl.uniformMatrix4fv(material.uniform("u_model_part"), false, mesh.transform);
-				gl.drawArrays(mesh.mode, 0, count);
+				gl.bindVertexArray(vao);
+				if (indices) {
+					gl.drawElements(mesh.mode, 0, count, indices.vertexAttribPointerArgs[1]);
+				} else {
+					gl.drawArrays(mesh.mode, 0, count);
+				}
 				material.engine.checkError();
 			};
 		});
