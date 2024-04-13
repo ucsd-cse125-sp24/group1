@@ -24,6 +24,18 @@ type Gltf = {
 		/** For vertex attributes only */
 		byteStride?: number;
 		/** For vertex indices and attributes */
-		target: WebGL2RenderingContext["ELEMENT_ARRAY_BUFFER"] | WebGL2RenderingContext["ARRAY_BUFFER"];
+		target: WebGL2RenderingContext["ELEMENT_ARRAY_BUFFER" | "ARRAY_BUFFER"];
+	}[];
+	accessors: {
+		bufferView: number;
+		byteOffset: number;
+		componentType: WebGL2RenderingContext[
+			| "BYTE"
+			| "UNSIGNED_BYTE"
+			| "SHORT"
+			| "UNSIGNED_SHORT"
+			| "INT"
+			| "UNSIGNED_INT"
+			| "FLOAT"];
 	}[];
 };
