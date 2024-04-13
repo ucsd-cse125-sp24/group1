@@ -1,0 +1,11 @@
+Model Information:
+* title:	Red Finned Fish
+* source:	https://sketchfab.com/3d-models/red-finned-fish-caba782285704b339dcc552b5455d2f6
+* author:	Kigha (https://sketchfab.com/Kigha)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Red Finned Fish" (https://sketchfab.com/3d-models/red-finned-fish-caba782285704b339dcc552b5455d2f6) by Kigha (https://sketchfab.com/Kigha) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
