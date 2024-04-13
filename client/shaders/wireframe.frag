@@ -8,7 +8,7 @@ in vec2 v_uv;
 out vec4 fragColor;
 
 void main() {
-  if (u_shape == 1) {
+  if (u_shape == 1 || u_shape == 3) {
     if (pow(abs(v_uv.x * 2.0 - 1.0), 30.0) +
             pow(abs(v_uv.y * 2.0 - 1.0), 30.0) <
         0.5) {

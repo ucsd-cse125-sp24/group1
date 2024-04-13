@@ -39,15 +39,35 @@ export type SerializedEntity = {
 	colliders: SerializedCollider[];
 };
 
+export type Vector2 = [x: number, y: number];
 export type Vector3 = [x: number, y: number, z: number];
 export type Quaternion = [x: number, y: number, z: number, w: number];
 
-export type SerializedCollider = BoxCollider | PlaneCollider;
+export type SerializedCollider = BoxCollider | PlaneCollider | SquareCollider;
 
+/**
+ * Represents an infinite plane. By default, it represents the xy-plane at z =
+ * 0.
+ */
 export type PlaneCollider = {
 	type: "plane";
 };
 
+/**
+ * Represents a finite plane with side length 2. By default, it represents a
+ * flat square with side lengths `2 * size` on the xy-plane, so its vertices are
+ * between `(-x, -y, 0)` and `(x, y, 0)`.
+ */
+export type SquareCollider = {
+	type: "square";
+	size: Vector2;
+};
+
+/**
+ * Represents a box. By default, it is a box with side lengths `2 * size`
+ * centered about the origin, so its vertices are between `(-x, -y, -z)` and
+ * `(x, y, z)`.
+ */
 export type BoxCollider = {
 	type: "box";
 	size: Vector3;

@@ -26,7 +26,7 @@ const vec2 uv[6] = vec2[6](vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 0),
 void main() {
   vec3 vertex = u_shape == 1
                     ? boxVertices[boxIndices[gl_VertexID]]
-                    : u_shape == 2
+                    : u_shape == 2 || u_shape == 3
                           ? vec3(100.0 * (uv[gl_VertexID] - vec2(0.5, 0.5)), 0)
                           : vec3(0, 0, 0);
   gl_Position = u_view * u_model * vec4(vertex, 1);

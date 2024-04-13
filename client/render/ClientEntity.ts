@@ -17,11 +17,8 @@ export class ClientEntity {
 	draw(view: mat4) {
 		const engine = this.geometry.material.engine;
 		this.geometry.material.use();
-		engine.checkError();
 		engine.gl.uniformMatrix4fv(this.geometry.material.uniform("u_view"), false, view);
-		engine.checkError();
 		engine.gl.uniformMatrix4fv(this.geometry.material.uniform("u_model"), false, this.transform);
-		engine.checkError();
 		this.geometry.draw();
 		engine.checkError();
 	}
@@ -30,14 +27,25 @@ export class ClientEntity {
 		// Assumes that the wireframe material is in use and the view uniform is set
 		const engine = this.geometry.material.engine;
 		for (const collider of this.colliders) {
-			engine.gl.uniformMatrix4fv(engine.wireframeBox.material.uniform("u_model"), false, this.transform);
+			const scale =
+				collider.type === "box"
+					? mat4.fromScaling(mat4.create(), collider.size)
+					: collider.type === "plane"
+						? mat4.create()
+						: mat4.fromScaling(mat4.create(), [...collider.size, 0]);
+			engine.gl.uniformMatrix4fv(
+				engine.wireframeBox.material.uniform("u_model"),
+				false,
+				mat4.multiply(scale, this.transform, scale),
+			);
 			if (collider.type === "box") {
 				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 1);
-				engine.checkError();
 				engine.wireframeBox.draw();
 			} else if (collider.type === "plane") {
 				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 2);
-				engine.checkError();
+				engine.wireframePlane.draw();
+			} else if (collider.type === "square") {
+				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 3);
 				engine.wireframePlane.draw();
 			}
 			engine.checkError();

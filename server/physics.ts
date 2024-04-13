@@ -31,7 +31,7 @@ export class TheWorld {
 			position: v3(0, 6, 5),
 			velocity: v3(0, 0, 0),
 			quaternion: q4(1, 2, 3, 4).normalize(),
-			shape: new phys.Box(v3(1, 1, 1)),
+			shape: new phys.Box(v3(1, 0.5, 1)),
 			mass: 200,
 			material: new phys.Material({
 				friction: 3,

@@ -6,7 +6,6 @@ import { InputListener } from "./net/input";
 import Camera from "./render/Camera";
 import GraphicsEngine from "./render/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
-import { Material } from "./render/materials/Material";
 import { getGl } from "./render/getGl";
 import { ClientEntity } from "./render/ClientEntity";
 
