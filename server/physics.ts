@@ -1,6 +1,6 @@
 import * as phys from "cannon-es";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { SerializedCollision, SerializedEntity } from "../common/messages";
+import { SerializedCollider, SerializedEntity } from "../common/messages";
 
 type WorldSetup = {
 	gravity: [number, number, number];
@@ -81,11 +81,11 @@ export class TheWorld {
 				materialId: 0,
 				position: body.position.toArray(),
 				quaternion: body.quaternion.toArray(),
-				collisions: [],
+				colliders: [],
 			};
 
 			for (let shape of body.shapes) {
-				let collider: SerializedCollision | undefined = undefined;
+				let collider: SerializedCollider | undefined = undefined;
 				if (shape instanceof phys.Box) {
 					collider = {
 						type: "box",
@@ -97,7 +97,7 @@ export class TheWorld {
 					};
 				}
 				if (collider) {
-					entity.collisions.push(collider);
+					entity.colliders.push(collider);
 				} else {
 					console.error("Unknown Collider", collider);
 				}

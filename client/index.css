@@ -1,3 +1,6 @@
+:root {
+	color-scheme: dark;
+}
 html,
 body {
 	height: 100%;
@@ -5,6 +8,8 @@ body {
 body {
 	display: flex;
 	margin: 0;
+	background-color: black;
+	color: white;
 }
 
 canvas {

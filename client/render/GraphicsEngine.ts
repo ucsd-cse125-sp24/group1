@@ -4,14 +4,15 @@ import { HardCodedGeometry } from "./geometries/HardCodedGeometry";
 import { Material } from "./materials/Material";
 import basicFragmentSource from "../shaders/basic.frag";
 import basicVertexSource from "../shaders/basic.vert";
-import boxFragmentSource from "../shaders/box.vert";
-import wireframeVertexSource from "../shaders/wireframe.frag";
+import wireframeVertexSource from "../shaders/wireframe.vert";
+import wireframeFragmentSource from "../shaders/wireframe.frag";
 
 class GraphicsEngine {
 	gl: WebGL2RenderingContext;
 	tempMaterial: Material;
 	tempGeometry: Geometry;
 	wireframeBox: Geometry;
+	wireframePlane: Geometry;
 
 	constructor(gl: WebGL2RenderingContext) {
 		this.gl = gl;
@@ -23,11 +24,13 @@ class GraphicsEngine {
 		);
 		this.tempGeometry = new BoxGeometry(this.tempMaterial, [1, 1, 1]);
 
-		const wireframeShader = this.createShader("fragment", wireframeVertexSource, "wireframe.frag");
-		this.wireframeBox = new HardCodedGeometry(
-			new Material(this, this.createShader("vertex", boxFragmentSource, "box.vert"), wireframeShader),
-			36,
+		const wireframe = new Material(
+			this,
+			this.createShader("vertex", wireframeVertexSource, "wireframe.vert"),
+			this.createShader("fragment", wireframeFragmentSource, "wireframe.frag"),
 		);
+		this.wireframeBox = new HardCodedGeometry(wireframe, 36);
+		this.wireframePlane = new HardCodedGeometry(wireframe, 6);
 	}
 
 	createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram {

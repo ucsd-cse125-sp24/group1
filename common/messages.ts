@@ -36,13 +36,13 @@ export type SerializedEntity = {
 	materialId: number;
 	quaternion: Quaternion;
 	position: Vector3;
-	collisions: SerializedCollision[];
+	colliders: SerializedCollider[];
 };
 
 export type Vector3 = [x: number, y: number, z: number];
 export type Quaternion = [x: number, y: number, z: number, w: number];
 
-export type SerializedCollision = BoxCollider | PlaneCollider;
+export type SerializedCollider = BoxCollider | PlaneCollider;
 
 export type PlaneCollider = {
 	type: "plane";
