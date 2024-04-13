@@ -32,15 +32,23 @@ export type ClientInputMessage = {
 } & ClientInputs;
 
 export type SerializedEntity = {
-	geometryId: string;
-	materialId: string;
+	geometryId: number;
+	materialId: number;
+	quaternion: Quaternion;
+	position: Vector3;
 	collisions: SerializedCollision[];
 };
 
 export type Vector3 = [x: number, y: number, z: number];
+export type Quaternion = [x: number, y: number, z: number, w: number];
 
-export type SerializedCollision = {
+export type SerializedCollision = BoxCollider | PlaneCollider;
+
+export type PlaneCollider = {
+	type: "plane";
+}
+
+export type BoxCollider = {
 	type: "box";
-	center: Vector3;
 	size: Vector3;
 };
