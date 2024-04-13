@@ -1,6 +1,9 @@
 {
 	"editor.formatOnSave": true,
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"files.associations": {
+		"*.gltf": "json"
+	},
 	"prettier.prettierPath": "./node_modules/prettier",
 	"prettier.configPath": ".prettierrc.json"
 }

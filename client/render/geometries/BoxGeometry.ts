@@ -3,13 +3,9 @@ import { expect } from "../../../common/lib/expect";
 import { Material } from "../materials/Material";
 import { Geometry } from "./Geometry";
 import texture from "../../../assets/test-texture.png";
+import { loadImage } from "../../lib/loadImage";
 
-const textureLoaded = new Promise<HTMLImageElement>((resolve, reject) => {
-	const image = new Image();
-	image.src = texture;
-	image.addEventListener("load", () => resolve(image));
-	image.addEventListener("error", reject);
-});
+const textureLoaded = loadImage(texture);
 
 export class BoxGeometry extends Geometry {
 	VAO: WebGLVertexArrayObject;
