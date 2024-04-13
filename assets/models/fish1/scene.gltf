@@ -1,319 +1,223 @@
 {
-  "accessors": [
-    {
-      "bufferView": 2,
-      "componentType": 5126,
-      "count": 676,
-      "max": [
-        2.770557403564453,
-        0.27270108461380005,
-        1.3781524896621704
-      ],
-      "min": [
-        -1.9281795024871826,
-        -0.27270108461380005,
-        -0.9275001287460327
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 2,
-      "byteOffset": 8112,
-      "componentType": 5126,
-      "count": 676,
-      "max": [
-        0.9999581575393677,
-        0.999707818031311,
-        0.9990392327308655
-      ],
-      "min": [
-        -0.9999986886978149,
-        -1.0,
-        -0.9999558925628662
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 3,
-      "componentType": 5126,
-      "count": 676,
-      "max": [
-        0.9999558329582214,
-        0.9955849647521973,
-        1.0,
-        1.0
-      ],
-      "min": [
-        -1.0,
-        -0.9955849647521973,
-        -0.9999998807907104,
-        -1.0
-      ],
-      "type": "VEC4"
-    },
-    {
-      "bufferView": 1,
-      "componentType": 5126,
-      "count": 676,
-      "max": [
-        0.4310693144798279,
-        0.9911729097366333
-      ],
-      "min": [
-        0.008827149868011475,
-        0.008827149868011475
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 5408,
-      "componentType": 5126,
-      "count": 676,
-      "max": [
-        0.4310693144798279,
-        0.9911729097366333
-      ],
-      "min": [
-        0.008827149868011475,
-        0.008827149868011475
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 1,
-      "byteOffset": 10816,
-      "componentType": 5126,
-      "count": 676,
-      "max": [
-        0.4310693144798279,
-        0.9911729097366333
-      ],
-      "min": [
-        0.008827149868011475,
-        0.008827149868011475
-      ],
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 0,
-      "componentType": 5125,
-      "count": 3864,
-      "type": "SCALAR"
-    }
-  ],
-  "asset": {
-    "extras": {
-      "author": "Kigha (https://sketchfab.com/Kigha)",
-      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "source": "https://sketchfab.com/3d-models/red-finned-fish-caba782285704b339dcc552b5455d2f6",
-      "title": "Red Finned Fish"
-    },
-    "generator": "Sketchfab-12.67.0",
-    "version": "2.0"
-  },
-  "bufferViews": [
-    {
-      "buffer": 0,
-      "byteLength": 15456,
-      "name": "floatBufferViews",
-      "target": 34963
-    },
-    {
-      "buffer": 0,
-      "byteLength": 16224,
-      "byteOffset": 15456,
-      "byteStride": 8,
-      "name": "floatBufferViews",
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 16224,
-      "byteOffset": 31680,
-      "byteStride": 12,
-      "name": "floatBufferViews",
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 10816,
-      "byteOffset": 47904,
-      "byteStride": 16,
-      "name": "floatBufferViews",
-      "target": 34962
-    }
-  ],
-  "buffers": [
-    {
-      "byteLength": 58720,
-      "uri": "scene.bin"
-    }
-  ],
-  "images": [
-    {
-      "uri": "textures/Full_Fish_Material_baseColor.png"
-    },
-    {
-      "uri": "textures/Full_Fish_Material_metallicRoughness.png"
-    },
-    {
-      "uri": "textures/Full_Fish_Material_normal.png"
-    }
-  ],
-  "materials": [
-    {
-      "alphaCutoff": 1.0,
-      "alphaMode": "MASK",
-      "doubleSided": true,
-      "name": "Full_Fish_Material",
-      "normalTexture": {
-        "index": 2
-      },
-      "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 0
-        },
-        "metallicFactor": 0.0,
-        "metallicRoughnessTexture": {
-          "index": 1
-        }
-      }
-    }
-  ],
-  "meshes": [
-    {
-      "name": "FISH_Combined_Full Fish Material_0",
-      "primitives": [
-        {
-          "attributes": {
-            "NORMAL": 1,
-            "POSITION": 0,
-            "TANGENT": 2,
-            "TEXCOORD_0": 3,
-            "TEXCOORD_1": 4,
-            "TEXCOORD_2": 5
-          },
-          "indices": 6,
-          "material": 0,
-          "mode": 4
-        }
-      ]
-    }
-  ],
-  "nodes": [
-    {
-      "children": [
-        1
-      ],
-      "matrix": [
-        1.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        2.220446049250313e-16,
-        -1.0,
-        0.0,
-        0.0,
-        1.0,
-        2.220446049250313e-16,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "Sketchfab_model"
-    },
-    {
-      "children": [
-        2
-      ],
-      "matrix": [
-        0.009999999776482582,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.009999999776482582,
-        0.0,
-        0.0,
-        -0.009999999776482582,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "Fish_Red-Fin.fbx"
-    },
-    {
-      "children": [
-        3
-      ],
-      "name": "RootNode"
-    },
-    {
-      "children": [
-        4
-      ],
-      "matrix": [
-        16.223209381103516,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        -2.6430962942853176e-06,
-        -16.223209381103302,
-        0.0,
-        0.0,
-        16.223209381103302,
-        -2.6430962942853176e-06,
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ],
-      "name": "FISH_Combined"
-    },
-    {
-      "mesh": 0,
-      "name": "FISH_Combined_Full Fish Material_0"
-    }
-  ],
-  "samplers": [
-    {
-      "magFilter": 9729,
-      "minFilter": 9987,
-      "wrapS": 10497,
-      "wrapT": 10497
-    }
-  ],
-  "scene": 0,
-  "scenes": [
-    {
-      "name": "Sketchfab_Scene",
-      "nodes": [
-        0
-      ]
-    }
-  ],
-  "textures": [
-    {
-      "sampler": 0,
-      "source": 0
-    },
-    {
-      "sampler": 0,
-      "source": 1
-    },
-    {
-      "sampler": 0,
-      "source": 2
-    }
-  ]
+	"accessors": [
+		{
+			"bufferView": 2,
+			"componentType": 5126,
+			"count": 676,
+			"max": [2.770557403564453, 0.27270108461380005, 1.3781524896621704],
+			"min": [-1.9281795024871826, -0.27270108461380005, -0.9275001287460327],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 2,
+			"byteOffset": 8112,
+			"componentType": 5126,
+			"count": 676,
+			"max": [0.9999581575393677, 0.999707818031311, 0.9990392327308655],
+			"min": [-0.9999986886978149, -1.0, -0.9999558925628662],
+			"type": "VEC3"
+		},
+		{
+			"bufferView": 3,
+			"componentType": 5126,
+			"count": 676,
+			"max": [0.9999558329582214, 0.9955849647521973, 1.0, 1.0],
+			"min": [-1.0, -0.9955849647521973, -0.9999998807907104, -1.0],
+			"type": "VEC4"
+		},
+		{
+			"bufferView": 1,
+			"componentType": 5126,
+			"count": 676,
+			"max": [0.4310693144798279, 0.9911729097366333],
+			"min": [0.008827149868011475, 0.008827149868011475],
+			"type": "VEC2"
+		},
+		{
+			"bufferView": 1,
+			"byteOffset": 5408,
+			"componentType": 5126,
+			"count": 676,
+			"max": [0.4310693144798279, 0.9911729097366333],
+			"min": [0.008827149868011475, 0.008827149868011475],
+			"type": "VEC2"
+		},
+		{
+			"bufferView": 1,
+			"byteOffset": 10816,
+			"componentType": 5126,
+			"count": 676,
+			"max": [0.4310693144798279, 0.9911729097366333],
+			"min": [0.008827149868011475, 0.008827149868011475],
+			"type": "VEC2"
+		},
+		{
+			"bufferView": 0,
+			"componentType": 5125,
+			"count": 3864,
+			"type": "SCALAR"
+		}
+	],
+	"asset": {
+		"extras": {
+			"author": "Kigha (https://sketchfab.com/Kigha)",
+			"license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+			"source": "https://sketchfab.com/3d-models/red-finned-fish-caba782285704b339dcc552b5455d2f6",
+			"title": "Red Finned Fish"
+		},
+		"generator": "Sketchfab-12.67.0",
+		"version": "2.0"
+	},
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 15456,
+			"name": "floatBufferViews",
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteLength": 16224,
+			"byteOffset": 15456,
+			"byteStride": 8,
+			"name": "floatBufferViews",
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 16224,
+			"byteOffset": 31680,
+			"byteStride": 12,
+			"name": "floatBufferViews",
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteLength": 10816,
+			"byteOffset": 47904,
+			"byteStride": 16,
+			"name": "floatBufferViews",
+			"target": 34962
+		}
+	],
+	"buffers": [
+		{
+			"byteLength": 58720,
+			"uri": "scene.bin"
+		}
+	],
+	"images": [
+		{
+			"uri": "textures/Full_Fish_Material_baseColor.png"
+		},
+		{
+			"uri": "textures/Full_Fish_Material_metallicRoughness.png"
+		},
+		{
+			"uri": "textures/Full_Fish_Material_normal.png"
+		}
+	],
+	"materials": [
+		{
+			"alphaCutoff": 1.0,
+			"alphaMode": "MASK",
+			"doubleSided": true,
+			"name": "Full_Fish_Material",
+			"normalTexture": {
+				"index": 2
+			},
+			"pbrMetallicRoughness": {
+				"baseColorTexture": {
+					"index": 0
+				},
+				"metallicFactor": 0.0,
+				"metallicRoughnessTexture": {
+					"index": 1
+				}
+			}
+		}
+	],
+	"meshes": [
+		{
+			"name": "FISH_Combined_Full Fish Material_0",
+			"primitives": [
+				{
+					"attributes": {
+						"NORMAL": 1,
+						"POSITION": 0,
+						"TANGENT": 2,
+						"TEXCOORD_0": 3,
+						"TEXCOORD_1": 4,
+						"TEXCOORD_2": 5
+					},
+					"indices": 6,
+					"material": 0,
+					"mode": 4
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"children": [1],
+			"matrix": [
+				1.0, 0.0, 0.0, 0.0, 0.0, 2.220446049250313e-16, -1.0, 0.0, 0.0, 1.0, 2.220446049250313e-16, 0.0, 0.0, 0.0, 0.0,
+				1.0
+			],
+			"name": "Sketchfab_model"
+		},
+		{
+			"children": [2],
+			"matrix": [
+				0.009999999776482582, 0.0, 0.0, 0.0, 0.0, 0.0, 0.009999999776482582, 0.0, 0.0, -0.009999999776482582, 0.0, 0.0,
+				0.0, 0.0, 0.0, 1.0
+			],
+			"name": "Fish_Red-Fin.fbx"
+		},
+		{
+			"children": [3],
+			"name": "RootNode"
+		},
+		{
+			"children": [4],
+			"matrix": [
+				16.223209381103516, 0.0, 0.0, 0.0, 0.0, -2.6430962942853176e-6, -16.223209381103302, 0.0, 0.0,
+				16.223209381103302, -2.6430962942853176e-6, 0.0, 0.0, 0.0, 0.0, 1.0
+			],
+			"name": "FISH_Combined"
+		},
+		{
+			"mesh": 0,
+			"name": "FISH_Combined_Full Fish Material_0"
+		}
+	],
+	"samplers": [
+		{
+			"magFilter": 9729,
+			"minFilter": 9987,
+			"wrapS": 10497,
+			"wrapT": 10497
+		}
+	],
+	"scene": 0,
+	"scenes": [
+		{
+			"name": "Sketchfab_Scene",
+			"nodes": [0]
+		}
+	],
+	"textures": [
+		{
+			"sampler": 0,
+			"source": 0
+		},
+		{
+			"sampler": 0,
+			"source": 1
+		},
+		{
+			"sampler": 0,
+			"source": 2
+		}
+	]
 }

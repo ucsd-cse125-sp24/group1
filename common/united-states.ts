@@ -1,3 +1,1 @@
-export type Player = {
-
-}
+export type Player = {};

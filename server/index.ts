@@ -76,7 +76,7 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 		y: 0,
 		z: 0,
 	};
-	let w = new TheWorld({gravity: [0, -9.82, 0]});
+	let w = new TheWorld({ gravity: [0, -9.82, 0] });
 	while (true) {
 		anchor.z = Math.sin(Date.now() / 500) * 5;
 		broadcast(wss, anchor);
@@ -86,11 +86,11 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 		// send updated state to all clients
 		broadcast(wss, {
 			type: "entire-game-state",
-			entities: w.serialize()
+			entities: w.serialize(),
 		});
 		// wait until end of tick
 		// broadcast(wss, )
-		
+
 		await delay(SERVER_GAME_TICK);
 	}
 })();

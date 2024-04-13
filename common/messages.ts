@@ -46,7 +46,7 @@ export type SerializedCollision = BoxCollider | PlaneCollider;
 
 export type PlaneCollider = {
 	type: "plane";
-}
+};
 
 export type BoxCollider = {
 	type: "box";
