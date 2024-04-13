@@ -1,21 +1,16 @@
 import { mat4, vec3 } from "gl-matrix";
-import { expect } from "../../common/lib/expect";
-import GraphicsEngine from "./GraphicsEngine";
+import GraphicsEngine from "../GraphicsEngine";
+import { Geometry } from "./Geometry";
+import { expect } from "../../../common/lib/expect";
+import { Material } from "../materials/Material";
 
-class Box {
-	#engine: GraphicsEngine;
-	position: vec3;
-
+export class BoxGeometry extends Geometry {
 	VAO: WebGLVertexArrayObject;
 	VBO_positions: WebGLBuffer;
 	VBO_normals: WebGLBuffer;
-	shader: WebGLProgram;
-	transform = mat4.create();
 
-	constructor(engine: GraphicsEngine, position: vec3, size: vec3, shader: WebGLProgram) {
-		this.#engine = engine;
-		this.position = position;
-		this.shader = shader;
+	constructor(engine: GraphicsEngine, position: vec3, size: vec3) {
+		super(engine);
 
 		const gl = engine.gl;
 
@@ -125,8 +120,6 @@ class Box {
 		];
 		const positionArray = new Float32Array(positionData.flat());
 		const normalArray = new Float32Array(normalData.flat());
-		const positionAttribLocation = gl.getAttribLocation(shader, "a_position");
-		const normalAttribLocation = gl.getAttribLocation(shader, "a_normal");
 
 		this.VAO = gl.createVertexArray() ?? expect("Failed to create VAO");
 		gl.bindVertexArray(this.VAO);
@@ -134,29 +127,26 @@ class Box {
 		this.VBO_positions = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_positions);
 		gl.bufferData(gl.ARRAY_BUFFER, positionArray, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(positionAttribLocation, 3, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(positionAttribLocation);
 
 		this.VBO_normals = gl.createBuffer() ?? expect("Failed to create VAO normal buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_normals);
 		gl.bufferData(gl.ARRAY_BUFFER, normalArray, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(normalAttribLocation, 3, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(normalAttribLocation);
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, null);
-		gl.bindVertexArray(null);
 	}
 
-	draw(viewMatrix: mat4) {
-		const gl = this.#engine.gl;
-		gl.useProgram(this.shader);
-		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_view"), false, viewMatrix);
-		gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, "u_model"), false, this.transform);
+	loadAttrib(material: Material) {
+		const gl = this.engine.gl;
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_positions);
+		gl.vertexAttribPointer(material.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(material.attrib("a_position"));
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_normals);
+		gl.vertexAttribPointer(material.attrib("a_normal"), 3, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(material.attrib("a_normal"));
+	}
+
+	draw() {
+		const gl = this.engine.gl;
 		gl.bindVertexArray(this.VAO);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
-		gl.bindVertexArray(null);
-		gl.useProgram(null);
 	}
 }
-
-export default Box;
