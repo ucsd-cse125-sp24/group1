@@ -44,11 +44,11 @@ export class BoxGeometry extends Geometry {
 		const positionData = [
 			// bottom
 			positions[0],
-			positions[2],
-			positions[1],
-			positions[0],
 			positions[3],
 			positions[2],
+			positions[0],
+			positions[2],
+			positions[1],
 			// side
 			positions[0],
 			positions[1],
@@ -129,11 +129,11 @@ export class BoxGeometry extends Geometry {
 			Array.from({ length: 6 }).flatMap(() =>
 				[
 					[0, 0],
-					[1, 1],
-					[1, 0],
-					[0, 0],
 					[0, 1],
 					[1, 1],
+					[0, 0],
+					[1, 1],
+					[1, 0],
 				].flat(),
 			),
 		);
