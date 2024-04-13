@@ -1,15 +1,15 @@
-import { mat4, vec3 } from "gl-matrix";
-import GraphicsEngine from "../GraphicsEngine";
-import { Geometry } from "./Geometry";
+import { vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
+import GraphicsEngine from "../GraphicsEngine";
 import { Material } from "../materials/Material";
+import { Geometry } from "./Geometry";
 
 export class BoxGeometry extends Geometry {
 	VAO: WebGLVertexArrayObject;
 	VBO_positions: WebGLBuffer;
 	VBO_normals: WebGLBuffer;
 
-	constructor(engine: GraphicsEngine, position: vec3, size: vec3) {
+	constructor(engine: GraphicsEngine, size: vec3) {
 		super(engine);
 
 		const gl = engine.gl;

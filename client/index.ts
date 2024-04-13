@@ -1,16 +1,16 @@
-import "./index.css";
-import GraphicsEngine from "./render/GraphicsEngine";
-import { Connection } from "./net/Connection";
-import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
-import { InputListener } from "./net/input";
-import { getGl } from "./render/webgl";
 import { mat4, vec3 } from "gl-matrix";
+import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
+import "./index.css";
+import { Connection } from "./net/Connection";
+import { InputListener } from "./net/input";
 import Camera from "./render/Camera";
-import { ClientEntity } from "./state/ClientEntity";
+import GraphicsEngine from "./render/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { Material } from "./render/materials/Material";
-import basicVertexSource from "./shaders/basic.vert";
+import { getGl } from "./render/getGl";
 import basicFragmentSource from "./shaders/basic.frag";
+import basicVertexSource from "./shaders/basic.vert";
+import { ClientEntity } from "./state/ClientEntity";
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
@@ -87,8 +87,8 @@ const material = new Material(
 	engine.createShader("vertex", basicVertexSource),
 	engine.createShader("fragment", basicFragmentSource),
 );
-const box1 = new ClientEntity(new BoxGeometry(engine, vec3.fromValues(0, 0, 0), vec3.fromValues(2, 2, 2)), material);
-const box2 = new ClientEntity(new BoxGeometry(engine, vec3.fromValues(0, -5, 0), vec3.fromValues(1, 2, 3)), material);
+const box1 = new ClientEntity(new BoxGeometry(engine, vec3.fromValues(2, 2, 2)), material);
+const box2 = new ClientEntity(new BoxGeometry(engine, vec3.fromValues(1, 2, 3)), material);
 const paint = () => {
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
 	camera.update(mat4.fromYRotation(mat4.create(), 0.01));

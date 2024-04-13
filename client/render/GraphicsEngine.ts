@@ -1,5 +1,3 @@
-import { mat4, vec3 } from "gl-matrix";
-
 class GraphicsEngine {
 	gl: WebGL2RenderingContext;
 

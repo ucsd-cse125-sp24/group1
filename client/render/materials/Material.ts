@@ -1,5 +1,8 @@
 import GraphicsEngine from "../GraphicsEngine";
 
+/**
+ * A material represents a shader program.
+ */
 export class Material {
 	engine: GraphicsEngine;
 	#program: WebGLProgram;
