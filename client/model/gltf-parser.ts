@@ -12,5 +12,11 @@ type Gltf = {
 	scene?: number;
 	nodes?: {
 		children?: number[];
+		translation?: [x: number, y: number, z: number];
+		/** A quaternion */
+		rotation?: [x: number, y: number, z: number, w: number];
+		scale?: [x: number, y: number, z: number];
+		/** Length 16 */
+		matrix?: number[];
 	}[];
 };
