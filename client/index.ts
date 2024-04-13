@@ -8,14 +8,13 @@ import GraphicsEngine from "./render/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { Material } from "./render/materials/Material";
 import { getGl } from "./render/getGl";
-import basicFragmentSource from "./shaders/basic.frag";
-import basicVertexSource from "./shaders/basic.vert";
-import { ClientEntity } from "./state/ClientEntity";
+import { ClientEntity } from "./render/ClientEntity";
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
 
 let position = { x: 0, y: 0, z: 0 };
+let entities: ClientEntity[] = [];
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -29,6 +28,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			};
 		case "CUBEEEEE":
 			position = data;
+			break;
+		case "entire-game-state":
+			entities = data.entities.map((entity) => ClientEntity.from(engine, entity));
 			break;
 	}
 };
@@ -82,23 +84,27 @@ const camera = new Camera(
 	0.01,
 	100,
 );
-const material = new Material(
-	engine,
-	engine.createShader("vertex", basicVertexSource),
-	engine.createShader("fragment", basicFragmentSource),
-);
-const box1 = new ClientEntity(new BoxGeometry(engine, vec3.fromValues(2, 2, 2)), material);
-const box2 = new ClientEntity(new BoxGeometry(engine, vec3.fromValues(1, 2, 3)), material);
+const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
+const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
 const paint = () => {
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
 	camera.update(mat4.fromYRotation(mat4.create(), 0.01));
-	box1.geometry.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
-	box2.geometry.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
-	box2.geometry.transform = mat4.translate(box2.geometry.transform, box2.geometry.transform, [0, -5, 0]);
+	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
+	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
+	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
 
 	engine.clear();
-	box1.draw(camera.getViewProjectionMatrix());
-	box2.draw(camera.getViewProjectionMatrix());
+	const view = camera.getViewProjectionMatrix();
+	box1.draw(view);
+	box2.draw(view);
+	for (const entity of entities) {
+		entity.draw(view);
+	}
+	engine.wireframeBox.material.use();
+	engine.gl.uniformMatrix4fv(engine.wireframeBox.material.uniform("u_view"), false, view);
+	for (const entity of entities) {
+		entity.drawWireframe();
+	}
 
 	window.requestAnimationFrame(paint);
 };

@@ -1,6 +1,5 @@
 import { vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
-import GraphicsEngine from "../GraphicsEngine";
 import { Material } from "../materials/Material";
 import { Geometry } from "./Geometry";
 
@@ -9,10 +8,10 @@ export class BoxGeometry extends Geometry {
 	VBO_positions: WebGLBuffer;
 	VBO_normals: WebGLBuffer;
 
-	constructor(engine: GraphicsEngine, size: vec3) {
-		super(engine);
+	constructor(material: Material, size: vec3) {
+		super(material);
 
-		const gl = engine.gl;
+		const gl = material.engine.gl;
 
 		const dx = size[0] / 2,
 			dy = size[1] / 2,
@@ -127,25 +126,18 @@ export class BoxGeometry extends Geometry {
 		this.VBO_positions = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_positions);
 		gl.bufferData(gl.ARRAY_BUFFER, positionArray, gl.STATIC_DRAW);
+		gl.vertexAttribPointer(material.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(material.attrib("a_position"));
 
 		this.VBO_normals = gl.createBuffer() ?? expect("Failed to create VAO normal buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_normals);
 		gl.bufferData(gl.ARRAY_BUFFER, normalArray, gl.STATIC_DRAW);
-	}
-
-	loadAttrib(material: Material) {
-		const gl = this.engine.gl;
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_positions);
-		gl.vertexAttribPointer(material.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(material.attrib("a_position"));
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO_normals);
 		gl.vertexAttribPointer(material.attrib("a_normal"), 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(material.attrib("a_normal"));
 	}
 
 	draw() {
-		const gl = this.engine.gl;
+		const gl = this.material.engine.gl;
 		gl.bindVertexArray(this.VAO);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
 	}

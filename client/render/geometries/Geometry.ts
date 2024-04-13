@@ -1,5 +1,3 @@
-import { mat4 } from "gl-matrix";
-import GraphicsEngine from "../GraphicsEngine";
 import { Material } from "../materials/Material";
 
 /**
@@ -7,13 +5,11 @@ import { Material } from "../materials/Material";
  * designed to only work for a specific material (shader program).
  */
 export abstract class Geometry {
-	engine: GraphicsEngine;
-	transform = mat4.create();
+	material: Material;
 
-	constructor(engine: GraphicsEngine) {
-		this.engine = engine;
+	constructor(material: Material) {
+		this.material = material;
 	}
 
-	abstract loadAttrib(material: Material): void;
 	abstract draw(): void;
 }

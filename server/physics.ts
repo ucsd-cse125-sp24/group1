@@ -53,14 +53,14 @@ export class TheWorld {
 	}
 
 	nextTick() {
-		console.log("box is at:", this.#colliders.box.position, "velocity:", this.#colliders.box.velocity);
+		// console.log("box is at:", this.#colliders.box.position, "velocity:", this.#colliders.box.velocity);
 		this.#world.step(1 / SERVER_GAME_TICK);
 	}
 
 	/**
 	 * Serialize this TheWorld into a format that represents the state of this class
 	 */
-	serialize() {
+	serialize(): SerializedEntity[] {
 		let serial = [];
 
 		for (let body of Object.values(this.#colliders)) {
