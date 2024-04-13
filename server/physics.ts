@@ -28,7 +28,7 @@ export class TheWorld {
 	initWorld() {
 		// create a funny box
 		this.#colliders.box = new phys.Body({
-			position: v3(0, 6, 20),
+			position: v3(0, 6, 5),
 			velocity: v3(0, 0, 0),
 			quaternion: q4(1, 2, 3, 4).normalize(),
 			shape: new phys.Box(v3(1, 1, 1)),
@@ -42,7 +42,7 @@ export class TheWorld {
 		// Create a plane pointing up at positive y,
 		this.#colliders.plane = new phys.Body({
 			shape: new phys.Plane(),
-			position: v3(0, -20, 0),
+			position: v3(0, -5, 0),
 			quaternion: q4(-1, 0, 0, 1).normalize(),
 			type: phys.Body.STATIC,
 		});
@@ -52,9 +52,21 @@ export class TheWorld {
 		this.#world.addBody(this.#colliders.box);
 	}
 
+	#time = 0;
 	nextTick() {
 		// console.log("box is at:", this.#colliders.box.position, "velocity:", this.#colliders.box.velocity);
 		this.#world.step(1 / SERVER_GAME_TICK);
+		this.#time += SERVER_GAME_TICK;
+		if (this.#time > 6000) {
+			this.#colliders.box.position = v3(0, 6, 5);
+			this.#colliders.box.quaternion = q4(
+				Math.random() + 0.1,
+				Math.random() + 0.1,
+				Math.random() + 0.1,
+				Math.random() + 0.1,
+			).normalize();
+			this.#time = 0;
+		}
 	}
 
 	/**
