@@ -20,8 +20,6 @@ void main() {
   temp = a_tangent;
 
   gl_Position = u_view * u_model * u_model_part * vec4(a_position, 1);
-  gl_Position = vec4(sign(a_position.x) * 0.2 + 0.4,
-                     sign(a_position.y) * 0.2 + 0.4, -1, 1); // TEMP!
 
   v_texcoord0 = a_texcoord0;
   v_texcoord1 = a_texcoord1;

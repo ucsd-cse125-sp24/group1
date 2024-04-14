@@ -255,13 +255,6 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
 			accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type],
 		);
-		console.log(
-			new componentTypes[accessor.componentType](
-				data.buffer,
-				data.byteOffset,
-				data.byteLength / componentTypes[accessor.componentType].BYTES_PER_ELEMENT,
-			), // TEMP!
-		);
 		const glBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
 		gl.bindBuffer(bufferView.target, glBuffer);
 		gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
@@ -331,7 +324,6 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			nodes[child].parent = nodes[i];
 		}
 	}
-	console.log(nodes); // TEMP!
 
 	const scene = root.scenes[root.scene].nodes.map((index) => nodes[index]).flatMap(getNodes);
 	// Precompute transforms
@@ -372,15 +364,7 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			let count = Infinity;
 			for (const vbo of vbos) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, vbo.buffer);
-				if (vbo.attribName === "a_position") {
-					// TEMP!
-					// console.log(new Float32Array([0.4, 0.4, -1, 0.6, 0.6, -1, 0.4, 0.6, -1]));
-					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.4, 0.4, -1, 0.6, 0.6, -1, 0.4, 0.6, -1]), gl.STATIC_DRAW);
-					gl.vertexAttribPointer(material.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
-				} else {
-					console.log(vbo.attribName, material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
-					gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
-				}
+				gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
 				gl.enableVertexAttribArray(material.attrib(vbo.attribName));
 				if (vbo.count < count) {
 					count = vbo.count;
@@ -438,8 +422,7 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 				gl.bindVertexArray(vao);
 				material.engine.checkError();
 				if (indices) {
-					// gl.drawElements(mesh.mode, count, indices.vertexAttribPointerArgs[1], 0);
-					gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_INT, 0); // TEMP!
+					gl.drawElements(mesh.mode, count, indices.vertexAttribPointerArgs[1], 0);
 				} else {
 					gl.drawArrays(mesh.mode, 0, count);
 				}

@@ -16,5 +16,4 @@ void main() {
   gl_FragColor = texture2D(u_texture_normal, v_texcoord2);
 
   gl_FragColor = texture2D(u_texture_color, v_texcoord0);
-  gl_FragColor = vec4(1, 1, 0, 1); // TEMP!
 }
