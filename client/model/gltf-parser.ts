@@ -1,32 +1,17 @@
 import { mat4, quat } from "gl-matrix";
 import { expect } from "../../common/lib/expect";
-import { loadImage } from "../lib/loadImage";
 import { Material } from "../render/materials/Material";
 import { exists } from "../../common/lib/exists";
 
-type ComponentType = WebGL2RenderingContext[
-	| "BYTE"
-	| "UNSIGNED_BYTE"
-	| "SHORT"
-	| "UNSIGNED_SHORT"
-	| "UNSIGNED_INT"
-	| "FLOAT"];
-function componentTypeToTypedArray(type: ComponentType) {
-	switch (type) {
-		case WebGL2RenderingContext.BYTE:
-			return Int8Array;
-		case WebGL2RenderingContext.UNSIGNED_BYTE:
-			return Uint8Array;
-		case WebGL2RenderingContext.SHORT:
-			return Int16Array;
-		case WebGL2RenderingContext.UNSIGNED_SHORT:
-			return Uint16Array;
-		case WebGL2RenderingContext.UNSIGNED_INT:
-			return Uint32Array;
-		case WebGL2RenderingContext.FLOAT:
-			return Float32Array;
-	}
-}
+const componentTypes = {
+	[WebGL2RenderingContext.BYTE]: Int8Array,
+	[WebGL2RenderingContext.UNSIGNED_BYTE]: Uint8Array,
+	[WebGL2RenderingContext.SHORT]: Int16Array,
+	[WebGL2RenderingContext.UNSIGNED_SHORT]: Uint16Array,
+	[WebGL2RenderingContext.UNSIGNED_INT]: Uint32Array,
+	[WebGL2RenderingContext.FLOAT]: Float32Array,
+};
+type ComponentType = keyof typeof componentTypes;
 
 const componentSizes = {
 	SCALAR: 1,
@@ -258,7 +243,9 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 
 	const buffers = await Promise.all(
 		root.buffers.map(({ uri }) =>
-			fetch(uriMap[uri]).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`HTTP ${r.status}: ${uri}`)))),
+			fetch(uriMap[uri]).then((r) =>
+				r.ok ? r.arrayBuffer() : Promise.reject(new Error(`HTTP ${r.status}: ${uri} (${r.url})`)),
+			),
 		),
 	);
 	const glBuffers = root.accessors.map((accessor): Accessor => {
@@ -266,9 +253,14 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 		const data = new Uint8Array(
 			buffers[bufferView.buffer],
 			(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
-			accessor.count *
-				componentTypeToTypedArray(accessor.componentType).BYTES_PER_ELEMENT *
-				componentSizes[accessor.type],
+			accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type],
+		);
+		console.log(
+			new componentTypes[accessor.componentType](
+				data.buffer,
+				data.byteOffset,
+				data.byteLength / componentTypes[accessor.componentType].BYTES_PER_ELEMENT,
+			), // TEMP!
 		);
 		const glBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
 		gl.bindBuffer(bufferView.target, glBuffer);
@@ -280,7 +272,7 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 				accessor.componentType,
 				accessor.normalized ?? false,
 				bufferView.byteStride ?? 0,
-				bufferView.byteOffset ?? 0,
+				accessor.byteOffset ?? 0,
 			],
 			count: accessor.count,
 		};
@@ -289,7 +281,11 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 	const images = await Promise.all(
 		root.images.map((image) => {
 			if ("uri" in image) {
-				return loadImage(uriMap[image.uri]);
+				// gl.texImage2D is much faster with ImageBitmap than HTMLImageElement
+				// (380 ms to 60 ms)
+				return fetch(uriMap[image.uri])
+					.then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}: ${image.uri} (${r.url})`))))
+					.then(createImageBitmap);
 			} else {
 				const bufferView = root.bufferViews[image.bufferView];
 				const data = new Uint8Array(buffers[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength);
@@ -302,7 +298,9 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 		const sampler = root.samplers[samplerIndex];
 		const texture = gl.createTexture() ?? expect("Failed to create texture");
 		gl.bindTexture(gl.TEXTURE_2D, texture);
+		console.time(`uploading texture ${source}`);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+		console.timeEnd(`uploading texture ${source}`);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
@@ -333,6 +331,7 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			nodes[child].parent = nodes[i];
 		}
 	}
+	console.log(nodes); // TEMP!
 
 	const scene = root.scenes[root.scene].nodes.map((index) => nodes[index]).flatMap(getNodes);
 	// Precompute transforms
@@ -373,7 +372,15 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			let count = Infinity;
 			for (const vbo of vbos) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, vbo.buffer);
-				gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
+				if (vbo.attribName === "a_position") {
+					// TEMP!
+					// console.log(new Float32Array([0.4, 0.4, -1, 0.6, 0.6, -1, 0.4, 0.6, -1]));
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.4, 0.4, -1, 0.6, 0.6, -1, 0.4, 0.6, -1]), gl.STATIC_DRAW);
+					gl.vertexAttribPointer(material.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
+				} else {
+					console.log(vbo.attribName, material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
+					gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
+				}
 				gl.enableVertexAttribArray(material.attrib(vbo.attribName));
 				if (vbo.count < count) {
 					count = vbo.count;
@@ -431,7 +438,8 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 				gl.bindVertexArray(vao);
 				material.engine.checkError();
 				if (indices) {
-					gl.drawElements(mesh.mode, count, indices.vertexAttribPointerArgs[1], 0);
+					// gl.drawElements(mesh.mode, count, indices.vertexAttribPointerArgs[1], 0);
+					gl.drawElements(gl.TRIANGLES, 3, gl.UNSIGNED_INT, 0); // TEMP!
 				} else {
 					gl.drawArrays(mesh.mode, 0, count);
 				}

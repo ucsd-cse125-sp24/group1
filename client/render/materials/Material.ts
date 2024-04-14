@@ -18,13 +18,20 @@ export class Material {
 		this.engine.gl.useProgram(this.#program);
 	}
 
-	uniform(name: string): WebGLUniformLocation | null {
+	uniform(name: string): WebGLUniformLocation {
 		this.#uniformLocations[name] ??= this.engine.gl.getUniformLocation(this.#program, name);
-		return this.#uniformLocations[name];
+		const location = this.#uniformLocations[name];
+		if (location === null) {
+			throw new ReferenceError(`Uniform ${name} not found`);
+		}
+		return location;
 	}
 
 	attrib(name: string): number {
 		this.#attribLocations[name] ??= this.engine.gl.getAttribLocation(this.#program, name);
+		if (this.#attribLocations[name] === -1) {
+			throw new ReferenceError(`Attribute ${name} not found`);
+		}
 		return this.#attribLocations[name];
 	}
 }

@@ -1,7 +1,7 @@
 import basicFragmentSource from "../shaders/basic.frag";
 import basicVertexSource from "../shaders/basic.vert";
-import gltfFragmentSource from "../shaders/gltf.frag";
-import gltfVertexSource from "../shaders/gltf.vert";
+import gltfFragmentSource from "../shaders/gltf-debug.frag"; // TEMP!
+import gltfVertexSource from "../shaders/gltf-debug.vert";
 import wireframeFragmentSource from "../shaders/wireframe.frag";
 import wireframeVertexSource from "../shaders/wireframe.vert";
 import { WebGlUtils } from "./WebGlUtils";
