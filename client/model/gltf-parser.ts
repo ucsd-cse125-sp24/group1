@@ -414,8 +414,10 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 
 			return () => {
 				// Assumes `u_model` uniform is already set
-				gl.cullFace(doubleSided ? gl.FRONT_AND_BACK : gl.FRONT);
-				material.engine.checkError();
+				if (doubleSided) {
+					gl.disable(gl.CULL_FACE);
+					material.engine.checkError();
+				}
 				for (const [i, { name, texture }] of meshTextures.entries()) {
 					gl.activeTexture(gl.TEXTURE0 + i);
 					material.engine.checkError();
@@ -434,6 +436,10 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 					gl.drawArrays(mesh.mode, 0, count);
 				}
 				material.engine.checkError();
+				if (doubleSided) {
+					gl.enable(gl.CULL_FACE);
+					material.engine.checkError();
+				}
 			};
 		});
 }

@@ -174,6 +174,7 @@ export class BoxGeometry extends Geometry {
 	draw() {
 		const gl = this.material.engine.gl;
 		gl.bindVertexArray(this.#VAO);
+		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.#texture);
 		gl.uniform1i(this.material.uniform("u_texture"), 0);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
