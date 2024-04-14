@@ -337,8 +337,7 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			node.mesh ? node.mesh.primitives.map((primitive) => ({ ...primitive, transform: node.transform })) : [],
 		)
 		.map((mesh) => {
-			const { pbrMetallicRoughness, normalTexture, occlusionTexture, emissiveTexture, doubleSided } =
-				root.materials[mesh.material];
+			const materialOptions = root.materials[mesh.material];
 
 			const vao = gl.createVertexArray() ?? expect("Failed to create VAO");
 			gl.bindVertexArray(vao);
@@ -379,24 +378,24 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			}
 
 			const meshTextures = [
-				pbrMetallicRoughness.baseColorTexture && {
-					texture: textures[pbrMetallicRoughness.baseColorTexture.index],
+				materialOptions.pbrMetallicRoughness.baseColorTexture && {
+					texture: textures[materialOptions.pbrMetallicRoughness.baseColorTexture.index],
 					name: "u_texture_color",
 				},
-				pbrMetallicRoughness.metallicRoughnessTexture && {
-					texture: textures[pbrMetallicRoughness.metallicRoughnessTexture.index],
+				materialOptions.pbrMetallicRoughness.metallicRoughnessTexture && {
+					texture: textures[materialOptions.pbrMetallicRoughness.metallicRoughnessTexture.index],
 					name: "u_texture_metallic_roughness",
 				},
-				normalTexture && {
-					texture: textures[normalTexture.index],
+				materialOptions.normalTexture && {
+					texture: textures[materialOptions.normalTexture.index],
 					name: "u_texture_normal",
 				},
-				occlusionTexture && {
-					texture: textures[occlusionTexture.index],
+				materialOptions.occlusionTexture && {
+					texture: textures[materialOptions.occlusionTexture.index],
 					name: "u_texture_occlusion",
 				},
-				emissiveTexture && {
-					texture: textures[emissiveTexture.index],
+				materialOptions.emissiveTexture && {
+					texture: textures[materialOptions.emissiveTexture.index],
 					name: "u_texture_emissive",
 				},
 			].filter(exists);
@@ -405,7 +404,7 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 
 			return () => {
 				// Assumes `u_model` uniform is already set
-				if (doubleSided) {
+				if (materialOptions.doubleSided) {
 					gl.disable(gl.CULL_FACE);
 					material.engine.checkError();
 				}
@@ -418,6 +417,10 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 					material.engine.checkError();
 				}
 				gl.uniformMatrix4fv(material.uniform("u_model_part"), false, mesh.transform);
+				gl.uniform1f(
+					material.uniform("u_alpha_cutoff"),
+					materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
+				);
 				material.engine.checkError();
 				gl.bindVertexArray(vao);
 				material.engine.checkError();
@@ -427,7 +430,7 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 					gl.drawArrays(mesh.mode, 0, count);
 				}
 				material.engine.checkError();
-				if (doubleSided) {
+				if (materialOptions.doubleSided) {
 					gl.enable(gl.CULL_FACE);
 					material.engine.checkError();
 				}
