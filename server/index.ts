@@ -95,6 +95,6 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 	}
 })();
 
-const PORT = 6969;
+const PORT = 2345;
 server.listen(PORT);
 console.log(`Listening on http://localhost:${PORT}/`);
