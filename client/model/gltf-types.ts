@@ -36,7 +36,7 @@ export type GltfMesh = {
 		/** Accessor of indices */
 		indices?: number;
 		material: number;
-		mode: WebGL2RenderingContext[
+		mode?: WebGL2RenderingContext[
 			| "POINTS"
 			| "LINES"
 			| "LINE_LOOP"
@@ -178,8 +178,8 @@ export type Gltf = {
 			| "LINEAR_MIPMAP_NEAREST"
 			| "NEAREST_MIPMAP_LINEAR"
 			| "LINEAR_MIPMAP_LINEAR"];
-		wrapS: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
-		wrapT: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
+		wrapS?: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
+		wrapT?: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
 	}[];
 	materials: ({
 		/**

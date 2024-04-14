@@ -9,18 +9,19 @@ uniform mat4 u_view;
 uniform mat4 u_model;
 uniform mat4 u_model_part;
 
+varying vec3 v_position;
+varying vec3 v_normal;
+varying vec3 v_tangent;
 varying vec2 v_texcoord0;
 varying vec2 v_texcoord1;
 varying vec2 v_texcoord2;
 
 void main() {
-  // TEMP: these lines are just here so the attributes don't get discarded
-  vec3 temp = a_position;
-  temp = a_normal;
-  temp = a_tangent;
-
   gl_Position = u_view * u_model * u_model_part * vec4(a_position, 1);
 
+  v_position = a_position;
+  v_normal = a_normal;
+  v_tangent = a_tangent;
   v_texcoord0 = a_texcoord0;
   v_texcoord1 = a_texcoord1;
   v_texcoord2 = a_texcoord2;

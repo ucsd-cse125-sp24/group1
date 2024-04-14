@@ -87,8 +87,12 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 		console.time(`uploading texture ${source}`);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 		console.timeEnd(`uploading texture ${source}`);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
+		if (sampler.wrapS) {
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
+		}
+		if (sampler.wrapT) {
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
+		}
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
 		gl.generateMipmap(gl.TEXTURE_2D);
@@ -173,23 +177,23 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			const meshTextures = [
 				materialOptions.pbrMetallicRoughness.baseColorTexture && {
 					texture: textures[materialOptions.pbrMetallicRoughness.baseColorTexture.index],
-					name: "u_texture_color",
+					name: "texture_color",
 				},
 				materialOptions.pbrMetallicRoughness.metallicRoughnessTexture && {
 					texture: textures[materialOptions.pbrMetallicRoughness.metallicRoughnessTexture.index],
-					name: "u_texture_metallic_roughness",
+					name: "texture_metallic_roughness",
 				},
 				materialOptions.normalTexture && {
 					texture: textures[materialOptions.normalTexture.index],
-					name: "u_texture_normal",
+					name: "texture_normal",
 				},
 				materialOptions.occlusionTexture && {
 					texture: textures[materialOptions.occlusionTexture.index],
-					name: "u_texture_occlusion",
+					name: "texture_occlusion",
 				},
 				materialOptions.emissiveTexture && {
 					texture: textures[materialOptions.emissiveTexture.index],
-					name: "u_texture_emissive",
+					name: "texture_emissive",
 				},
 			].filter(exists);
 
@@ -206,7 +210,8 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 					material.engine.checkError();
 					gl.bindTexture(gl.TEXTURE_2D, texture);
 					material.engine.checkError();
-					gl.uniform1i(material.uniform(name), i);
+					gl.uniform1i(material.uniform(`u_${name}`), i);
+					gl.uniform1i(material.uniform(`u_has_${name}`), 1);
 					material.engine.checkError();
 				}
 				gl.uniformMatrix4fv(material.uniform("u_model_part"), false, mesh.transform);
@@ -214,13 +219,20 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 					material.uniform("u_alpha_cutoff"),
 					materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
 				);
+				gl.uniform4fv(
+					material.uniform("u_base_color"),
+					materialOptions.pbrMetallicRoughness.baseColorFactor ?? [1, 1, 1, 1],
+				);
+				gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness.metallicFactor ?? 1);
+				gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness.roughnessFactor ?? 1);
+				gl.uniform3fv(material.uniform("u_emissive"), materialOptions.emissiveFactor ?? [0, 0, 0]);
 				material.engine.checkError();
 				gl.bindVertexArray(vao);
 				material.engine.checkError();
 				if (indices) {
-					gl.drawElements(mesh.mode, count, indices.vertexAttribPointerArgs[1], 0);
+					gl.drawElements(mesh.mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
 				} else {
-					gl.drawArrays(mesh.mode, 0, count);
+					gl.drawArrays(mesh.mode ?? gl.TRIANGLES, 0, count);
 				}
 				material.engine.checkError();
 				if (materialOptions.doubleSided) {

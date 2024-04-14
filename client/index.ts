@@ -9,6 +9,7 @@ import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { ClientEntity } from "./render/ClientEntity";
 import { fish1 } from "../assets/models/fish1";
+import { fish2 } from "../assets/models/fish2";
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
@@ -86,9 +87,17 @@ const camera = new Camera(
 );
 const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
-let draw = () => {};
+let draw1 = () => {};
 fish1(engine.gltfMaterial).then((drawFuncs) => {
-	draw = () => {
+	draw1 = () => {
+		for (const fn of drawFuncs) {
+			fn();
+		}
+	};
+});
+let draw2 = () => {};
+fish2(engine.gltfMaterial).then((drawFuncs) => {
+	draw2 = () => {
 		for (const fn of drawFuncs) {
 			fn();
 		}
@@ -118,7 +127,11 @@ const paint = () => {
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	draw();
+	draw1();
+	transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
+	mat4.rotateY(transform, transform, -Date.now() / 200);
+	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
+	draw2();
 
 	window.requestAnimationFrame(paint);
 };
