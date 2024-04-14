@@ -410,18 +410,26 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 				},
 			].filter(exists);
 
+			material.engine.checkError();
+
 			return () => {
 				// Assumes `u_model` uniform is already set
 				gl.cullFace(doubleSided ? gl.FRONT_AND_BACK : gl.FRONT);
+				material.engine.checkError();
 				for (const [i, { name, texture }] of meshTextures.entries()) {
 					gl.activeTexture(gl.TEXTURE0 + i);
+					material.engine.checkError();
 					gl.bindTexture(gl.TEXTURE_2D, texture);
+					material.engine.checkError();
 					gl.uniform1i(material.uniform(name), i);
+					material.engine.checkError();
 				}
 				gl.uniformMatrix4fv(material.uniform("u_model_part"), false, mesh.transform);
+				material.engine.checkError();
 				gl.bindVertexArray(vao);
+				material.engine.checkError();
 				if (indices) {
-					gl.drawElements(mesh.mode, 0, count, indices.vertexAttribPointerArgs[1]);
+					gl.drawElements(mesh.mode, count, indices.vertexAttribPointerArgs[1], 0);
 				} else {
 					gl.drawArrays(mesh.mode, 0, count);
 				}

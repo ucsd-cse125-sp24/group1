@@ -115,11 +115,9 @@ const paint = () => {
 	}
 	engine.gltfMaterial.use();
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
-	engine.gl.uniformMatrix4fv(
-		engine.gltfMaterial.uniform("u_model"),
-		false,
-		mat4.fromYRotation(mat4.create(), Date.now() / 1000),
-	);
+	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
+	mat4.scale(transform, transform, [0.1, 0.1, 0.1]);
+	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
 	draw();
 
 	window.requestAnimationFrame(paint);
