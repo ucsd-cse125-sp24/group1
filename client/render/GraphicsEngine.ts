@@ -27,7 +27,7 @@ class GraphicsEngine extends WebGlUtils {
 	gltfMaterial = new Material(
 		this,
 		this.createShader("vertex", gltfVertexSource, "gltf.vert"),
-		this.createShader("fragment", toonShaderSouce, "toon.frag"),
+		this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
 	);
 
 	createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram {
