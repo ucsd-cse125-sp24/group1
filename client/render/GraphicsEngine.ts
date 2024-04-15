@@ -4,6 +4,7 @@ import gltfFragmentSource from "../shaders/gltf.frag";
 import gltfVertexSource from "../shaders/gltf.vert";
 import wireframeFragmentSource from "../shaders/wireframe.frag";
 import wireframeVertexSource from "../shaders/wireframe.vert";
+import toonShaderSouce from "../shaders/toon.frag";
 import { WebGlUtils } from "./WebGlUtils";
 import { BoxGeometry } from "./geometries/BoxGeometry";
 import { HardCodedGeometry } from "./geometries/HardCodedGeometry";
@@ -13,7 +14,7 @@ class GraphicsEngine extends WebGlUtils {
 	tempMaterial = new Material(
 		this,
 		this.createShader("vertex", basicVertexSource, "basic.vert"),
-		this.createShader("fragment", basicFragmentSource, "basic.frag"),
+		this.createShader("fragment", toonShaderSouce, "toon.frag"),
 	);
 	tempGeometry = new BoxGeometry(this.tempMaterial, [1, 1, 1]);
 	#wireframeMaterial = new Material(
@@ -26,7 +27,7 @@ class GraphicsEngine extends WebGlUtils {
 	gltfMaterial = new Material(
 		this,
 		this.createShader("vertex", gltfVertexSource, "gltf.vert"),
-		this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
+		this.createShader("fragment", toonShaderSouce, "toon.frag"),
 	);
 
 	createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram {
