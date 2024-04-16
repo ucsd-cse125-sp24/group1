@@ -1,4 +1,4 @@
-import { ClientMessage, ServerMessage } from "../common/messages";
+import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import { delay } from "../common/lib/delay";
 import { TheWorld } from "./physics";
 import { SERVER_GAME_TICK } from "../common/constants";
@@ -15,6 +15,9 @@ const server: Server<ClientMessage, ServerMessage> = BROWSER
 	? new WebWorker(handleMessage)
 	: // In the browser, we don't want to import WsServer
 		new (await import("./net/WsServer")).WsServer(handleMessage);
+
+
+let playerInputs: ClientInputs[] = [];
 
 /**
  * Parses a raw websocket message, and then generates a
@@ -33,8 +36,8 @@ function handleMessage(data: ClientMessage): ServerMessage | undefined {
 				type: "ping",
 			};
 		case "client-input":
-			console.log(data);
-			break;
+			playerInputs[0] = data;
+		break;
 	}
 	return;
 }
@@ -46,17 +49,18 @@ function handleMessage(data: ClientMessage): ServerMessage | undefined {
 		y: 0,
 		z: 0,
 	};
-	let w = new TheWorld({ gravity: [0, -9.82, 0] });
+
 	while (true) {
 		anchor.z = Math.sin(Date.now() / 500) * 5;
 		server.broadcast(anchor);
 		// receive input from all clients
+		if (playerInputs[0].)
 		// update game state
-		w.nextTick();
+		TheWorld.nextTick();
 		// send updated state to all clients
 		server.broadcast({
 			type: "entire-game-state",
-			entities: w.serialize(),
+			entities: TheWorld.serialize(),
 		});
 		// wait until end of tick
 		// broadcast(wss, )
