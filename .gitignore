@@ -5,4 +5,7 @@ node_modules/
 public/index.css
 public/index.js
 public/*.map
+public/*.png
+public/*.bin
+public/worker/
 dist/

@@ -7,6 +7,9 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+/**
+ * An implementation of `Server` that starts a WebSocket server.
+ */
 export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendType> {
 	#app = express();
 	#server = http.createServer(this.#app);
@@ -23,18 +26,7 @@ export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendTyp
 
 		this.#wss.on("connection", (ws) => {
 			ws.on("message", (rawData) => {
-				console.log(rawData);
-				const stringData = Array.isArray(rawData) ? rawData.join("") : rawData.toString();
-
-				let data: ReceiveType;
-				try {
-					data = JSON.parse(stringData);
-				} catch {
-					console.warn("Non-JSON message: ", stringData);
-					return;
-				}
-
-				const response = this.handleMessage(data);
+				const response = this.handleMessage(rawData);
 				if (response) {
 					ws.send(JSON.stringify(response));
 				}

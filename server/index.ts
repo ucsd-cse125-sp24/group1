@@ -3,8 +3,18 @@ import { delay } from "../common/lib/delay";
 import { TheWorld } from "./physics";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { WsServer } from "./net/WsServer";
+import { Server } from "./net/Server";
+import { WebWorker } from "./net/WebWorker";
 
-const server = new WsServer<ClientMessage, ServerMessage>(handleMessage);
+/**
+ * Whether the server is being compiled for the browser. This is set by the
+ * `esbuild` bundle options in `package.json`.
+ */
+declare var BROWSER: boolean;
+
+const server: Server<ClientMessage, ServerMessage> = BROWSER
+	? new WebWorker(handleMessage)
+	: new WsServer(handleMessage);
 
 /**
  * Parses a raw websocket message, and then generates a
