@@ -73,14 +73,24 @@ export class Connection<ReceiveType, SendType> {
 
 	#handleError = () => {
 		console.log("WebSocket error :(");
+		// Automatically use Web Worker on GitHub Pages
+		if (window.location.hostname.endsWith(".github.io")) {
+			this.#connectWorker();
+			return;
+		}
 		if (this.#indicator) {
 			this.#indicator.textContent = "❌ Failed to connect. ";
-			// Automatically use Web Worker on GitHub Pages
-			if (window.location.hostname.endsWith(".github.io")) {
-				this.#connectWorker();
-			} else {
-				this.#indicator.append(this.#workerBtn);
-			}
+			// Check if the worker file exists (npm run build doesn't build it by
+			// default)
+			fetch("./worker/index.js")
+				.then((r) => r.ok)
+				.then((ok) => {
+					if (ok) {
+						if (this.#indicator) {
+							this.#indicator.append(this.#workerBtn);
+						}
+					}
+				});
 			this.#ws = null;
 		}
 		this.#wsError = true;
