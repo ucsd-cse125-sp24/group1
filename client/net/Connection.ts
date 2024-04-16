@@ -1,15 +1,20 @@
 export class Connection<ReceiveType, SendType> {
 	url: string;
-	#ws?: WebSocket;
+	#ws: WebSocket | null = null;
 	#indicator?: HTMLElement | null;
 	#lastTime = performance.now();
 	#wsError = false;
 	handleMessage: (data: ReceiveType) => SendType | undefined;
 
+	#worker: Worker | null = null;
+	#workerBtn = Object.assign(document.createElement("button"), { textContent: "Use worker" });
+
 	constructor(url: string, handleMessage: (data: ReceiveType) => SendType | undefined, indicator?: HTMLElement | null) {
 		this.url = url;
 		this.#indicator = indicator;
 		this.handleMessage = handleMessage;
+
+		this.#workerBtn.addEventListener("click", this.#connectWorker);
 	}
 
 	connect() {
@@ -69,7 +74,9 @@ export class Connection<ReceiveType, SendType> {
 	#handleError = () => {
 		console.log("WebSocket error :(");
 		if (this.#indicator) {
-			this.#indicator.textContent = "❌ Failed to connect";
+			this.#indicator.textContent = "❌ Failed to connect. ";
+			this.#indicator.append(this.#workerBtn);
+			this.#ws = null;
 		}
 		this.#wsError = true;
 	};
@@ -79,14 +86,29 @@ export class Connection<ReceiveType, SendType> {
 		console.log("Connection closed", { code, reason, wasClean });
 		if (this.#indicator && !this.#wsError) {
 			this.#indicator.textContent = "⛔ Connection closed";
+			this.#ws = null;
 		}
 	};
 
 	// TODO: Queue unsent messages while offline(?)
 	send(message: SendType): void {
-		if (!this.#ws) {
+		if (this.#ws) {
+			this.#ws.send(JSON.stringify(message));
+		} else if (this.#worker) {
+			this.#worker.postMessage(JSON.stringify(message));
+		} else {
 			throw new Error("connect() has not yet been called");
 		}
-		this.#ws.send(JSON.stringify(message));
 	}
+
+	#connectWorker = () => {
+		if (this.#worker) {
+			return;
+		}
+		if (this.#indicator) {
+			this.#indicator.textContent = "🤔 Creating worker...";
+		}
+		this.#worker = new Worker("./worker/index.js");
+		this.#worker.addEventListener("message", this.#handleRawMessage);
+	};
 }

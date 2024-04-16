@@ -14,7 +14,7 @@ declare var BROWSER: boolean;
 
 const server: Server<ClientMessage, ServerMessage> = BROWSER
 	? new WebWorker(handleMessage)
-	: new WsServer(handleMessage);
+	: new (await import("./net/WsServer")).WsServer(handleMessage);
 
 /**
  * Parses a raw websocket message, and then generates a
