@@ -2,7 +2,6 @@ import { ClientMessage, ServerMessage } from "../common/messages";
 import { delay } from "../common/lib/delay";
 import { TheWorld } from "./physics";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { WsServer } from "./net/WsServer";
 import { Server } from "./net/Server";
 import { WebWorker } from "./net/WebWorker";
 
@@ -14,7 +13,8 @@ declare var BROWSER: boolean;
 
 const server: Server<ClientMessage, ServerMessage> = BROWSER
 	? new WebWorker(handleMessage)
-	: new (await import("./net/WsServer")).WsServer(handleMessage);
+	: // In the browser, we don't want to import WsServer
+		new (await import("./net/WsServer")).WsServer(handleMessage);
 
 /**
  * Parses a raw websocket message, and then generates a

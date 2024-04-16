@@ -75,7 +75,12 @@ export class Connection<ReceiveType, SendType> {
 		console.log("WebSocket error :(");
 		if (this.#indicator) {
 			this.#indicator.textContent = "❌ Failed to connect. ";
-			this.#indicator.append(this.#workerBtn);
+			// Automatically use Web Worker on GitHub Pages
+			if (window.location.hostname.endsWith(".github.io")) {
+				this.#connectWorker();
+			} else {
+				this.#indicator.append(this.#workerBtn);
+			}
 			this.#ws = null;
 		}
 		this.#wsError = true;
