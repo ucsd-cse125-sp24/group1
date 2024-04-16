@@ -1,5 +1,9 @@
 import { mat4, vec3, vec4 } from "gl-matrix";
 
+/**
+ * Computes the projection and view matrix for the vertex shaders to use based
+ * on the camera's position and rotation.
+ */
 class Camera {
 	position: vec3;
 	forwardDir: vec3;

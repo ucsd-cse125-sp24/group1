@@ -3,9 +3,24 @@ import { Geometry } from "./geometries/Geometry";
 import { SerializedCollider, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./GraphicsEngine";
 
+/**
+ * An entity on the client. These entities are deserialized from the server and
+ * dictate where to render what models.
+ *
+ * The client does not handle moving the entities around.
+ */
 export class ClientEntity {
 	geometry: Geometry;
+	/**
+	 * A transformation to apply to all the models in the entity. You can think of
+	 * it like the anchor position and rotation of the entity.
+	 */
 	transform: mat4;
+	/**
+	 * A list of physics engine colliders to draw for debugging purposes. They
+	 * aren't used by the client for anything else, so the server may choose to
+	 * keep this empty.
+	 */
 	colliders: SerializedCollider[];
 
 	constructor(geometry: Geometry, transform = mat4.create(), colliders: SerializedCollider[] = []) {
@@ -14,6 +29,13 @@ export class ClientEntity {
 		this.colliders = colliders;
 	}
 
+	/**
+	 * Draw the entity's models.
+	 * @param view The camera's view and projection matrix.
+	 *
+	 * TODO: We might want to split up rendering by material so we don't have to
+	 * keep switching between materials.
+	 */
 	draw(view: mat4) {
 		const engine = this.geometry.material.engine;
 		this.geometry.material.use();
@@ -23,8 +45,14 @@ export class ClientEntity {
 		engine.checkError();
 	}
 
+	/**
+	 * Draw the entity's colliders.
+	 *
+	 * This method assumes that the wireframe material is already in use, and the
+	 * camera matrix `u_view` uniform is already set. This is because the same
+	 * shader is used to draw all the colliders' wireframes.
+	 */
 	drawWireframe() {
-		// Assumes that the wireframe material is in use and the view uniform is set
 		const engine = this.geometry.material.engine;
 		for (const collider of this.colliders) {
 			const scale =
@@ -52,6 +80,10 @@ export class ClientEntity {
 		}
 	}
 
+	/**
+	 * Parse a serialized entity object sent from the server into a `ClientEntity`
+	 * instance.
+	 */
 	static from(engine: GraphicsEngine, entity: SerializedEntity): ClientEntity {
 		const transform = mat4.fromRotationTranslation(mat4.create(), entity.quaternion, entity.position);
 		return new ClientEntity(engine.tempGeometry, transform, entity.colliders);
