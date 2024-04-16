@@ -35,7 +35,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			break;
 	}
 };
-const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
+const connection = new Connection<ServerMessage, ClientMessage>(
+	wsUrl,
+	handleMessage,
+	document.getElementById("network-status"),
+);
 
 const inputListener = new InputListener({
 	reset: (): ClientInputs => ({
