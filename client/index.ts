@@ -45,7 +45,7 @@ const connection = new Connection<ServerMessage, ClientMessage>(
 const engine = new GraphicsEngine(getGl());
 const camera = new Camera(
 	vec3.fromValues(5, 5, 5),
-	vec3.normalize(vec3.create(), vec3.fromValues(-1, -1, -1)),
+	vec3.fromValues(0, 0, 0),
 	vec3.fromValues(0, 1, 0),
 	45,
 	window.innerWidth / window.innerHeight,
