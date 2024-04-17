@@ -1,4 +1,5 @@
 import { mat4, vec3 } from "gl-matrix";
+import { Vector3 } from "../common/commontypes";
 import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
 import { Connection } from "./net/Connection";
@@ -41,6 +42,18 @@ const connection = new Connection<ServerMessage, ClientMessage>(
 	document.getElementById("network-status"),
 );
 
+const engine = new GraphicsEngine(getGl());
+const camera = new Camera(
+	vec3.fromValues(5, 5, 5),
+	vec3.normalize(vec3.create(), vec3.fromValues(-1, -1, -1)),
+	vec3.fromValues(0, 1, 0),
+	45,
+	window.innerWidth / window.innerHeight,
+	0.01,
+	100,
+	engine,
+);
+
 const inputListener = new InputListener({
 	reset: (): ClientInputs => ({
 		forward: false,
@@ -68,27 +81,21 @@ const inputListener = new InputListener({
 				return "emote";
 			case 0: // Left mouse button
 				return "attack";
-			case 1: // Left mouse button
+			case 1: // Right mouse button
 				return "use";
 			default:
 				return null;
 		}
 	},
 	handleInputs: (inputs) => {
-		connection.send({ type: "client-input", ...inputs });
+		connection.send({
+			type: "client-input",
+			...inputs,
+			lookDir: Array.from(camera.forward) as Vector3,
+		});
 	},
 });
 
-const engine = new GraphicsEngine(getGl());
-const camera = new Camera(
-	vec3.fromValues(5, 5, 5),
-	vec3.normalize(vec3.create(), vec3.fromValues(-1, -1, -1)),
-	vec3.fromValues(0, 1, 0),
-	45,
-	window.innerWidth / window.innerHeight,
-	0.01,
-	100,
-);
 const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
 let draw1 = () => {};
@@ -109,7 +116,6 @@ fish2(engine.gltfMaterial).then((drawFuncs) => {
 });
 const paint = () => {
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
-	camera.update(mat4.fromYRotation(mat4.create(), 0.01));
 	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
@@ -142,4 +148,5 @@ const paint = () => {
 
 connection.connect();
 inputListener.listen();
+camera.listen();
 paint();

@@ -31,6 +31,7 @@ export type ClientInputs = {
 
 export type ClientInputMessage = {
 	type: "client-input";
+	lookDir: Vector3;
 } & ClientInputs;
 
 export type SerializedEntity = {
