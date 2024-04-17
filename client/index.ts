@@ -103,7 +103,10 @@ fish2(engine.gltfMaterial).then((drawFuncs) => {
 		}
 	};
 });
+
 const paint = () => {
+
+	engine.updateScene();
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
 	camera.update(mat4.fromYRotation(mat4.create(), 0.01));
 	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
@@ -127,7 +130,7 @@ const paint = () => {
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	draw1();
+	//draw1();
 	transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
 	mat4.rotateY(transform, transform, -Date.now() / 200);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);

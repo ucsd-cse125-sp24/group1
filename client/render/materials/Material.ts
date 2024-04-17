@@ -27,6 +27,24 @@ export class Material {
 		return location;
 	}
 
+	setUniforms(materialProps: { ambient: number[], diffuse: number[], specular: number[], shininess: number }, lightProps: { ambient: number[], diffuse: number[], specular: number[], position: number[] }) {
+		this.use(); // Make sure the program is being used before setting uniforms
+	
+		// Set material properties
+		this.engine.gl.uniform3fv(this.uniform('uAmbient'), materialProps.ambient);
+		this.engine.gl.uniform3fv(this.uniform('uDiffuse'), materialProps.diffuse);
+		this.engine.gl.uniform3fv(this.uniform('uSpecular'), materialProps.specular);
+		this.engine.gl.uniform1f(this.uniform('uShininess'), materialProps.shininess);
+	
+		// Set light properties
+		this.engine.gl.uniform3fv(this.uniform('uLightAmbient'), lightProps.ambient);
+		this.engine.gl.uniform3fv(this.uniform('uLightDiffuse'), lightProps.diffuse);
+		this.engine.gl.uniform3fv(this.uniform('uLightSpecular'), lightProps.specular);
+		this.engine.gl.uniform3fv(this.uniform('uLightPosition'), lightProps.position);
+	}
+
+	
+
 	attrib(name: string): number {
 		this.#attribLocations[name] ??= this.engine.gl.getAttribLocation(this.#program, name);
 		if (this.#attribLocations[name] === -1) {

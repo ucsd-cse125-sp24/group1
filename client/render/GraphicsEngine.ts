@@ -5,6 +5,7 @@ import gltfVertexSource from "../shaders/gltf.vert";
 import wireframeFragmentSource from "../shaders/wireframe.frag";
 import wireframeVertexSource from "../shaders/wireframe.vert";
 import toonShaderSouce from "../shaders/toon.frag";
+import toonShaderSouce2 from "../shaders/toon2.frag";
 import { WebGlUtils } from "./WebGlUtils";
 import { BoxGeometry } from "./geometries/BoxGeometry";
 import { HardCodedGeometry } from "./geometries/HardCodedGeometry";
@@ -14,7 +15,7 @@ class GraphicsEngine extends WebGlUtils {
 	tempMaterial = new Material(
 		this,
 		this.createShader("vertex", basicVertexSource, "basic.vert"),
-		this.createShader("fragment", toonShaderSouce, "toon.frag"),
+		this.createShader("fragment", toonShaderSouce2, "toon2.frag"),
 	);
 	tempGeometry = new BoxGeometry(this.tempMaterial, [1, 1, 1]);
 	#wireframeMaterial = new Material(
@@ -61,6 +62,22 @@ class GraphicsEngine extends WebGlUtils {
 		throw new Error("Failed to create shader");
 	}
 
+	updateScene() {
+		const materialProps = {
+			ambient: [0.1, 0.1, 0.1],
+			diffuse: [0.7, 0.7, 0.7],
+			specular: [0.5, 0.5, 0.5],
+			shininess: 32.0
+		};
+	
+		const lightProps = {
+			ambient: [0.2, 0.2, 0.2],
+			diffuse: [0.8, 0.8, 0.8],
+			specular: [1.0, 1.0, 1.0],
+			position: [5.0, 5.0, 5.0] 
+		};
+		this.tempMaterial.setUniforms(materialProps, lightProps);
+	}
 	clear() {
 		const gl = this.gl;
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
