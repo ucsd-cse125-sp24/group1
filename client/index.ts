@@ -12,6 +12,7 @@ import { ClientEntity } from "./render/ClientEntity";
 import { fish1 } from "../assets/models/fish1";
 import { fish2 } from "../assets/models/fish2";
 import { listenErrors } from "./lib/listenErrors";
+import { GltfModelWrapper } from "./model/gltf-parser";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -107,21 +108,8 @@ const inputListener = new InputListener({
 const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
 let draw1 = () => {};
-fish1(engine.gltfMaterial).then((drawFuncs) => {
-	draw1 = () => {
-		for (const fn of drawFuncs) {
-			fn();
-		}
-	};
-});
-let draw2 = () => {};
-fish2(engine.gltfMaterial).then((drawFuncs) => {
-	draw2 = () => {
-		for (const fn of drawFuncs) {
-			fn();
-		}
-	};
-});
+const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
+const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
 
 const paint = () => {
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
@@ -149,11 +137,11 @@ const paint = () => {
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	draw1();
+	fish1Model.draw();
 	transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
 	mat4.rotateY(transform, transform, -Date.now() / 200);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	draw2();
+	fish2Model.draw();
 
 	window.requestAnimationFrame(paint);
 };

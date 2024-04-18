@@ -20,43 +20,66 @@ export const componentSizes = {
 	MAT4: 16,
 };
 
+export type GltfMode = WebGL2RenderingContext[
+	| "POINTS"
+	| "LINES"
+	| "LINE_LOOP"
+	| "LINE_STRIP"
+	| "TRIANGLES"
+	| "TRIANGLE_STRIP"
+	| "TRIANGLE_FAN"];
+export type GltfPrimitive = {
+	/**
+	 * Values are the index of accessor. Numbers start at 0 (eg `TEXCOORD_0`)
+	 *
+	 * https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#meshes-overview
+	 */
+	attributes: {
+		POSITION?: number;
+		NORMAL?: number;
+		TANGENT?: number;
+	} & Record<`TEXCOORD_${number}`, number> &
+		Record<`COLOR_${number}`, number> &
+		Record<`JOINTS_${number}`, number> &
+		Record<`WEIGHTS_${number}`, number>;
+	/** Accessor of indices */
+	indices?: number;
+	material: number;
+	mode?: GltfMode;
+	/** Morph targets */
+	targets?: ({
+		POSITION?: number;
+		NORMAL?: number;
+		TANGENT?: number;
+	} & Record<`TEXCOORD_${number}`, number> &
+		Record<`COLOR_${number}`, number>)[];
+};
 export type GltfMesh = {
-	primitives: {
-		/**
-		 * Values are the index of accessor. Numbers start at 0 (eg `TEXCOORD_0`)
-		 *
-		 * https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#meshes-overview
-		 */
-		attributes: {
-			POSITION?: number;
-			NORMAL?: number;
-			TANGENT?: number;
-		} & Record<`TEXCOORD_${number}`, number> &
-			Record<`COLOR_${number}`, number> &
-			Record<`JOINTS_${number}`, number> &
-			Record<`WEIGHTS_${number}`, number>;
-		/** Accessor of indices */
-		indices?: number;
-		material: number;
-		mode?: WebGL2RenderingContext[
-			| "POINTS"
-			| "LINES"
-			| "LINE_LOOP"
-			| "LINE_STRIP"
-			| "TRIANGLES"
-			| "TRIANGLE_STRIP"
-			| "TRIANGLE_FAN"];
-		/** Morph targets */
-		targets?: ({
-			POSITION?: number;
-			NORMAL?: number;
-			TANGENT?: number;
-		} & Record<`TEXCOORD_${number}`, number> &
-			Record<`COLOR_${number}`, number>)[];
-	}[];
+	primitives: GltfPrimitive[];
 	/** For morph targets */
 	weights?: number[];
 };
+export type GltfMaterial = {
+	/**
+	 * Difference between factor and texture:
+	 * https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#metallic-roughness-material
+	 *
+	 * `index` is index of texture object.
+	 */
+	pbrMetallicRoughness: {
+		baseColorFactor?: [r: number, g: number, b: number, a: number];
+		baseColorTexture?: { index: number; texCoord?: number };
+		metallicFactor?: number;
+		roughnessFactor?: number;
+		/** green = roughness, blue = metalness */
+		metallicRoughnessTexture?: { index: number; texCoord?: number };
+	};
+	normalTexture?: { index: number; texCoord?: number; scale?: number };
+	occlusionTexture?: { index: number; texCoord?: number; strength?: number };
+	emissiveTexture?: { index: number; texCoord?: number };
+	emissiveFactor?: [r: number, g: number, b: number];
+	doubleSided?: boolean;
+} & ({ alphaMode: "MASK"; alphaCutoff: number } | { alphaMode?: "OPAQUE" | "BLEND" });
 export type GltfCamera =
 	| {
 			type: "perspective";
@@ -183,27 +206,7 @@ export type Gltf = {
 		wrapS?: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
 		wrapT?: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
 	}[];
-	materials: ({
-		/**
-		 * Difference between factor and texture:
-		 * https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#metallic-roughness-material
-		 *
-		 * `index` is index of texture object.
-		 */
-		pbrMetallicRoughness: {
-			baseColorFactor?: [r: number, g: number, b: number, a: number];
-			baseColorTexture?: { index: number; texCoord?: number };
-			metallicFactor?: number;
-			roughnessFactor?: number;
-			/** green = roughness, blue = metalness */
-			metallicRoughnessTexture?: { index: number; texCoord?: number };
-		};
-		normalTexture?: { index: number; texCoord?: number; scale?: number };
-		occlusionTexture?: { index: number; texCoord?: number; strength?: number };
-		emissiveTexture?: { index: number; texCoord?: number };
-		emissiveFactor?: [r: number, g: number, b: number];
-		doubleSided?: boolean;
-	} & ({ alphaMode: "MASK"; alphaCutoff: number } | { alphaMode?: "OPAQUE" | "BLEND" }))[];
+	materials: GltfMaterial[];
 	cameras?: GltfCamera[];
 	animations?: unknown[];
 };

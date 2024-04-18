@@ -2,7 +2,17 @@ import { mat4, quat } from "gl-matrix";
 import { expect } from "../../common/lib/expect";
 import { Material } from "../render/materials/Material";
 import { exists } from "../../common/lib/exists";
-import { GltfMesh, GltfCamera, ComponentType, Gltf, componentTypes, componentSizes } from "./gltf-types";
+import {
+	GltfMesh,
+	GltfCamera,
+	ComponentType,
+	Gltf,
+	componentTypes,
+	componentSizes,
+	GltfPrimitive,
+	GltfMaterial,
+	GltfMode,
+} from "./gltf-types";
 
 type Node = {
 	parent?: Node;
@@ -39,17 +49,14 @@ function getNodes(node: Node): Node[] {
 	return nodes;
 }
 
-/**
- * Parses a glTF object, fetches its dependencies (e.g. textures, a .bin file of
- * vertex data, etc.), then uses the WebGL context in `material` to upload
- * buffers of vertex data and textures to the GPU.
- *
- * Once it's done, it'll return a list of functions that each will draw a part
- * (node) of the model.
- */
-export async function parseGltf(material: Material, root: Gltf, uriMap: Record<string, string>): Promise<Mesh[]> {
-	const gl = material.engine.gl;
+export type GltfParser = {
+	root: Gltf;
+	buffers: ArrayBuffer[];
+	images: ImageBitmap[];
+	meshes: (GltfPrimitive & { transform: mat4 })[];
+};
 
+export async function parseGltf(root: Gltf, uriMap: Record<string, string>): Promise<GltfParser> {
 	const buffers = await Promise.all(
 		root.buffers.map(({ uri }) =>
 			fetch(uriMap[uri]).then((r) =>
@@ -57,38 +64,12 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			),
 		),
 	);
-	const glBuffers = root.accessors.map((accessor): Accessor => {
-		const bufferView = root.bufferViews[accessor.bufferView];
-		// const data = new componentTypes[accessor.componentType](
-		// 	buffers[bufferView.buffer],
-		// 	(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
-		// 	accessor.count * componentSizes[accessor.type],
-		// );
-		const offset = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
-		const length =
-			accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type];
-		const data = buffers[bufferView.buffer].slice(offset, offset + length);
-		const glBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
-		gl.bindBuffer(bufferView.target, glBuffer);
-		gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
-		return {
-			buffer: glBuffer,
-			vertexAttribPointerArgs: [
-				componentSizes[accessor.type],
-				accessor.componentType,
-				accessor.normalized ?? false,
-				bufferView.byteStride ?? 0,
-				accessor.byteOffset ?? 0,
-			],
-			count: accessor.count,
-		};
-	});
 
 	const images = await Promise.all(
 		root.images.map((image) => {
 			if ("uri" in image) {
-				// gl.texImage2D is much faster with ImageBitmap than HTMLImageElement
-				// (380 ms to 60 ms)
+				// gl.texImage2D is much faster with ImageBitmap than
+				// HTMLImageElement (380 ms to 60 ms)
 				return fetch(uriMap[image.uri])
 					.then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}: ${image.uri} (${r.url})`))))
 					.then(createImageBitmap);
@@ -99,25 +80,6 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			}
 		}),
 	);
-	const textures = root.textures.map(({ source, sampler: samplerIndex }) => {
-		const image = images[source];
-		const sampler = root.samplers[samplerIndex];
-		const texture = gl.createTexture() ?? expect("Failed to create texture");
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		console.time(`uploading texture ${source}`);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-		console.timeEnd(`uploading texture ${source}`);
-		if (sampler.wrapS) {
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
-		}
-		if (sampler.wrapT) {
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
-		}
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
-		gl.generateMipmap(gl.TEXTURE_2D);
-		return texture;
-	});
 
 	const nodes = root.nodes.map((node): Node => {
 		return {
@@ -149,11 +111,84 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 			applyTransform(node);
 		}
 	}
-	return scene
-		.flatMap((node) =>
+
+	return {
+		root,
+		buffers,
+		images,
+		meshes: scene.flatMap((node) =>
 			node.mesh ? node.mesh.primitives.map((primitive) => ({ ...primitive, transform: node.transform })) : [],
-		)
-		.map((mesh) => {
+		),
+	};
+}
+
+type ModelMesh = {
+	vao: WebGLVertexArrayObject;
+	materialOptions: GltfMaterial;
+	meshTextures: { texture: WebGLTexture; name: string }[];
+	indices: Accessor | null;
+	count: number;
+	transform: mat4;
+	mode?: GltfMode;
+};
+
+export class GltfModel {
+	#material: Material;
+	#meshes: ModelMesh[];
+
+	constructor(material: Material, { root, buffers, images, meshes }: GltfParser) {
+		this.#material = material;
+
+		const gl = material.engine.gl;
+
+		const glBuffers = root.accessors.map((accessor): Accessor => {
+			const bufferView = root.bufferViews[accessor.bufferView];
+			// const data = new componentTypes[accessor.componentType](
+			// 	buffers[bufferView.buffer],
+			// 	(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
+			// 	accessor.count * componentSizes[accessor.type],
+			// );
+			const offset = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+			const length =
+				accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type];
+			const data = buffers[bufferView.buffer].slice(offset, offset + length);
+			const glBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
+			gl.bindBuffer(bufferView.target, glBuffer);
+			gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
+			return {
+				buffer: glBuffer,
+				vertexAttribPointerArgs: [
+					componentSizes[accessor.type],
+					accessor.componentType,
+					accessor.normalized ?? false,
+					bufferView.byteStride ?? 0,
+					accessor.byteOffset ?? 0,
+				],
+				count: accessor.count,
+			};
+		});
+
+		const textures = root.textures.map(({ source, sampler: samplerIndex }) => {
+			const image = images[source];
+			const sampler = root.samplers[samplerIndex];
+			const texture = gl.createTexture() ?? expect("Failed to create texture");
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			console.time(`uploading texture ${source}`);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+			console.timeEnd(`uploading texture ${source}`);
+			if (sampler.wrapS) {
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
+			}
+			if (sampler.wrapT) {
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
+			}
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
+			gl.generateMipmap(gl.TEXTURE_2D);
+			return texture;
+		});
+
+		this.#meshes = meshes.map((mesh) => {
 			const materialOptions = root.materials[mesh.material];
 
 			const vao = gl.createVertexArray() ?? expect("Failed to create VAO");
@@ -219,46 +254,80 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 
 			material.engine.checkError();
 
-			return () => {
-				// Assumes `u_model` uniform is already set
-				if (materialOptions.doubleSided) {
-					gl.disable(gl.CULL_FACE);
-					material.engine.checkError();
-				}
-				for (const [i, { name, texture }] of meshTextures.entries()) {
-					gl.activeTexture(gl.TEXTURE0 + i);
-					material.engine.checkError();
-					gl.bindTexture(gl.TEXTURE_2D, texture);
-					material.engine.checkError();
-					gl.uniform1i(material.uniform(`u_${name}`), i);
-					gl.uniform1i(material.uniform(`u_has_${name}`), 1);
-					material.engine.checkError();
-				}
-				gl.uniformMatrix4fv(material.uniform("u_model_part"), false, mesh.transform);
-				gl.uniform1f(
-					material.uniform("u_alpha_cutoff"),
-					materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
-				);
-				gl.uniform4fv(
-					material.uniform("u_base_color"),
-					materialOptions.pbrMetallicRoughness.baseColorFactor ?? [1, 1, 1, 1],
-				);
-				gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness.metallicFactor ?? 1);
-				gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness.roughnessFactor ?? 1);
-				gl.uniform3fv(material.uniform("u_emissive"), materialOptions.emissiveFactor ?? [0, 0, 0]);
-				material.engine.checkError();
-				gl.bindVertexArray(vao);
-				material.engine.checkError();
-				if (indices) {
-					gl.drawElements(mesh.mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
-				} else {
-					gl.drawArrays(mesh.mode ?? gl.TRIANGLES, 0, count);
-				}
-				material.engine.checkError();
-				if (materialOptions.doubleSided) {
-					gl.enable(gl.CULL_FACE);
-					material.engine.checkError();
-				}
+			return {
+				vao,
+				materialOptions,
+				meshTextures,
+				indices,
+				count,
+				transform: mesh.transform,
+				mode: mesh.mode,
 			};
 		});
+	}
+
+	draw() {
+		const material = this.#material;
+		const gl = material.engine.gl;
+
+		for (const { vao, materialOptions, meshTextures, indices, count, transform, mode } of this.#meshes) {
+			// Assumes `u_model` uniform is already set
+			if (materialOptions.doubleSided) {
+				gl.disable(gl.CULL_FACE);
+				material.engine.checkError();
+			}
+			for (const [i, { name, texture }] of meshTextures.entries()) {
+				gl.activeTexture(gl.TEXTURE0 + i);
+				material.engine.checkError();
+				gl.bindTexture(gl.TEXTURE_2D, texture);
+				material.engine.checkError();
+				gl.uniform1i(material.uniform(`u_${name}`), i);
+				gl.uniform1i(material.uniform(`u_has_${name}`), 1);
+				material.engine.checkError();
+			}
+			gl.uniformMatrix4fv(material.uniform("u_model_part"), false, transform);
+			gl.uniform1f(
+				material.uniform("u_alpha_cutoff"),
+				materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
+			);
+			gl.uniform4fv(
+				material.uniform("u_base_color"),
+				materialOptions.pbrMetallicRoughness.baseColorFactor ?? [1, 1, 1, 1],
+			);
+			gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness.metallicFactor ?? 1);
+			gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness.roughnessFactor ?? 1);
+			gl.uniform3fv(material.uniform("u_emissive"), materialOptions.emissiveFactor ?? [0, 0, 0]);
+			material.engine.checkError();
+			gl.bindVertexArray(vao);
+			material.engine.checkError();
+			if (indices) {
+				gl.drawElements(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
+			} else {
+				gl.drawArrays(mode ?? gl.TRIANGLES, 0, count);
+			}
+			material.engine.checkError();
+			if (materialOptions.doubleSided) {
+				gl.enable(gl.CULL_FACE);
+				material.engine.checkError();
+			}
+		}
+	}
+}
+
+export class GltfModelWrapper {
+	#model: GltfModel | null = null;
+
+	constructor(material: Material, promise: Promise<GltfParser>) {
+		promise.then((model) => {
+			this.#model = new GltfModel(material, model);
+		});
+	}
+
+	draw() {
+		this.#model?.draw();
+	}
+
+	static from(material: Material, promise: Promise<GltfParser>): GltfModelWrapper {
+		return new GltfModelWrapper(material, promise);
+	}
 }
