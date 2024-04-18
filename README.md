@@ -10,11 +10,11 @@ This project requires [Node](https://nodejs.org/). This should also install [npm
 $ npm install
 ```
 
-If you intend on making changes to both the server and the client, run the following command and open http://localhost:6969/ in your browser.
+If you intend on making changes to both the server and the client, run the following command and open http://localhost:2345/ in your browser.
 
 ```shell
 $ npm run watch
-Listening on http://localhost:6969/
+Listening on http://localhost:2345/
 ```
 
 This will wait for changes you make to the code and re-build the project. If you edit any server code, it will also restart the server.
@@ -24,7 +24,7 @@ If you aren't working on the server and just want to have the server running, th
 ```shell
 $ npm run build
 $ npm start
-Listening on http://localhost:6969/
+Listening on http://localhost:2345/
 ```
 
 We recommend installing the [Prettier VS Code extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) and auto-formatting the file when you save. Alternatively, you can run the following command, which will try to format all the files in the repo. This way, our code will look consistent, and people with auto-formatting on won't have stray formatting changes in their commits.
@@ -40,10 +40,10 @@ For front-end development where you will only be making changes to the client, y
 ```shell
 $ npm run build
 $ npm start
-Listening on http://localhost:6969/
+Listening on http://localhost:2345/
 ```
 
-Then, in another terminal tab, run the following command and open http://127.0.0.1:8000/?ws=ws://localhost:6969/ in your browser.
+Then, in another terminal tab, run the following command and open http://127.0.0.1:8000/?ws=ws://localhost:2345/ in your browser.
 
 ```shell
 $ npm run dev

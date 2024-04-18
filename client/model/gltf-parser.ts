@@ -59,11 +59,15 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 	);
 	const glBuffers = root.accessors.map((accessor): Accessor => {
 		const bufferView = root.bufferViews[accessor.bufferView];
-		const data = new componentTypes[accessor.componentType](
-			buffers[bufferView.buffer],
-			(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
-			accessor.count * componentSizes[accessor.type],
-		);
+		// const data = new componentTypes[accessor.componentType](
+		// 	buffers[bufferView.buffer],
+		// 	(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
+		// 	accessor.count * componentSizes[accessor.type],
+		// );
+		const offset = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+		const length =
+			accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type];
+		const data = buffers[bufferView.buffer].slice(offset, offset + length);
 		const glBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
 		gl.bindBuffer(bufferView.target, glBuffer);
 		gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
