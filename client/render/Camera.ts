@@ -65,18 +65,53 @@ class Camera {
 
 	listen(): void {
 		document.addEventListener("pointerlockchange", this.#checkPointerLock);
+
+		const canvas = this.#engine.gl.canvas;
+		if (canvas instanceof OffscreenCanvas) {
+			// Can't add event listeners to OffscreenCanvas
+			return;
+		}
+		// Add touch support
+		type DragState = { pointerId: number; lastX: number; lastY: number };
+		let dragState: DragState | null = null;
+		canvas.addEventListener("pointerdown", (e) => {
+			if (e.pointerType === "touch" && !dragState) {
+				dragState = { pointerId: e.pointerId, lastX: e.clientX, lastY: e.clientY };
+				canvas.setPointerCapture(e.pointerId);
+			}
+		});
+		canvas.addEventListener("pointermove", (e) => {
+			if (e.pointerId === dragState?.pointerId) {
+				const movementX = e.clientX - dragState.lastX;
+				const movementY = e.clientY - dragState.lastY;
+				this.#handleMouseMove({ movementX, movementY });
+				dragState.lastX = e.clientX;
+				dragState.lastY = e.clientY;
+			}
+		});
+		const handlePointerEnd = (e: PointerEvent) => {
+			if (e.pointerId === dragState?.pointerId) {
+				dragState = null;
+			}
+		};
+		canvas.addEventListener("pointerup", handlePointerEnd);
+		canvas.addEventListener("pointercancel", handlePointerEnd);
 	}
 
 	#checkPointerLock = () => {
-		if (document.pointerLockElement === this.#engine.gl.canvas) {
-			document.addEventListener("mousemove", this.#handleMouseMove);
+		const canvas = this.#engine.gl.canvas;
+		if (canvas instanceof OffscreenCanvas) {
+			// Can't add event listeners to OffscreenCanvas
+			return;
+		}
+		if (document.pointerLockElement === canvas) {
+			canvas.addEventListener("mousemove", this.#handleMouseMove);
 		} else {
-			document.removeEventListener("mousemove", this.#handleMouseMove);
+			canvas.removeEventListener("mousemove", this.#handleMouseMove);
 		}
 	};
 
-	#handleMouseMove = (event: MouseEvent) => {
-		const { movementX, movementY } = event;
+	#handleMouseMove = ({ movementX, movementY }: { movementX: number; movementY: number }) => {
 		this.setOrientation(
 			this.#orientation[0] + movementY * this.#sensitivity * ROTATION_RATE,
 			this.#orientation[1] - movementX * this.#sensitivity * ROTATION_RATE,
