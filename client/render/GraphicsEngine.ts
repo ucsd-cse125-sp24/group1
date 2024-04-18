@@ -28,6 +28,7 @@ class GraphicsEngine extends WebGlUtils {
 	);
 	wireframeBox = new HardCodedGeometry(this.#wireframeMaterial, 36);
 	wireframePlane = new HardCodedGeometry(this.#wireframeMaterial, 6);
+	wireframeSphere = new HardCodedGeometry(this.#wireframeMaterial, 18);
 	gltfMaterial = new Material(
 		this,
 		this.createShader("vertex", gltfVertexSource, "gltf.vert"),

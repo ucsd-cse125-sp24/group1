@@ -43,7 +43,7 @@ export type SerializedEntity = {
 	colliders: SerializedCollider[];
 };
 
-export type SerializedCollider = BoxCollider | PlaneCollider | SquareCollider;
+export type SerializedCollider = BoxCollider | PlaneCollider | SphereCollider;
 
 /**
  * Represents an infinite plane. By default, it represents the xy-plane at z =
@@ -53,14 +53,9 @@ export type PlaneCollider = {
 	type: "plane";
 };
 
-/**
- * Represents a finite plane with side length 2. By default, it represents a
- * flat square with side lengths `2 * size` on the xy-plane, so its vertices are
- * between `(-x, -y, 0)` and `(x, y, 0)`.
- */
-export type SquareCollider = {
-	type: "square";
-	size: Vector2;
+export type SphereCollider = {
+	type: "sphere";
+	radius: number;
 };
 
 /**
