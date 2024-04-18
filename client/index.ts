@@ -139,9 +139,11 @@ const paint = () => {
 	}
 	engine.wireframeBox.material.use();
 	engine.gl.uniformMatrix4fv(engine.wireframeBox.material.uniform("u_view"), false, view);
+	engine.gl.disable(engine.gl.CULL_FACE);
 	for (const entity of entities) {
 		entity.drawWireframe();
 	}
+	engine.gl.enable(engine.gl.CULL_FACE);
 	engine.gltfMaterial.use();
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);

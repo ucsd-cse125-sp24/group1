@@ -60,7 +60,9 @@ export class ClientEntity {
 					? mat4.fromScaling(mat4.create(), collider.size)
 					: collider.type === "plane"
 						? mat4.create()
-						: mat4.fromScaling(mat4.create(), [...collider.size, 0]);
+						: collider.type === "sphere"
+							? mat4.fromScaling(mat4.create(), [collider.radius, collider.radius, collider.radius])
+							: mat4.create();
 			engine.gl.uniformMatrix4fv(
 				engine.wireframeBox.material.uniform("u_model"),
 				false,
@@ -72,9 +74,9 @@ export class ClientEntity {
 			} else if (collider.type === "plane") {
 				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 2);
 				engine.wireframePlane.draw();
-			} else if (collider.type === "square") {
+			} else if (collider.type === "sphere") {
 				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 3);
-				engine.wireframePlane.draw();
+				engine.wireframeSphere.draw();
 			}
 			engine.checkError();
 		}
