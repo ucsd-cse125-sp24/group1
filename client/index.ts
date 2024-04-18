@@ -11,6 +11,14 @@ import { getGl } from "./render/getGl";
 import { ClientEntity } from "./render/ClientEntity";
 import { fish1 } from "../assets/models/fish1";
 import { fish2 } from "../assets/models/fish2";
+import { listenErrors } from "./lib/listenErrors";
+
+const errorWindow = document.getElementById("error-window");
+if (errorWindow instanceof HTMLDialogElement) {
+	listenErrors(errorWindow);
+} else {
+	alert("Failed to get error window");
+}
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
@@ -114,6 +122,7 @@ fish2(engine.gltfMaterial).then((drawFuncs) => {
 		}
 	};
 });
+
 const paint = () => {
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
 	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
@@ -121,6 +130,7 @@ const paint = () => {
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
 
 	engine.clear();
+
 	const view = camera.getViewProjectionMatrix();
 	box1.draw(view);
 	box2.draw(view);

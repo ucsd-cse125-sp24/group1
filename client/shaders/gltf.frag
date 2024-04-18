@@ -26,18 +26,19 @@ uniform float u_alpha_cutoff;
 void main() {
   // TEMP: these lines are just here so the uniforms don't get discarded
   float unused;
-  unused = u_base_color.x;
-  unused = u_metallic;
-  unused = u_roughness;
-  unused = u_emissive.x;
+  unused += u_base_color.x;
+  unused += u_metallic;
+  unused += u_roughness;
+  unused += u_emissive.x;
+  unused += texture2D(u_texture_metallic_roughness, v_texcoord1).x;
+  unused += texture2D(u_texture_normal, v_texcoord2).x;
   int unusedInt;
-  unusedInt = u_has_texture_color;
-  unusedInt = u_has_texture_metallic_roughness;
-  unusedInt = u_has_texture_normal;
-  unusedInt = u_has_texture_occlusion;
-  unusedInt = u_has_texture_emissive;
-  gl_FragColor = texture2D(u_texture_metallic_roughness, v_texcoord1);
-  gl_FragColor = texture2D(u_texture_normal, v_texcoord2);
+  unusedInt += u_has_texture_color;
+  unusedInt += u_has_texture_metallic_roughness;
+  unusedInt += u_has_texture_normal;
+  unusedInt += u_has_texture_occlusion;
+  unusedInt += u_has_texture_emissive;
+  // end TEMP
 
   vec4 base_color =
       u_base_color * (u_has_texture_color == 1
@@ -53,7 +54,7 @@ void main() {
            ? texture2D(u_texture_metallic_roughness, v_texcoord1).g
            : 1.0);
 
-  gl_FragColor = base_color;
+  gl_FragColor = base_color * (1.0 + 0.0 * unused);
 
   if (gl_FragColor.a < u_alpha_cutoff) {
     discard;

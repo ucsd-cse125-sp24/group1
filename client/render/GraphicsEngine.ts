@@ -5,6 +5,7 @@ import gltfVertexSource from "../shaders/gltf.vert";
 import wireframeFragmentSource from "../shaders/wireframe.frag";
 import wireframeVertexSource from "../shaders/wireframe.vert";
 import toonShaderSouce from "../shaders/toon.frag";
+import toonShaderSouce2 from "../shaders/toon2.frag";
 import { WebGlUtils } from "./WebGlUtils";
 import { BoxGeometry } from "./geometries/BoxGeometry";
 import { HardCodedGeometry } from "./geometries/HardCodedGeometry";
@@ -17,7 +18,7 @@ class GraphicsEngine extends WebGlUtils {
 	tempMaterial = new Material(
 		this,
 		this.createShader("vertex", basicVertexSource, "basic.vert"),
-		this.createShader("fragment", toonShaderSouce, "toon.frag"),
+		this.createShader("fragment", toonShaderSouce2, "toon2.frag"),
 	);
 	tempGeometry = new BoxGeometry(this.tempMaterial, [1, 1, 1]);
 	#wireframeMaterial = new Material(
@@ -61,16 +62,17 @@ class GraphicsEngine extends WebGlUtils {
 	createShader(type: "vertex" | "fragment", source: string, name = "Untitled shader"): WebGLShader {
 		const gl = this.gl;
 		const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-		if (shader) {
-			gl.shaderSource(shader, source);
-			gl.compileShader(shader);
-			if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-				return shader;
-			}
-			console.error(`${name} failed to compile:`, gl.getShaderInfoLog(shader));
+		if (!shader) {
+			throw new Error("Failed to create shader");
 		}
+		gl.shaderSource(shader, source);
+		gl.compileShader(shader);
+		if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			return shader;
+		}
+		const infoLog = gl.getShaderInfoLog(shader);
 		gl.deleteShader(shader);
-		throw new Error("Failed to create shader");
+		throw new SyntaxError(`${name} failed to compile:\n${infoLog}`);
 	}
 
 	clear() {

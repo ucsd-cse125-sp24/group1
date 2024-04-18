@@ -10,14 +10,15 @@
 	"scripts": {
 		"build": "npm run build:server && npm run build:client",
 		"build:server": "esbuild server/index.ts --bundle --platform=node --packages=external --define:BROWSER=false --outdir=dist --format=esm",
-		"build:server-worker": "esbuild server/index.ts --bundle --external:./server/net/WsServer.ts --define:BROWSER=true --outdir=public/worker/ --format=iife --sourcemap",
+		"build:server-worker": "esbuild server/index.ts --bundle --external:./server/net/WsServer.ts --define:BROWSER=true --outdir=public/worker/ --format=iife --minify --sourcemap",
 		"build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --loader:.gltf=json --loader:.bin=file --loader:.png=file --outdir=public --minify --sourcemap",
 		"dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --loader:.gltf=json --loader:.bin=file --loader:.png=file --outdir=public --servedir=public --sourcemap",
 		"format": "prettier -w . --log-level=warn",
 		"start": "node dist/index.js",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"watch": "npm run watch:server & npm run watch:client",
-		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --define:BROWSER=false --outdir=dist --format=esm & nodemon --watch dist --exec npm start",
+		"watch": "npm-run-all --parallel watch:*",
+		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --define:BROWSER=false --outdir=dist --format=esm",
+		"watch:server-run": "nodemon --watch dist --exec npm start",
 		"watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --loader:.gltf=json --loader:.bin=file --loader:.png=file --outdir=public --sourcemap"
 	},
 	"keywords": [],
@@ -29,6 +30,7 @@
 		"@types/ws": "^8.5.10",
 		"esbuild": "^0.20.2",
 		"nodemon": "^3.1.0",
+		"npm-run-all": "^4.1.5",
 		"prettier": "^3.2.5",
 		"typescript": "^5.4.5"
 	},
