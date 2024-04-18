@@ -1,17 +1,17 @@
 import { mat4, quat } from "gl-matrix";
+import { exists } from "../../common/lib/exists";
 import { expect } from "../../common/lib/expect";
 import { Material } from "../render/materials/Material";
-import { exists } from "../../common/lib/exists";
 import {
-	GltfMesh,
-	GltfCamera,
 	ComponentType,
 	Gltf,
-	componentTypes,
-	componentSizes,
-	GltfPrimitive,
+	GltfCamera,
 	GltfMaterial,
+	GltfMesh,
 	GltfMode,
+	GltfPrimitive,
+	componentSizes,
+	componentTypes,
 } from "./gltf-types";
 
 type Node = {
@@ -21,13 +21,6 @@ type Node = {
 	mesh: GltfMesh | null;
 	camera: GltfCamera | null;
 };
-type Accessor = {
-	buffer: WebGLBuffer;
-	vertexAttribPointerArgs: [size: number, type: ComponentType, normalized: boolean, stride: number, offset: number];
-	count: number;
-};
-/** A mesh is just a draw function. */
-export type Mesh = () => void;
 
 /**
  * Converts local to global transformations for all nodes in the tree,
@@ -122,6 +115,12 @@ export async function parseGltf(root: Gltf, uriMap: Record<string, string>): Pro
 	};
 }
 
+type Accessor = {
+	buffer: WebGLBuffer;
+	vertexAttribPointerArgs: [size: number, type: ComponentType, normalized: boolean, stride: number, offset: number];
+	count: number;
+};
+
 type ModelMesh = {
 	vao: WebGLVertexArrayObject;
 	materialOptions: GltfMaterial;
@@ -152,11 +151,11 @@ export class GltfModel {
 			const length =
 				accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type];
 			const data = buffers[bufferView.buffer].slice(offset, offset + length);
-			const glBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
-			gl.bindBuffer(bufferView.target, glBuffer);
+			const buffer = gl.createBuffer() ?? expect("Failed to create buffer");
+			gl.bindBuffer(bufferView.target, buffer);
 			gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
 			return {
-				buffer: glBuffer,
+				buffer,
 				vertexAttribPointerArgs: [
 					componentSizes[accessor.type],
 					accessor.componentType,

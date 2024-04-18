@@ -1,18 +1,18 @@
 import { mat4, vec3 } from "gl-matrix";
+import { fish1 } from "../assets/models/fish1";
+import { fish2 } from "../assets/models/fish2";
 import { Vector3 } from "../common/commontypes";
 import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
+import { listenErrors } from "./lib/listenErrors";
+import { GltfModelWrapper } from "./model/gltf-parser";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/input";
 import Camera from "./render/Camera";
+import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
-import { ClientEntity } from "./render/ClientEntity";
-import { fish1 } from "../assets/models/fish1";
-import { fish2 } from "../assets/models/fish2";
-import { listenErrors } from "./lib/listenErrors";
-import { GltfModelWrapper } from "./model/gltf-parser";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
