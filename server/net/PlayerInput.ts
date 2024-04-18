@@ -33,6 +33,8 @@ export class PlayerInput {
 	 */
 	updateInputs(newData: ClientInputs) {
 		for (let key of Object.keys(this.#data)) {
+			// If the button wasn't pressed and now is, then mark the input
+			// as pressed for the next server tick regardless of its current value
 			if (!this.#data[key] && newData[key]) {
 				this.#posedge[key] = true;
 			}
