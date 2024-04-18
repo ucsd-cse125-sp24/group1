@@ -4,6 +4,7 @@ import { TheWorld } from "./physics";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { Server } from "./net/Server";
 import { WebWorker } from "./net/WebWorker";
+import { Game } from "./Game";
 
 /**
  * Whether the server is being compiled for the browser. This is set by the
@@ -16,8 +17,8 @@ const server: Server<ClientMessage, ServerMessage> = BROWSER
 	: // In the browser, we don't want to import WsServer
 		new (await import("./net/WsServer")).WsServer(handleMessage);
 
-
-let playerInputs: ClientInputs[] = [];
+// Create a new game with 1 player
+const game = new Game(1);
 
 /**
  * Parses a raw websocket message, and then generates a
@@ -36,8 +37,8 @@ function handleMessage(data: ClientMessage): ServerMessage | undefined {
 				type: "ping",
 			};
 		case "client-input":
-			playerInputs[0] = data;
-		break;
+			game.updatePlayerInputs(0, data);
+			break;
 	}
 	return;
 }
@@ -54,9 +55,13 @@ function handleMessage(data: ClientMessage): ServerMessage | undefined {
 		anchor.z = Math.sin(Date.now() / 500) * 5;
 		server.broadcast(anchor);
 		// receive input from all clients
-		if (playerInputs[0].)
+		if (game.getPlayerInputs(0).forward) {
+			// Move player forward
+			// who has this responsibility?
+		}
 		// update game state
-		TheWorld.nextTick();
+		game.nextTick();
+
 		// send updated state to all clients
 		server.broadcast({
 			type: "entire-game-state",

@@ -1,4 +1,4 @@
-import { Entity } from "./entity";
+import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
 

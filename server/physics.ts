@@ -20,7 +20,7 @@ export class PhysicsWorld {
 
 	constructor(setup: WorldSetup) {
 		this.#world = new World({
-			gravity: v3(...setup.gravity)
+			gravity: v3(...setup.gravity),
 		});
 		this.#colliders = {};
 		this.initWorld();

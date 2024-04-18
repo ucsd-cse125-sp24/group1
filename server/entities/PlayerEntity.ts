@@ -1,4 +1,4 @@
-import { Entity } from "./entity";
+import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
 import { TheWorld } from "../physics";
@@ -17,7 +17,7 @@ export class PlayerEntity implements Entity {
 		this.body = new phys.Body({
 			mass: 1.0, //fuckable
 			position: new phys.Vec3(...pos),
-			fixedRotation: true
+			fixedRotation: true,
 		});
 
 		// Add player cylinder
@@ -47,8 +47,7 @@ export class PlayerEntity implements Entity {
 		return this.body.quaternion;
 	}
 
-
-    move(direction?: phys.Vec3) {
-        this.body.applyForce(direction || new phys.Vec3(5, 5, 5));
-    }
+	move(direction?: phys.Vec3) {
+		this.body.applyForce(direction || new phys.Vec3(5, 5, 5));
+	}
 }
