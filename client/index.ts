@@ -116,7 +116,6 @@ fish2(engine.gltfMaterial).then((drawFuncs) => {
 });
 
 const paint = () => {
-
 	camera.aspectRatio = window.innerWidth / window.innerHeight;
 	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);

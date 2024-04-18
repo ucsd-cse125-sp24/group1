@@ -2,8 +2,8 @@
  * This manages the entire state of the game. Any gameplay specific elements
  * should be placed into this file or included into this file, and any interactions
  * that affect the state of the game must eventually be guaranteed to pass through
- * this class. 
- * 
+ * this class.
+ *
  * This class serves as the ground source of truth for anything concerning the game
  */
 
