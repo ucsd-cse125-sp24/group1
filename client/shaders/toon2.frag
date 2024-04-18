@@ -22,6 +22,7 @@ uniform sampler2D u_texture;
 // geometry properties
 varying vec3 v_position; // world xyz of fragment
 varying vec3 v_normal; // normal of fragment
+varying vec2 v_texcoord;
 
 void main(void) {
         
@@ -47,12 +48,10 @@ void main(void) {
     // combine to find lit color
     vec3 litColor = ambient + diffuse + specular; 
 
-    vec4 texColor = texture2D(u_texture, vec2(0,0)); // adjust coordinates as needed
-    gl_FragColor = vec4(litColor, 1.0) * texColor; 
+    vec4 texColor = texture2D(u_texture, v_texcoord); // adjust coordinates as needed
+    
     gl_FragColor = vec4(normalize(v_normal) * 0.5 + 0.5, 1.0); // Normal visualizer
-    // Debugging 
-    //gl_FragColor = vec4(ambient, 1.0); // Check ambient color
-    //gl_FragColor = vec4(diffuse, 1.0); // Check diffuse lighting
-    //gl_FragColor = vec4(specular, 1.0); // Check specular highlights
+    gl_FragColor = vec4(litColor, 1.0) * texColor; 
+    
     
 } // end main

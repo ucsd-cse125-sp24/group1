@@ -62,22 +62,6 @@ class GraphicsEngine extends WebGlUtils {
 		throw new Error("Failed to create shader");
 	}
 
-	updateScene() {
-		const materialProps = {
-			ambient: [0.1, 0.1, 0.1],
-			diffuse: [0.7, 0.7, 0.7],
-			specular: [0.5, 0.5, 0.5],
-			shininess: 32.0
-		};
-	
-		const lightProps = {
-			ambient: [0.2, 0.2, 0.2],
-			diffuse: [0.8, 0.8, 0.8],
-			specular: [1.0, 1.0, 1.0],
-			position: [5.0, 5.0, 5.0] 
-		};
-		this.tempMaterial.setUniforms(materialProps, lightProps);
-	}
 	clear() {
 		const gl = this.gl;
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
