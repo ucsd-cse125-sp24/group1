@@ -1,40 +1,24 @@
-import express from "express";
-import http from "http";
-import path, { dirname } from "path";
-import { WebSocketServer, RawData } from "ws";
-import { ClientMessage, ServerMessage } from "../common/messages";
-import { fileURLToPath } from "url";
+import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import { delay } from "../common/lib/delay";
 import { TheWorld } from "./physics";
 import { SERVER_GAME_TICK } from "../common/constants";
+import { Server } from "./net/Server";
+import { WebWorker } from "./net/WebWorker";
+import { Game } from "./Game";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+/**
+ * Whether the server is being compiled for the browser. This is set by the
+ * `esbuild` bundle options in `package.json`.
+ */
+declare var BROWSER: boolean;
 
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const server: Server<ClientMessage, ServerMessage> = BROWSER
+	? new WebWorker(handleMessage)
+	: // In the browser, we don't want to import WsServer
+		new (await import("./net/WsServer")).WsServer(handleMessage);
 
-app.use(express.static(path.join(__dirname, "..", "public")));
-
-app.get("/", (req, res) => {
-	res.sendFile(path.join(__dirname, "public/index.html"));
-});
-
-wss.on("connection", (ws) => {
-	ws.on("message", (rawData) => {
-		console.log(rawData);
-		const response = handleMessage(rawData);
-		if (response) {
-			ws.send(JSON.stringify(response));
-		}
-	});
-});
-
-function broadcast(wss: WebSocketServer, message: ServerMessage) {
-	for (const ws of wss.clients) {
-		ws.send(JSON.stringify(message));
-	}
-}
+// Create a new game with 1 player
+const game = new Game(1);
 
 /**
  * Parses a raw websocket message, and then generates a
@@ -42,17 +26,7 @@ function broadcast(wss: WebSocketServer, message: ServerMessage) {
  * @param rawData the raw message data to process
  * @returns a ServerMessage
  */
-function handleMessage(rawData: RawData): ServerMessage | undefined {
-	const stringData = Array.isArray(rawData) ? rawData.join("") : rawData.toString();
-
-	let data: ClientMessage;
-	try {
-		data = JSON.parse(stringData);
-	} catch {
-		console.warn("Non-JSON message: ", stringData);
-		return;
-	}
-
+function handleMessage(data: ClientMessage): ServerMessage | undefined {
 	switch (data.type) {
 		case "ping":
 			return {
@@ -63,7 +37,7 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 				type: "ping",
 			};
 		case "client-input":
-			console.log(data);
+			game.updatePlayerInputs(0, data);
 			break;
 	}
 	return;
@@ -76,17 +50,22 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 		y: 0,
 		z: 0,
 	};
-	let w = new TheWorld({ gravity: [0, -9.82, 0] });
+
 	while (true) {
 		anchor.z = Math.sin(Date.now() / 500) * 5;
-		broadcast(wss, anchor);
+		server.broadcast(anchor);
 		// receive input from all clients
+		if (game.getPlayerInputs(0).forward) {
+			// Move player forward
+			// who has this responsibility?
+		}
 		// update game state
-		w.nextTick();
+		game.nextTick();
+
 		// send updated state to all clients
-		broadcast(wss, {
+		server.broadcast({
 			type: "entire-game-state",
-			entities: w.serialize(),
+			entities: TheWorld.serialize(),
 		});
 		// wait until end of tick
 		// broadcast(wss, )
@@ -95,6 +74,4 @@ function handleMessage(rawData: RawData): ServerMessage | undefined {
 	}
 })();
 
-const PORT = 2345;
-server.listen(PORT);
-console.log(`Listening on http://localhost:${PORT}/`);
+server.listen(2345);

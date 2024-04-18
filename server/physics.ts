@@ -1,4 +1,5 @@
 import * as phys from "cannon-es";
+import { Box, Material, Body, Plane, World } from "cannon-es";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { SerializedCollider, SerializedEntity } from "../common/messages";
 
@@ -13,12 +14,12 @@ function q4(x: number, y: number, z: number, w: number) {
 	return new phys.Quaternion(x, y, z, w);
 }
 
-export class TheWorld {
+export class PhysicsWorld {
 	#world: phys.World;
 	#colliders: { [key: string]: phys.Body };
 
 	constructor(setup: WorldSetup) {
-		this.#world = new phys.World({
+		this.#world = new World({
 			gravity: v3(...setup.gravity),
 		});
 		this.#colliders = {};
@@ -27,21 +28,21 @@ export class TheWorld {
 
 	initWorld() {
 		// create a funny box
-		this.#colliders.box = new phys.Body({
+		this.#colliders.box = new Body({
 			position: v3(0, 6, 5),
 			velocity: v3(0, 0, 0),
 			quaternion: q4(1, 2, 3, 4).normalize(),
-			shape: new phys.Box(v3(1, 0.5, 1)),
+			shape: new Box(v3(1, 0.5, 1)),
 			mass: 200,
-			material: new phys.Material({
+			material: new Material({
 				friction: 3,
 				restitution: 20,
 			}),
 		});
 
 		// Create a plane pointing up at positive y,
-		this.#colliders.plane = new phys.Body({
-			shape: new phys.Plane(),
+		this.#colliders.plane = new Body({
+			shape: new Plane(),
 			position: v3(0, -5, 0),
 			quaternion: q4(-1, 0, 0, 1).normalize(),
 			type: phys.Body.STATIC,
@@ -50,6 +51,10 @@ export class TheWorld {
 		this.#world.addBody(this.#colliders.plane);
 
 		this.#world.addBody(this.#colliders.box);
+	}
+
+	addBody(body: Body) {
+		this.#world.addBody(body);
 	}
 
 	#time = 0;
@@ -86,12 +91,12 @@ export class TheWorld {
 
 			for (let shape of body.shapes) {
 				let collider: SerializedCollider | undefined = undefined;
-				if (shape instanceof phys.Box) {
+				if (shape instanceof Box) {
 					collider = {
 						type: "box",
 						size: shape.halfExtents.toArray(),
 					};
-				} else if (shape instanceof phys.Plane) {
+				} else if (shape instanceof Plane) {
 					collider = {
 						type: "plane",
 					};
@@ -112,3 +117,5 @@ export class TheWorld {
 	 */
 	deserialize() {}
 }
+
+export const TheWorld = new PhysicsWorld({ gravity: [0, -9.82, 0] });

@@ -1,3 +1,5 @@
+// Defines TypeScript types to represent glTF's JSON structure
+
 export const componentTypes = {
 	[WebGL2RenderingContext.BYTE]: Int8Array,
 	[WebGL2RenderingContext.UNSIGNED_BYTE]: Uint8Array,

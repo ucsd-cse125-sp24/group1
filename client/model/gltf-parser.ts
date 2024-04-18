@@ -19,18 +19,34 @@ type Accessor = {
 /** A mesh is just a draw function. */
 export type Mesh = () => void;
 
+/**
+ * Converts local to global transformations for all nodes in the tree,
+ * multiplying each child node's local transformation matrix by their
+ * ancestors'. This way, the tree of nodes can be flattened into a single list.
+ */
 function applyTransform(node: Node, transform = mat4.create()): void {
 	mat4.multiply(node.transform, node.transform, transform);
 	for (const child of node.children) {
 		applyTransform(child, node.transform);
 	}
 }
+/**
+ * Flatten a tree of nodes into a list of nodes.
+ */
 function getNodes(node: Node): Node[] {
 	const nodes = node.children.flatMap(getNodes);
 	nodes.push(node);
 	return nodes;
 }
 
+/**
+ * Parses a glTF object, fetches its dependencies (e.g. textures, a .bin file of
+ * vertex data, etc.), then uses the WebGL context in `material` to upload
+ * buffers of vertex data and textures to the GPU.
+ *
+ * Once it's done, it'll return a list of functions that each will draw a part
+ * (node) of the model.
+ */
 export async function parseGltf(material: Material, root: Gltf, uriMap: Record<string, string>): Promise<Mesh[]> {
 	const gl = material.engine.gl;
 

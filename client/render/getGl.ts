@@ -25,6 +25,18 @@ export function getGl(): WebGL2RenderingContext {
 	});
 	observer.observe(canvas, { box: "content-box" });
 
+	// Lock pointer to canvas
+	// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
+	document.addEventListener("pointerlockerror", () => {
+		throw new Error("Failed to lock pointer");
+	});
+	canvas.addEventListener("click", async () => {
+		if (!document.pointerLockElement) {
+			// @ts-expect-error - type definition seems to be missing options argument
+			await canvas.requestPointerLock({ unadjustedMovement: true });
+		}
+	});
+
 	const gl = canvas.getContext("webgl2");
 	if (!gl) {
 		throw new Error("Failed to get WebGL context");
