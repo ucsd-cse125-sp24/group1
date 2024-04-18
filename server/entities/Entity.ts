@@ -1,15 +1,15 @@
 import * as phys from "cannon-es";
-import { Vector3 } from "../../common/commontypes";
-import { TheWorld } from "../physics";
+import { PhysicsWorld } from "../physics";
 
 export interface Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: number;
+	model: string[];
 
 	getPos: () => phys.Vec3;
 	getRot: () => phys.Quaternion;
+	addToWorld(world: PhysicsWorld): void;
 }
 
 /**

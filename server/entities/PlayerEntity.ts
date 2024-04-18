@@ -1,18 +1,18 @@
 import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { TheWorld } from "../physics";
+import { PhysicsWorld, TheWorld } from "../physics";
 
 export class PlayerEntity implements Entity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: number;
+	model: string[];
 
-	constructor(name: string, pos: Vector3, modelNumber: number) {
+	constructor(name: string, pos: Vector3, model: string[] = []) {
 		this.type = "player";
 		this.name = name;
-		this.model = modelNumber;
+		this.model = model;
 
 		this.body = new phys.Body({
 			mass: 1.0, //fuckable
@@ -35,8 +35,6 @@ export class PlayerEntity implements Entity {
 
 		// Add player capsule bottom
 		this.body.addShape(new phys.Sphere(0.25), new phys.Vec3(0, -0.25, 0));
-
-		TheWorld.addBody(this.body);
 	}
 
 	getPos() {
@@ -49,5 +47,9 @@ export class PlayerEntity implements Entity {
 
 	move(direction?: phys.Vec3) {
 		this.body.applyForce(direction || new phys.Vec3(5, 5, 5));
+	}
+	
+	addToWorld(world: PhysicsWorld): void {
+		world.addBody(this.body);
 	}
 }

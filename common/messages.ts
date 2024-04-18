@@ -1,15 +1,6 @@
 import { Vector2, Vector3, Quaternion } from "./commontypes";
 
-export type ServerMessage =
-	| { type: "ping" }
-	| { type: "pong" }
-	| {
-			type: "CUBEEEEE";
-			x: number;
-			y: number;
-			z: number;
-	  }
-	| EntireGameState;
+export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameState;
 
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage;
 
@@ -43,7 +34,7 @@ export type SerializedEntity = {
 	colliders: SerializedCollider[];
 };
 
-export type SerializedCollider = BoxCollider | PlaneCollider | SquareCollider;
+export type SerializedCollider = BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider;
 
 /**
  * Represents an infinite plane. By default, it represents the xy-plane at z =
@@ -72,3 +63,16 @@ export type BoxCollider = {
 	type: "box";
 	size: Vector3;
 };
+
+export type SphereCollider = {
+	type: "sphere",
+	radius: number
+};
+
+export type CylinderCollider = {
+	type: "cylinder",
+	radiusTop: number,
+	radiusBottom: number,
+	height: number,
+	numSegments: number
+}

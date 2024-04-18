@@ -104,9 +104,12 @@ export async function parseGltf(material: Material, root: Gltf, uriMap: Record<s
 		const sampler = root.samplers[samplerIndex];
 		const texture = gl.createTexture() ?? expect("Failed to create texture");
 		gl.bindTexture(gl.TEXTURE_2D, texture);
+
+		// Slow :3
 		console.time(`uploading texture ${source}`);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 		console.timeEnd(`uploading texture ${source}`);
+
 		if (sampler.wrapS) {
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
 		}

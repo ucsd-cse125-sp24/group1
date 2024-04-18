@@ -12,65 +12,44 @@ import { Game } from "./Game";
  */
 declare var BROWSER: boolean;
 
-const server: Server<ClientMessage, ServerMessage> = BROWSER
-	? new WebWorker(handleMessage)
-	: // In the browser, we don't want to import WsServer
-		new (await import("./net/WsServer")).WsServer(handleMessage);
-
 // Create a new game with 1 player
 const game = new Game(1);
 
-/**
- * Parses a raw websocket message, and then generates a
- * response to the message if that is needed
- * @param rawData the raw message data to process
- * @returns a ServerMessage
- */
-function handleMessage(data: ClientMessage): ServerMessage | undefined {
-	switch (data.type) {
-		case "ping":
-			return {
-				type: "pong",
-			};
-		case "pong":
-			return {
-				type: "ping",
-			};
-		case "client-input":
-			game.updatePlayerInputs(0, data);
-			break;
-	}
-	return;
-}
+const server: Server<ClientMessage, ServerMessage> = BROWSER
+	? new WebWorker(game.handleMessage.bind(game))
+	: // In the browser, we don't want to import WsServer
+		new (await import("./net/WsServer")).WsServer(game.handleMessage.bind(game));
 
+//what actually runs the game loop
 (async () => {
-	let anchor: ServerMessage = {
-		type: "CUBEEEEE",
-		x: 0,
-		y: 0,
-		z: 0,
-	};
-
+	game.setup();
 	while (true) {
-		anchor.z = Math.sin(Date.now() / 500) * 5;
-		server.broadcast(anchor);
-		// receive input from all clients
-		if (game.getPlayerInputs(0).forward) {
-			// Move player forward
-			// who has this responsibility?
-		}
+		//check time at beginning of gamestep
+		let startTimeCheck = Date.now();
+
 		// update game state
-		game.nextTick();
+		game.updateGameState();
+
+		console.log(TheWorld.serialize());
 
 		// send updated state to all clients
 		server.broadcast({
 			type: "entire-game-state",
-			entities: TheWorld.serialize(),
+			entities: TheWorld.serialize(), //the game instead!
 		});
 		// wait until end of tick
 		// broadcast(wss, )
 
-		await delay(SERVER_GAME_TICK);
+		//check time at end of gamestep
+		let endTimeCheck = Date.now();
+
+		let delta = endTimeCheck - startTimeCheck;
+		//wait until the rest of the tick is complete
+		if (delta > SERVER_GAME_TICK) {
+			//shit we had a longass tick. Cry ig
+		} else {
+			await delay(SERVER_GAME_TICK - delta);
+		}
 	}
 })();
 
