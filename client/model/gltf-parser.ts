@@ -142,15 +142,11 @@ export class GltfModel {
 
 		const glBuffers = root.accessors.map((accessor): Accessor => {
 			const bufferView = root.bufferViews[accessor.bufferView];
-			// const data = new componentTypes[accessor.componentType](
-			// 	buffers[bufferView.buffer],
-			// 	(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
-			// 	accessor.count * componentSizes[accessor.type],
-			// );
-			const offset = (bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
-			const length =
-				accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type];
-			const data = buffers[bufferView.buffer].slice(offset, offset + length);
+			const data = new Uint8Array(
+				buffers[bufferView.buffer],
+				(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
+				accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type],
+			);
 			const buffer = gl.createBuffer() ?? expect("Failed to create buffer");
 			gl.bindBuffer(bufferView.target, buffer);
 			gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
@@ -161,7 +157,7 @@ export class GltfModel {
 					accessor.componentType,
 					accessor.normalized ?? false,
 					bufferView.byteStride ?? 0,
-					accessor.byteOffset ?? 0,
+					0,
 				],
 				count: accessor.count,
 			};
