@@ -25,6 +25,7 @@ export class InputListener<Inputs extends string> {
 	#handleKeyup = (e: KeyboardEvent) => this.#handleInput(this.options.handleKey(e.code), false);
 	#handleMousedown = (e: MouseEvent) => this.#handleInput(this.options.handleKey(e.button), true);
 	#handleMouseup = (e: MouseEvent) => this.#handleInput(this.options.handleKey(e.button), false);
+
 	/** When the user leaves the page, unpress all keys  */
 	#handleBlur = () => {
 		this.#inputs = this.options.reset();

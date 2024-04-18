@@ -24,3 +24,15 @@ canvas {
 	left: 0;
 	margin: 10px;
 }
+
+#error-window form {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+#error-window h2 {
+	margin: 0;
+}
+#error-window pre {
+	margin-bottom: 0;
+}
