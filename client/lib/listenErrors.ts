@@ -1,7 +1,9 @@
 /**
  * Listens for errors and displays them on screen when they happen.
+ *
+ * @returns A function you can use to report errors.
  */
-export function listenErrors(errorWindow: HTMLDialogElement) {
+export function listenErrors(errorWindow: HTMLDialogElement): (error: unknown) => void {
 	function displayError(error: unknown): string {
 		if (error instanceof Error) {
 			return error.stack ?? `${error.name}: ${error.message}`;
@@ -15,8 +17,8 @@ export function listenErrors(errorWindow: HTMLDialogElement) {
 
 	let visible = false;
 	const log = document.createElement("pre");
-	function handleError(error: string) {
-		log.textContent += error + "\n";
+	function handleError(error: unknown) {
+		log.textContent += displayError(error) + "\n";
 		if (!visible) {
 			visible = true;
 			errorWindow.append(log);
@@ -25,9 +27,11 @@ export function listenErrors(errorWindow: HTMLDialogElement) {
 	}
 
 	window.addEventListener("error", (e) => {
-		handleError(displayError(e.error));
+		handleError(e.error);
 	});
 	window.addEventListener("unhandledrejection", (e) => {
-		handleError(displayError(e.reason));
+		handleError(e.reason);
 	});
+
+	return handleError;
 }

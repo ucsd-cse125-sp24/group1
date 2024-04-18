@@ -62,16 +62,17 @@ class GraphicsEngine extends WebGlUtils {
 	createShader(type: "vertex" | "fragment", source: string, name = "Untitled shader"): WebGLShader {
 		const gl = this.gl;
 		const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-		if (shader) {
-			gl.shaderSource(shader, source);
-			gl.compileShader(shader);
-			if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-				return shader;
-			}
-			console.error(`${name} failed to compile:`, gl.getShaderInfoLog(shader));
+		if (!shader) {
+			throw new Error("Failed to create shader");
 		}
+		gl.shaderSource(shader, source);
+		gl.compileShader(shader);
+		if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+			return shader;
+		}
+		const infoLog = gl.getShaderInfoLog(shader);
 		gl.deleteShader(shader);
-		throw new Error("Failed to create shader");
+		throw new SyntaxError(`${name} failed to compile:\n${infoLog}`);
 	}
 
 	clear() {
