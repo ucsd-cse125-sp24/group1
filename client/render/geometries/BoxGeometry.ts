@@ -177,6 +177,17 @@ export class BoxGeometry extends Geometry {
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.#texture);
 		gl.uniform1i(this.material.uniform("u_texture"), 0);
+		gl.uniform3fv(this.material.uniform("uLightAmbient"), [0.2, 0.2, 0.2]);
+		gl.uniform3fv(this.material.uniform("uLightDiffuse"), [0.5, 0.5, 0.5]);
+		gl.uniform3fv(this.material.uniform("uLightSpecular"), [1.0, 1.0, 1.0]);
+		gl.uniform3fv(this.material.uniform("uLightPosition"), [0, 15.0, 0]);
+
+		gl.uniform3fv(this.material.uniform("uAmbient"), [0.1, 0.1, 0.1]);
+		gl.uniform3fv(this.material.uniform("uDiffuse"), [0.7, 0.7, 0.7]);
+		gl.uniform3fv(this.material.uniform("uSpecular"), [0.5, 0.5, 0.5]);
+		gl.uniform1f(this.material.uniform("uShininess"), 0.5);
+		gl.uniform1f(this.material.uniform("uTones"), 5.0);
+		gl.uniform1f(this.material.uniform("uSpecularTones"), 32.0);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
 	}
 }
