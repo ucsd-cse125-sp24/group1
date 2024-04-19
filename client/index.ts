@@ -37,9 +37,6 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			return {
 				type: "ping",
 			};
-		case "CUBEEEEE":
-			position = data;
-			break;
 		case "entire-game-state":
 			entities = data.entities.map((entity) => ClientEntity.from(engine, entity));
 			break;
