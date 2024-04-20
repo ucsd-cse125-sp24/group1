@@ -8,11 +8,12 @@ import { listenErrors } from "./lib/listenErrors";
 import { GltfModelWrapper } from "./model/gltf-parser";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/input";
-import Camera from "./render/Camera";
+import { PlayerCamera } from "./render/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
+import { PointLight } from "./render/lights/PointLight";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -49,11 +50,11 @@ const connection = new Connection<ServerMessage, ClientMessage>(
 );
 
 const engine = new GraphicsEngine(getGl());
-const camera = new Camera(
+const camera = new PlayerCamera(
 	vec3.fromValues(5, 5, 5),
 	vec3.fromValues(0, 0, 0),
 	vec3.fromValues(0, 1, 0),
-	45,
+	Math.PI / 4,
 	window.innerWidth / window.innerHeight,
 	0.01,
 	100,
@@ -97,22 +98,28 @@ const inputListener = new InputListener({
 		connection.send({
 			type: "client-input",
 			...inputs,
-			lookDir: Array.from(camera.forward) as Vector3,
+			lookDir: Array.from(camera.getForwardDir()) as Vector3,
 		});
 	},
 });
 
 const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
-let draw1 = () => {};
 const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
 const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
+const tempLights = [new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(1, 1, 1))];
 
 const paint = () => {
-	camera.aspectRatio = window.innerWidth / window.innerHeight;
+	camera.setAspectRatio(window.innerWidth / window.innerHeight);
 	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
+
+	engine.clear();
+
+	for (const light of tempLights) {
+		light.renderShadowMap(entities);
+	}
 
 	engine.clear();
 
