@@ -128,11 +128,6 @@ export class PhysicsWorld {
 		}
 		return serial;
 	}
-
-	/**
-	 * Deserialize a serialized TheWorld and set the properties of this class
-	 */
-	deserialize() {}
 }
 
 export const TheWorld = new PhysicsWorld({ gravity: [0, -9.82, 0] });
