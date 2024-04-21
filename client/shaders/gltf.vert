@@ -18,7 +18,7 @@ varying vec2 v_texcoord2;
 
 void main() {
   v_position = vec3(u_model * u_model_part * vec4(a_position, 1));
-  v_normal = vec3(u_model * u_model_part * vec4(a_normal, 0));
+  v_normal = normalize(vec3(u_model * u_model_part * vec4(a_normal, 0)));
   v_tangent = a_tangent;
   v_texcoord0 = a_texcoord0;
   v_texcoord1 = a_texcoord1;
