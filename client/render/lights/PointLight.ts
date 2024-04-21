@@ -17,6 +17,14 @@ export class PointLight {
 		this.#shadowCamera = new ShadowMapCamera(position, 0.001, 100, this.#shadowMapSize, engine);
 	}
 
+	getPosition() {
+		return this.#position;
+	}
+
+	getIntensity() {
+		return this.#intensity;
+	}
+
 	renderShadowMap(entities: ClientEntity[]): void {
 		this.#shadowCamera.renderShadowMap(entities);
 	}

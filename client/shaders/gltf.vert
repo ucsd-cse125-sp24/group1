@@ -17,12 +17,12 @@ varying vec2 v_texcoord1;
 varying vec2 v_texcoord2;
 
 void main() {
-  gl_Position = u_view * u_model * u_model_part * vec4(a_position, 1);
-
-  v_position = a_position;
-  v_normal = a_normal;
+  v_position = vec3(u_model * u_model_part * vec4(a_position, 1));
+  v_normal = vec3(u_model * u_model_part * vec4(a_normal, 0));
   v_tangent = a_tangent;
   v_texcoord0 = a_texcoord0;
   v_texcoord1 = a_texcoord1;
   v_texcoord2 = a_texcoord2;
+
+  gl_Position = u_view * vec4(v_position, 1);
 }

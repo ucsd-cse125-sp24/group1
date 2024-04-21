@@ -61,16 +61,20 @@ export class ShadowMapCamera extends Camera {
 				gl.FLOAT,
 				null,
 			);
-			// Don't use mips
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		}
-		// Bind color attachment - even though we only care about depth, WebGL still
-		// requires us to attach something to the framebuffer's color binding point
+		// Don't use mips
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		// Bind color attachment - even though we only care about depth, some
+		// devices still require the framebuffer to have a color attachment
 		gl.bindTexture(gl.TEXTURE_2D, colorTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, size, size, 0, gl.RED, gl.UNSIGNED_BYTE, null);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.#framebuffer);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colorTexture, 0);
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -90,7 +94,6 @@ export class ShadowMapCamera extends Camera {
 		const gl = this._engine.gl;
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.#framebuffer);
 		gl.viewport(0, 0, this.#textureSize, this.#textureSize);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		for (let side = 0; side < 6; side++) {
 			gl.framebufferTexture2D(
 				gl.FRAMEBUFFER,
@@ -99,6 +102,8 @@ export class ShadowMapCamera extends Camera {
 				this.#shadowMap,
 				0,
 			);
+			gl.clearColor(1, 1, 1, 1);
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			this._forwardDir = CUBE_FORWARD_DIR[side];
 			this._upDir = CUBE_UP_DIR[side];
 			const view = this.getViewProjectionMatrix();

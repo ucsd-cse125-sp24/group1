@@ -58,6 +58,10 @@ export class Camera {
 		this._upDir = up;
 	}
 
+	getPosition() {
+		return this._position;
+	}
+
 	setPosition(pos: vec3) {
 		this._position = pos;
 	}
