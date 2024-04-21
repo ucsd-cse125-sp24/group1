@@ -112,8 +112,8 @@ const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
  * Up to 8 lights allowed by the gltf.frag shader
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(1, 1, 1)),
-	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(1, 1, 1)),
+	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(10, 10, 10)),
+	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(10, 10, 10)),
 ];
 
 const paint = () => {
