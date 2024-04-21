@@ -3,7 +3,6 @@ import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
 import { PhysicsWorld, TheWorld, v3 } from "../physics";
 
-
 export class CubeEntity implements Entity {
 	name: string;
 	type: string;
@@ -14,7 +13,7 @@ export class CubeEntity implements Entity {
 		this.type = "cube";
 		this.name = name;
 		this.model = model;
-		
+
 		/*
 
 		const size = 1
@@ -29,9 +28,7 @@ export class CubeEntity implements Entity {
 			position: v3(...pos),
 		});
 
-		this.body.addShape(
-			new phys.Box(v3(1,1,2))
-		);
+		this.body.addShape(new phys.Box(v3(1, 1, 2)));
 	}
 
 	getPos() {

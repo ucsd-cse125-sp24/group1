@@ -7,7 +7,6 @@ type WorldSetup = {
 	gravity: [number, number, number];
 };
 
-
 //I HATE THIS FUNCTION FUCK YOU NICK
 export function v3(a: number, b: number, c: number) {
 	return new phys.Vec3(a, b, c);
@@ -43,12 +42,14 @@ export class PhysicsWorld {
 		// }));
 
 		// Create a plane pointing up at positive y,
-		this.#colliders.push(new Body({
-			shape: new Plane(),
-			position: v3(0, -5, 0),
-			quaternion: q4(-1, 0, 0, 1).normalize(),
-			type: phys.Body.STATIC,
-		}));
+		this.#colliders.push(
+			new Body({
+				shape: new Plane(),
+				position: v3(0, -5, 0),
+				quaternion: q4(-1, 0, 0, 1).normalize(),
+				type: phys.Body.STATIC,
+			}),
+		);
 
 		for (let collider of this.#colliders) {
 			this.#world.addBody(collider);
@@ -106,16 +107,16 @@ export class PhysicsWorld {
 				} else if (shape instanceof phys.Sphere) {
 					collider = {
 						type: "sphere",
-						radius: shape.radius
-					}
+						radius: shape.radius,
+					};
 				} else if (shape instanceof phys.Cylinder) {
 					collider = {
 						type: "cylinder",
 						radiusTop: shape.radiusTop,
 						radiusBottom: shape.radiusBottom,
 						height: shape.height,
-						numSegments: shape.numSegments
-					}
+						numSegments: shape.numSegments,
+					};
 				}
 				if (collider) {
 					entity.colliders.push(collider);

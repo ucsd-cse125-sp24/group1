@@ -7,7 +7,7 @@
  * This class serves as the ground source of truth for anything concerning the game
  */
 
-import { TheWorld, v3} from "./physics";
+import { TheWorld, v3 } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { ClientInputs, ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { PlayerEntity } from "./entities/PlayerEntity";
@@ -18,7 +18,7 @@ import { Body } from "cannon-es";
 export class Game {
 	// Store all of the player inputs, there is just one for now
 	#playerInput: PlayerInput;
-	#entities: {[key: string]: Entity};
+	#entities: { [key: string]: Entity };
 	#entityMap: Map<Body, Entity>;
 	// player array
 	// mapping from socket to player
@@ -28,7 +28,6 @@ export class Game {
 		this.#entities = {};
 		this.#entityMap = new Map();
 	}
-
 
 	//TODO: Create a fucntion that can more easily create Entities
 	//by god please
@@ -42,7 +41,6 @@ export class Game {
 		// this.#entityMap.set(p1.body, p1);
 		// p1.addToWorld(TheWorld);
 
-		
 		let rock = new CubeEntity("rock", [0, 100, 0], ["fish1"]);
 		this.#entityMap.set(rock.body, rock);
 		this.#entities.rock = rock;
@@ -68,7 +66,7 @@ export class Game {
 				return {
 					type: "pong",
 				};
-			case "pong": 
+			case "pong":
 				return {
 					type: "ping",
 				};

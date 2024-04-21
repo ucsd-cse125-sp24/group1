@@ -48,7 +48,7 @@ export class PlayerEntity implements Entity {
 	move(direction?: phys.Vec3) {
 		this.body.applyForce(direction || new phys.Vec3(5, 5, 5));
 	}
-	
+
 	addToWorld(world: PhysicsWorld): void {
 		world.addBody(this.body);
 	}
