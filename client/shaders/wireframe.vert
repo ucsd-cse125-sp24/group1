@@ -70,9 +70,8 @@ void main() {
       float angle =
           float(gl_VertexID / 6 + int(xy.x == 1.0 ? 1 : 0)) * u_size.w;
       // Distance from the center for this particular vertex
-      float radius = xy.y == 0.0 ? u_size.y : u_size.x;
-      vertex = vec3(cos(angle) * radius, xy.y == 0.0 ? -u_size.z : u_size.z,
-                    sin(angle) * radius);
+      float radius = xy.y == -1.0 ? u_size.y : u_size.x;
+      vertex = vec3(cos(angle) * radius, xy.y * u_size.z, sin(angle) * radius);
     }
   }
   gl_Position = u_view * u_model * vec4(vertex, 1);
