@@ -2,16 +2,20 @@ export class Connection<ReceiveType, SendType> {
 	static MAX_RECONNECT_ATTEMPTS = 3;
 
 	url: string;
+	handleMessage: (data: ReceiveType) => SendType | undefined;
+
 	#ws: WebSocket | null = null;
-	#indicator?: HTMLElement | null;
+	#worker: Worker | null = null;
+
 	#lastTime = performance.now();
 	#wsError = false;
-	handleMessage: (data: ReceiveType) => SendType | undefined;
+
 	#sendQueue: SendType[] = [];
 	#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 
-	#worker: Worker | null = null;
+	#indicator?: HTMLElement | null;
 	#workerBtn = Object.assign(document.createElement("button"), { textContent: "Use worker" });
+	#retryBtn = Object.assign(document.createElement("button"), { textContent: "Reconnect" });
 
 	constructor(url: string, handleMessage: (data: ReceiveType) => SendType | undefined, indicator?: HTMLElement | null) {
 		this.url = url;
@@ -19,6 +23,7 @@ export class Connection<ReceiveType, SendType> {
 		this.handleMessage = handleMessage;
 
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
+		this.#retryBtn.addEventListener("click", () => this.connect(true));
 	}
 
 	connect(reconnecting = false) {
@@ -109,7 +114,7 @@ export class Connection<ReceiveType, SendType> {
 	#handleClose = ({ code, reason, wasClean }: CloseEvent) => {
 		console.log("Connection closed", { code, reason, wasClean });
 		if (this.#indicator && !this.#wsError) {
-			this.#indicator.textContent = "⛔ Connection closed";
+			this.#indicator.textContent = "⛔ Connection closed. ";
 		}
 		this.#ws = null;
 		this.#worker = null;
@@ -117,6 +122,8 @@ export class Connection<ReceiveType, SendType> {
 		if (this.#reconnectAttempts > 0) {
 			this.#reconnectAttempts--;
 			this.connect();
+		} else if (this.#indicator) {
+			this.#indicator.append(this.#retryBtn);
 		}
 	};
 
