@@ -153,14 +153,14 @@ const paint = () => {
 		lightIntensities.push(...light.getIntensity());
 		const shadowMap = light.getShadowMap();
 		// Bind up to 8 shadow maps to texture indices 8..15
-		engine.gl.activeTexture(engine.gl.TEXTURE0 + 8 + i);
+		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
 		engine.gl.bindTexture(engine.gl.TEXTURE_CUBE_MAP, shadowMap);
 	}
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_eye_pos"), camera.getPosition());
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_num_lights"), tempLights.length);
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_intensities[0]"), lightIntensities);
-	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [8, 9, 10, 11, 12, 13, 14, 15]);
+	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
