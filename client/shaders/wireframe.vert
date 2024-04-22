@@ -20,6 +20,7 @@ uniform lowp int u_shape;
 uniform vec4 u_size;
 
 out vec2 v_uv;
+flat out int v_face;
 
 const vec3 boxVertices[8] =
     vec3[8](vec3(-1, -1, -1), vec3(-1, -1, 1), vec3(1, -1, 1), vec3(1, -1, -1),
@@ -50,6 +51,8 @@ const vec2 uv[6] = vec2[6](vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 0),
 #define PI 3.1415926538
 
 void main() {
+  v_face = 0;
+
   vec3 vertex;
   if (u_shape == BOX) {
     vertex = boxVertices[boxIndices[gl_VertexID]] * u_size.xyz;
@@ -72,6 +75,7 @@ void main() {
       // Distance from the center for this particular vertex
       float radius = xy.y == -1.0 ? u_size.y : u_size.x;
       vertex = vec3(cos(angle) * radius, xy.y * u_size.z, sin(angle) * radius);
+      v_face = 1;
     }
   }
   gl_Position = u_view * u_model * vec4(vertex, 1);
