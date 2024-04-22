@@ -86,8 +86,8 @@ export class PhysicsWorld {
 
 		for (let body of Object.values(this.#colliders)) {
 			let entity: SerializedEntity = {
-				geometryId: body.id,
-				materialId: 0,
+				name: body.id.toString(),
+				model: ["debuggable"],
 				position: body.position.toArray(),
 				quaternion: body.quaternion.toArray(),
 				colliders: [],
@@ -128,11 +128,6 @@ export class PhysicsWorld {
 		}
 		return serial;
 	}
-
-	/**
-	 * Deserialize a serialized TheWorld and set the properties of this class
-	 */
-	deserialize() {}
 }
 
 export const TheWorld = new PhysicsWorld({ gravity: [0, -9.82, 0] });

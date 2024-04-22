@@ -83,15 +83,14 @@ void main() {
     }
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
-    to_light = normalize(to_light);
+    to_light = to_light / distance;
     float shadow_dist = linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
     if (shadow_dist < distance - 0.005) {
       // occluded
       continue;
     }
     vec3 half_vector = normalize(to_light + to_eye);
-    vec4 intensity = vec4(u_point_intensities[i], 1.0);
-    // TODO: check that this lighting calculation is correct + add ambient lighting
+    vec4 intensity = vec4(u_point_intensities[i], 1.0) / (distance * distance);
     irradiance +=
         base_color * max(dot(to_light, v_normal), 0.0) * intensity +
         specular * pow(max(dot(half_vector, v_normal), 0.0), shininess) * intensity;
