@@ -1,6 +1,6 @@
 import { mat4, vec3, vec4 } from "gl-matrix";
-import GraphicsEngine from "./GraphicsEngine";
-import { clamp, modulo } from "../../common/lib/math";
+import GraphicsEngine from "../GraphicsEngine";
+import { clamp, modulo } from "../../../common/lib/math";
 
 /**
  * Computes the projection and view matrix for the vertex shaders to use based

@@ -1,4 +1,4 @@
-import { parseGltf } from "../../../client/model/gltf-parser";
+import { parseGltf } from "../../../client/render/model/gltf-parser";
 import bin from "./scene.bin";
 import root from "./scene.gltf";
 import baseColor from "./textures/Full_Fish_Material_baseColor.png";

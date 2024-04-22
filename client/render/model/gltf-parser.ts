@@ -1,7 +1,7 @@
 import { mat4, quat } from "gl-matrix";
-import { exists } from "../../common/lib/exists";
-import { expect } from "../../common/lib/expect";
-import { Material } from "../render/materials/Material";
+import { exists } from "../../../common/lib/exists";
+import { expect } from "../../../common/lib/expect";
+import { Material } from "../materials/Material";
 import {
 	ComponentType,
 	Gltf,
