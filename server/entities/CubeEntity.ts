@@ -1,15 +1,16 @@
 import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
+import type { Model } from "../../common/models";
 import { PhysicsWorld, TheWorld, v3 } from "../physics";
 
 export class CubeEntity implements Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: string[];
+	model: Model[];
 
-	constructor(name: string, pos: Vector3, model: string[] = []) {
+	constructor(name: string, pos: Vector3, model: Model[] = []) {
 		this.type = "cube";
 		this.name = name;
 		this.model = model;

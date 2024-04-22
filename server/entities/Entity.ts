@@ -1,11 +1,12 @@
 import * as phys from "cannon-es";
+import type { Model } from "../../common/models";
 import { PhysicsWorld } from "../physics";
 
 export interface Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: string[];
+	model: Model[];
 
 	getPos: () => phys.Vec3;
 	getRot: () => phys.Quaternion;
