@@ -27,13 +27,17 @@ export function getGl(): WebGL2RenderingContext {
 
 	// Lock pointer to canvas
 	// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
-	document.addEventListener("pointerlockerror", () => {
-		throw new Error("Failed to lock pointer");
-	});
 	canvas.addEventListener("click", async () => {
 		if (!document.pointerLockElement) {
-			// @ts-expect-error - type definition seems to be missing options argument
-			await canvas.requestPointerLock({ unadjustedMovement: true });
+			try {
+				await canvas.requestPointerLock({ unadjustedMovement: true });
+			} catch (error) {
+				// Ignore SecurityError: The user has exited the lock before this
+				// request was completed.
+				if (!(error instanceof DOMException && error.name === "SecurityError")) {
+					throw error;
+				}
+			}
 		}
 	});
 

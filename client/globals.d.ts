@@ -8,7 +8,7 @@ declare module "*.frag" {
 }
 
 declare module "*.gltf" {
-	// Importing Gltf breaks the entire file for some reason
+	// Importing Gltf here breaks the entire file for some reason
 	const root: any;
 	export default root;
 }
@@ -19,4 +19,9 @@ declare module "*.bin" {
 declare module "*.png" {
 	const path: string;
 	export default path;
+}
+
+interface Element {
+	// lib.dom.d.ts is missing options parameter and Promise return type
+	requestPointerLock(options?: { unadjustedMovement?: boolean }): Promise<void>;
 }

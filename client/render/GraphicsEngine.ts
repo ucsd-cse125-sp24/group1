@@ -21,14 +21,12 @@ class GraphicsEngine extends WebGlUtils {
 		this.createShader("fragment", toonShaderSouce2, "toon2.frag"),
 	);
 	tempGeometry = new BoxGeometry(this.tempMaterial, [1, 1, 1]);
-	#wireframeMaterial = new Material(
+	wireframeMaterial = new Material(
 		this,
 		this.createShader("vertex", wireframeVertexSource, "wireframe.vert"),
 		this.createShader("fragment", wireframeFragmentSource, "wireframe.frag"),
 	);
-	wireframeBox = new HardCodedGeometry(this.#wireframeMaterial, 36);
-	wireframePlane = new HardCodedGeometry(this.#wireframeMaterial, 6);
-	wireframeSphere = new HardCodedGeometry(this.#wireframeMaterial, 18);
+	wireframeGeometry = new HardCodedGeometry(this.wireframeMaterial);
 	gltfMaterial = new Material(
 		this,
 		this.createShader("vertex", gltfVertexSource, "gltf.vert"),
