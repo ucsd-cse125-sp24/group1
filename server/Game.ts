@@ -85,7 +85,12 @@ export class Game {
 		//}
 	}
 
-	serialize(): SerializedEntity[] | null {
-		return null;
+	serialize(): SerializedEntity[] {
+		let serial = [];
+
+		for (let entity of Object.values(this.#entities)) {
+			serial.push(entity.serialize());
+		}
+		return serial;
 	}
 }

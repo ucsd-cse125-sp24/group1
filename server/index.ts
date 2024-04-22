@@ -30,12 +30,13 @@ const server: Server<ClientMessage, ServerMessage> = BROWSER
 		// update game state
 		game.updateGameState();
 
-		console.log(TheWorld.serialize());
+		console.log(game.serialize());
 
 		// send updated state to all clients
 		server.broadcast({
 			type: "entire-game-state",
-			entities: TheWorld.serialize(), //the game instead!
+			entities: game.serialize(), //the game instead!
+			// ... other game data
 		});
 		// wait until end of tick
 		// broadcast(wss, )

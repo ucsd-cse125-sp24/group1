@@ -27,14 +27,17 @@ export type ClientInputMessage = {
 } & ClientInputs;
 
 export type SerializedEntity = {
-	geometryId: number;
-	materialId: number;
+	name: string;
+	//possible that we need to send model position
+	model: string[];
 	quaternion: Quaternion;
 	position: Vector3;
 	colliders: SerializedCollider[];
 };
 
-export type SerializedCollider = BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider;
+export type SerializedCollider = (BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider) & {
+	offset?: Vector3;
+};
 
 /**
  * Represents an infinite plane. By default, it represents the xy-plane at z =
