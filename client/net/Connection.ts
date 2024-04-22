@@ -94,11 +94,10 @@ export class Connection<ReceiveType, SendType> {
 			// default)
 			fetch("./worker/index.js")
 				.then((r) => r.ok)
+				.catch(() => false)
 				.then((ok) => {
-					if (ok) {
-						if (this.#indicator) {
-							this.#indicator.append(this.#workerBtn);
-						}
+					if (ok && this.#indicator) {
+						this.#indicator.append(this.#workerBtn);
 					}
 				});
 			this.#ws = null;

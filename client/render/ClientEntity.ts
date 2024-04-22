@@ -63,19 +63,33 @@ export class ClientEntity {
 						: collider.type === "sphere"
 							? mat4.fromScaling(mat4.create(), [collider.radius, collider.radius, collider.radius])
 							: mat4.create();
-			engine.gl.uniformMatrix4fv(
-				engine.wireframeBox.material.uniform("u_model"),
-				false,
-				mat4.multiply(scale, this.transform, scale),
-			);
+			engine.gl.uniformMatrix4fv(engine.wireframeBox.material.uniform("u_model"), false, this.transform);
 			if (collider.type === "box") {
 				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 1);
+				engine.gl.uniform4f(engine.wireframeBox.material.uniform("u_size"), ...collider.size, 0);
 				engine.wireframeBox.draw();
 			} else if (collider.type === "plane") {
 				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 2);
 				engine.wireframePlane.draw();
 			} else if (collider.type === "sphere") {
 				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 3);
+				engine.gl.uniform4f(
+					engine.wireframeBox.material.uniform("u_size"),
+					collider.radius,
+					collider.radius,
+					collider.radius,
+					0,
+				);
+				engine.wireframeSphere.draw();
+			} else if (collider.type === "cylinder") {
+				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 4);
+				engine.gl.uniform4f(
+					engine.wireframeBox.material.uniform("u_size"),
+					collider.radiusTop,
+					collider.radiusBottom,
+					collider.height / 2,
+					(2 * Math.PI) / collider.numSegments,
+				);
 				engine.wireframeSphere.draw();
 			}
 			engine.checkError();

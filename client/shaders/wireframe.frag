@@ -5,6 +5,7 @@ precision mediump float;
 #define BOX 1
 #define PLANE 2
 #define SPHERE 3
+#define CYLINDER 4
 
 uniform lowp int u_shape;
 
@@ -12,7 +13,7 @@ in vec2 v_uv;
 out vec4 fragColor;
 
 void main() {
-  if (u_shape == BOX) {
+  if (u_shape == BOX || u_shape == CYLINDER) {
     if (pow(abs(v_uv.x * 2.0 - 1.0), 30.0) +
             pow(abs(v_uv.y * 2.0 - 1.0), 30.0) <
         0.5) {

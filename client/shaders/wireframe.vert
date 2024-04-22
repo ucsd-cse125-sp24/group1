@@ -5,10 +5,12 @@ precision mediump float;
 #define BOX 1
 #define PLANE 2
 #define SPHERE 3
+#define CYLINDER 4
 
 uniform mat4 u_view;
 uniform mat4 u_model;
 uniform lowp int u_shape;
+uniform vec4 u_size;
 
 out vec2 v_uv;
 
@@ -35,14 +37,26 @@ const int sphereIndices[18] =
 const vec2 uv[6] = vec2[6](vec2(0, 0), vec2(1, 0), vec2(1, 1), vec2(0, 0),
                            vec2(1, 1), vec2(0, 1));
 
+#define PI 3.1415926538
+
 void main() {
   vec3 vertex;
   if (u_shape == BOX) {
-    vertex = boxVertices[boxIndices[gl_VertexID]];
+    vertex = boxVertices[boxIndices[gl_VertexID]] * u_size.xyz;
   } else if (u_shape == PLANE) {
     vertex = vec3(100.0 * (uv[gl_VertexID] - vec2(0.5, 0.5)), 0);
   } else if (u_shape == SPHERE) {
-    vertex = sphereVertices[sphereIndices[gl_VertexID]];
+    vertex = sphereVertices[sphereIndices[gl_VertexID]] * u_size.xyz;
+  } else if (u_shape == CYLINDER) {
+    vec2 xy = uv[gl_VertexID % 6];
+    if (gl_VertexID < 12) {
+      xy *= gl_VertexID < 6 ? u_size.x : u_size.y;
+      vertex = vec3(xy.x, gl_VertexID < 6 ? u_size.z : -u_size.z, xy.y);
+    } else {
+      float a = float(gl_VertexID / 6) * u_size.w;
+      float b = float(gl_VertexID / 6 + 1) * u_size.w;
+      vertex = vec3(0, xy.y == 1.0 ? u_size.z : -u_size.z, 0);
+    }
   }
   gl_Position = u_view * u_model * vec4(vertex, 1);
   v_uv = uv[gl_VertexID % 6];
