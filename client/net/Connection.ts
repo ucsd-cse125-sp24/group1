@@ -1,10 +1,14 @@
 export class Connection<ReceiveType, SendType> {
+	static MAX_RECONNECT_ATTEMPTS = 3;
+
 	url: string;
 	#ws: WebSocket | null = null;
 	#indicator?: HTMLElement | null;
 	#lastTime = performance.now();
 	#wsError = false;
 	handleMessage: (data: ReceiveType) => SendType | undefined;
+	#sendQueue: SendType[] = [];
+	#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 
 	#worker: Worker | null = null;
 	#workerBtn = Object.assign(document.createElement("button"), { textContent: "Use worker" });
@@ -17,12 +21,12 @@ export class Connection<ReceiveType, SendType> {
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
 	}
 
-	connect() {
+	connect(reconnecting = false) {
 		if (this.#ws) {
 			throw new Error("connect() has already been called");
 		}
 		if (this.#indicator) {
-			this.#indicator.textContent = "🤔 Connecting...";
+			this.#indicator.textContent = reconnecting ? "🤔 Connecting..." : "🤔 Connection lost. Reconnecting...";
 		}
 		try {
 			this.#ws = new WebSocket(this.url);
@@ -40,9 +44,15 @@ export class Connection<ReceiveType, SendType> {
 
 	#handleOpen = () => {
 		console.log("Connected :D");
+		this.#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 		if (this.#indicator) {
 			this.#indicator.textContent = "✅ Connected";
 			this.#lastTime = performance.now();
+		}
+		const queue = this.#sendQueue;
+		this.#sendQueue = [];
+		for (const message of queue) {
+			this.send(message);
 		}
 	};
 
@@ -101,18 +111,23 @@ export class Connection<ReceiveType, SendType> {
 		console.log("Connection closed", { code, reason, wasClean });
 		if (this.#indicator && !this.#wsError) {
 			this.#indicator.textContent = "⛔ Connection closed";
-			this.#ws = null;
+		}
+		this.#ws = null;
+		this.#worker = null;
+		// Try to reconnect
+		if (this.#reconnectAttempts > 0) {
+			this.#reconnectAttempts--;
+			this.connect();
 		}
 	};
 
-	// TODO: Queue unsent messages while offline(?)
 	send(message: SendType): void {
-		if (this.#ws) {
+		if (this.#ws?.readyState === WebSocket.OPEN) {
 			this.#ws.send(JSON.stringify(message));
 		} else if (this.#worker) {
 			this.#worker.postMessage(JSON.stringify(message));
 		} else {
-			throw new Error("connect() has not yet been called");
+			this.#sendQueue.push(message);
 		}
 	}
 
