@@ -136,8 +136,8 @@ const paint = () => {
 	for (const entity of entities) {
 		entity.draw(view);
 	}
-	engine.wireframeBox.material.use();
-	engine.gl.uniformMatrix4fv(engine.wireframeBox.material.uniform("u_view"), false, view);
+	engine.wireframeMaterial.use();
+	engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_view"), false, view);
 	engine.gl.disable(engine.gl.CULL_FACE);
 	for (const entity of entities) {
 		entity.drawWireframe();

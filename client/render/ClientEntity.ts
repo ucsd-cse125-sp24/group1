@@ -55,42 +55,38 @@ export class ClientEntity {
 	drawWireframe() {
 		const engine = this.geometry.material.engine;
 		for (const collider of this.colliders) {
-			const scale =
-				collider.type === "box"
-					? mat4.fromScaling(mat4.create(), collider.size)
-					: collider.type === "plane"
-						? mat4.create()
-						: collider.type === "sphere"
-							? mat4.fromScaling(mat4.create(), [collider.radius, collider.radius, collider.radius])
-							: mat4.create();
-			engine.gl.uniformMatrix4fv(engine.wireframeBox.material.uniform("u_model"), false, this.transform);
+			engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_model"), false, this.transform);
 			if (collider.type === "box") {
-				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 1);
-				engine.gl.uniform4f(engine.wireframeBox.material.uniform("u_size"), ...collider.size, 0);
-				engine.wireframeBox.draw();
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 1);
+				engine.gl.uniform4f(engine.wireframeMaterial.uniform("u_size"), ...collider.size, 0);
+				engine.wireframeGeometry.vertices = 36;
+				engine.wireframeGeometry.draw();
 			} else if (collider.type === "plane") {
-				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 2);
-				engine.wireframePlane.draw();
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 2);
+				engine.wireframeGeometry.vertices = 6;
+				engine.wireframeGeometry.draw();
 			} else if (collider.type === "sphere") {
-				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 3);
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 3);
 				engine.gl.uniform4f(
-					engine.wireframeBox.material.uniform("u_size"),
+					engine.wireframeMaterial.uniform("u_size"),
 					collider.radius,
 					collider.radius,
 					collider.radius,
 					0,
 				);
-				engine.wireframeSphere.draw();
+				engine.wireframeGeometry.vertices = 18;
+				engine.wireframeGeometry.draw();
 			} else if (collider.type === "cylinder") {
-				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 4);
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 4);
 				engine.gl.uniform4f(
-					engine.wireframeBox.material.uniform("u_size"),
+					engine.wireframeMaterial.uniform("u_size"),
 					collider.radiusTop,
 					collider.radiusBottom,
 					collider.height / 2,
 					(2 * Math.PI) / collider.numSegments,
 				);
-				engine.wireframeSphere.draw();
+				engine.wireframeGeometry.vertices = 12 + 6 * collider.numSegments;
+				engine.wireframeGeometry.draw();
 			}
 			engine.checkError();
 		}
