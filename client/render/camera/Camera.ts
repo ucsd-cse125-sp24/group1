@@ -1,5 +1,5 @@
 import { mat4, vec3, vec4 } from "gl-matrix";
-import GraphicsEngine from "../GraphicsEngine";
+import GraphicsEngine from "../engine/GraphicsEngine";
 import { clamp, modulo } from "../../../common/lib/math";
 
 /**

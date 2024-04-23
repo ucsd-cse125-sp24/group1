@@ -10,7 +10,7 @@ import { Connection } from "./net/Connection";
 import { InputListener } from "./net/input";
 import { PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
-import GraphicsEngine from "./render/GraphicsEngine";
+import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";

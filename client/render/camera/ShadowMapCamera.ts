@@ -1,6 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 import { Camera } from "./Camera";
-import GraphicsEngine from "../GraphicsEngine";
+import GraphicsEngine from "../engine/GraphicsEngine";
 import { ClientEntity } from "../ClientEntity";
 
 const CUBE_FORWARD_DIR = [

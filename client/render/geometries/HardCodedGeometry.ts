@@ -1,4 +1,4 @@
-import { Material } from "../materials/Material";
+import { ShaderProgram } from "../engine/ShaderProgram";
 import { Geometry } from "./Geometry";
 
 /**
@@ -11,7 +11,7 @@ export class HardCodedGeometry extends Geometry {
 	/**
 	 * @param vertices Number of times to call the vertex shader.
 	 */
-	constructor(material: Material) {
+	constructor(material: ShaderProgram) {
 		super(material);
 	}
 

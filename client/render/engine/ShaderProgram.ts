@@ -1,17 +1,17 @@
-import GraphicsEngine from "../GraphicsEngine";
+import GraphicsEngine from "./GraphicsEngine";
 
 /**
  * A material represents a shader program.
  */
-export class Material {
+export class ShaderProgram {
 	engine: GraphicsEngine;
 	#program: WebGLProgram;
 	#uniformLocations: Record<string, WebGLUniformLocation | null> = {};
 	#attribLocations: Record<string, number> = {};
 
-	constructor(engine: GraphicsEngine, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
+	constructor(engine: GraphicsEngine, program: WebGLProgram) {
 		this.engine = engine;
-		this.#program = engine.createProgram(vertexShader, fragmentShader);
+		this.#program = program;
 	}
 
 	use() {

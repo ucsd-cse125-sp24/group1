@@ -1,7 +1,7 @@
 import { mat4 } from "gl-matrix";
 import { Geometry } from "./geometries/Geometry";
 import { SerializedCollider, SerializedEntity } from "../../common/messages";
-import GraphicsEngine from "./GraphicsEngine";
+import GraphicsEngine from "./engine/GraphicsEngine";
 
 /**
  * An entity on the client. These entities are deserialized from the server and

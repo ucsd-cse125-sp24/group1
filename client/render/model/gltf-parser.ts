@@ -1,7 +1,7 @@
 import { mat4, quat } from "gl-matrix";
 import { exists } from "../../../common/lib/exists";
 import { expect } from "../../../common/lib/expect";
-import { Material } from "../materials/Material";
+import { ShaderProgram } from "../engine/ShaderProgram";
 import {
 	ComponentType,
 	Gltf,
@@ -132,10 +132,10 @@ type ModelMesh = {
 };
 
 export class GltfModel {
-	#material: Material;
+	#material: ShaderProgram;
 	#meshes: ModelMesh[];
 
-	constructor(material: Material, { root, buffers, images, meshes }: GltfParser) {
+	constructor(material: ShaderProgram, { root, buffers, images, meshes }: GltfParser) {
 		this.#material = material;
 
 		const gl = material.engine.gl;
@@ -312,7 +312,7 @@ export class GltfModel {
 export class GltfModelWrapper {
 	#model: GltfModel | null = null;
 
-	constructor(material: Material, promise: Promise<GltfParser>) {
+	constructor(material: ShaderProgram, promise: Promise<GltfParser>) {
 		promise.then((model) => {
 			this.#model = new GltfModel(material, model);
 		});
@@ -322,7 +322,7 @@ export class GltfModelWrapper {
 		this.#model?.draw();
 	}
 
-	static from(material: Material, promise: Promise<GltfParser>): GltfModelWrapper {
+	static from(material: ShaderProgram, promise: Promise<GltfParser>): GltfModelWrapper {
 		return new GltfModelWrapper(material, promise);
 	}
 }

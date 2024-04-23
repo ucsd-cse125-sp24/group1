@@ -1,5 +1,5 @@
 import { vec3 } from "gl-matrix";
-import GraphicsEngine from "../GraphicsEngine";
+import GraphicsEngine from "../engine/GraphicsEngine";
 import { ShadowMapCamera } from "../camera/ShadowMapCamera";
 import { ClientEntity } from "../ClientEntity";
 
