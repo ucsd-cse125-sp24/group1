@@ -73,18 +73,18 @@ const inputListener = new InputListener({
 		emote: false,
 	}),
 	handleKey: (key) => {
-		switch (typeof key === "string" ? key.toLowerCase() : key) {
-			case "w":
+		switch (key) {
+			case "KeyW":
 				return "forward";
-			case "a":
+			case "KeyA":
 				return "left";
-			case "s":
+			case "KeyS":
 				return "backward";
-			case "d":
+			case "KeyD":
 				return "right";
-			case "space":
+			case "Space":
 				return "jump";
-			case "e":
+			case "KeyE":
 				return "emote";
 			case 0: // Left mouse button
 				return "attack";
