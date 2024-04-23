@@ -2,7 +2,7 @@ import { mat4, vec3 } from "gl-matrix";
 import { fish1 } from "../assets/models/fish1";
 import { fish2 } from "../assets/models/fish2";
 import { Vector3 } from "../common/commontypes";
-import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
+import { ClientInputMessage, ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { GltfModelWrapper } from "./render/model/gltf-parser";
@@ -71,6 +71,7 @@ const inputListener = new InputListener({
 		attack: false,
 		use: false,
 		emote: false,
+		lookDir: [0, 0, 0],
 	}),
 	handleKey: (key) => {
 		switch (key) {
@@ -95,11 +96,12 @@ const inputListener = new InputListener({
 		}
 	},
 	handleInputs: (inputs) => {
-		connection.send({
+		let msg: ClientInputMessage = {
 			type: "client-input",
 			...inputs,
 			lookDir: Array.from(camera.getForwardDir()) as Vector3,
-		});
+		};
+		connection.send(msg);
 	},
 });
 
