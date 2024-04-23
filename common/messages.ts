@@ -19,11 +19,11 @@ export type ClientInputs = {
 	attack: boolean;
 	use: boolean;
 	emote: boolean;
+	lookDir: Vector3;
 };
 
 export type ClientInputMessage = {
 	type: "client-input";
-	lookDir: Vector3;
 } & ClientInputs;
 
 export type SerializedEntity = {
@@ -33,6 +33,7 @@ export type SerializedEntity = {
 	quaternion: Quaternion;
 	position: Vector3;
 	colliders: SerializedCollider[];
+	// for future reference we need to include velocity for movement prediction
 };
 
 export type SerializedCollider = (BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider) & {

@@ -1,6 +1,6 @@
 import { Entity } from "./Entity";
 import * as phys from "cannon-es";
-import { Vector3 } from "../../common/commontypes";
+import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { Model } from "../../common/models";
 import { PhysicsWorld, TheWorld } from "../physics";
 import { SerializedEntity } from "../../common/messages";
@@ -10,6 +10,8 @@ export class PlayerEntity implements Entity {
 	name: string;
 	body: phys.Body;
 	model: Model[];
+	speed: number;
+	jumping: boolean;
 
 	// shapes
 	cylinder: phys.Cylinder;
@@ -20,6 +22,10 @@ export class PlayerEntity implements Entity {
 		this.type = "player";
 		this.name = name;
 		this.model = model;
+
+		// Magic numbers!!! WOOHOO
+		this.speed = 1000;
+		this.jumping = false;
 
 		this.body = new phys.Body({
 			mass: 1.0, //fuckable
@@ -55,12 +61,38 @@ export class PlayerEntity implements Entity {
 		return this.body.quaternion;
 	}
 
-	move(direction?: phys.Vec3) {
-		this.body.applyForce(direction || new phys.Vec3(5, 5, 5));
+	move(movement: MovementInfo) {
+		//movement.lookDir
+
+		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
+		let rightVector = forwardVector.cross(forwardVector, new phys.Vec3(0, 1, 0));
+
+		let movementVector = new phys.Vec3(0, 0, 0);
+
+		if (movement.forward) {
+			movementVector = movementVector.vadd(forwardVector);
+		}
+		if (movement.backward) {
+			movementVector = movementVector.vadd(forwardVector.negate());
+		}
+		if (movement.right) {
+			movementVector = movementVector.vadd(rightVector);
+		}
+		if (movement.left) {
+			movementVector = movementVector.vadd(rightVector.negate());
+		}
+
+		movementVector.normalize();
+		console.log();
+		this.body.applyForce(movementVector.scale(this.speed));
 	}
 
 	addToWorld(world: PhysicsWorld): void {
 		world.addBody(this.body);
+	}
+
+	removeFromWorld(world: PhysicsWorld): void {
+		world.removeBody(this.body);
 	}
 
 	serialize(): SerializedEntity {

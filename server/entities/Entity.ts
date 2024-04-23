@@ -12,6 +12,7 @@ export interface Entity {
 	getPos: () => phys.Vec3;
 	getRot: () => phys.Quaternion;
 	addToWorld(world: PhysicsWorld): void;
+	removeFromWorld(world: PhysicsWorld): void;
 
 	serialize: () => SerializedEntity;
 }

@@ -60,6 +60,10 @@ export class PhysicsWorld {
 		this.#world.addBody(body);
 		this.#colliders.push(body);
 	}
+	removeBody(body: Body) {
+		this.#world.removeBody(body);
+		this.#colliders.splice(this.#colliders.indexOf(body), 1);
+	}
 
 	#time = 0;
 	nextTick() {
