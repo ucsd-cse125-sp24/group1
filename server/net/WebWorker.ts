@@ -20,15 +20,15 @@ import { Server } from "./Server";
 export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendType> {
 	hasConnection = Promise.resolve();
 
-	constructor(handleMessage: (data: ReceiveType) => SendType | undefined) {
-		super(handleMessage);
-	}
-
 	broadcast(message: SendType): void {
 		self.postMessage(JSON.stringify(message));
 	}
 
 	listen(_port: number): void {
+		for (const message of this.handleOpen()) {
+			self.postMessage(JSON.stringify(message));
+		}
+
 		self.addEventListener("message", (e) => {
 			const response = this.handleMessage(e.data);
 			if (response) {

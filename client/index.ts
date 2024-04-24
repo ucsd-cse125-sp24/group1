@@ -27,6 +27,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 
 let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
+let cameraLockTarget: string | null = null;
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -41,6 +42,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 		case "entire-game-state":
 			entities = data.entities.map((entity) => ClientEntity.from(engine, entity));
 			break;
+		case "camera-lock":
+			cameraLockTarget = data.entityName;
+			break;
+		default:
+			throw new Error(`Unsupported message type '${data["type"]}'`);
 	}
 };
 const connection = new Connection<ServerMessage, ClientMessage>(
@@ -105,8 +111,8 @@ const inputListener = new InputListener({
 	},
 });
 
-const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
-const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
+const box1 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
+const box2 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
 const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
 const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
 
@@ -123,6 +129,15 @@ const paint = () => {
 	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
+
+	for (const entity of entities) {
+		entity.visible = entity.name !== cameraLockTarget;
+	}
+
+	const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
+	if (cameraTarget) {
+		camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+	}
 
 	engine.clear();
 

@@ -1,3 +1,15 @@
+export type ServerHandlers<ReceiveType, SendType> = {
+	/**
+	 * Handle a new connection and decide what messages to send to it.
+	 */
+	handleOpen?: () => SendType[];
+	/**
+	 * Handles a message sent from the client, and decides what to reply with. It
+	 * can return `undefined` to not send back anything.
+	 */
+	handleMessage?: (data: ReceiveType) => SendType | undefined;
+};
+
 /**
  * Defines the interface of a websocket server. Feel free to add any methods you
  * need here.
@@ -7,16 +19,16 @@
  * doing that.
  */
 export abstract class Server<ReceiveType, SendType> {
-	#handleMessage: (data: ReceiveType) => SendType | undefined;
+	#handlers: ServerHandlers<ReceiveType, SendType>;
 	/** A promise that resolves when there's a connection */
 	abstract hasConnection: Promise<void>;
 
-	/**
-	 * @param handleMessage Handles a message sent from the client, and decides
-	 * what to reply with. It can return `undefined` to not send back anything.
-	 */
-	constructor(handleMessage: (data: ReceiveType) => SendType | undefined) {
-		this.#handleMessage = handleMessage;
+	constructor(handlers: ServerHandlers<ReceiveType, SendType> = {}) {
+		this.#handlers = handlers;
+	}
+
+	handleOpen(): SendType[] {
+		return this.#handlers.handleOpen?.() ?? [];
 	}
 
 	handleMessage(rawData: unknown): SendType | undefined {
@@ -30,7 +42,7 @@ export abstract class Server<ReceiveType, SendType> {
 			return;
 		}
 
-		return this.#handleMessage(data);
+		return this.#handlers.handleMessage?.(data);
 	}
 
 	/**

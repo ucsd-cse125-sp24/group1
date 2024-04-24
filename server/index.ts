@@ -16,9 +16,9 @@ declare var BROWSER: boolean;
 const game = new Game(1);
 
 const server: Server<ClientMessage, ServerMessage> = BROWSER
-	? new WebWorker(game.handleMessage.bind(game))
+	? new WebWorker(game)
 	: // In the browser, we don't want to import WsServer
-		new (await import("./net/WsServer")).WsServer(game.handleMessage.bind(game));
+		new (await import("./net/WsServer")).WsServer(game);
 
 //what actually runs the game loop
 (async () => {

@@ -10,6 +10,7 @@ import GraphicsEngine from "./engine/GraphicsEngine";
  * The client does not handle moving the entities around.
  */
 export class ClientEntity {
+	name: string;
 	geometry: Geometry;
 	/**
 	 * A transformation to apply to all the models in the entity. You can think of
@@ -22,8 +23,10 @@ export class ClientEntity {
 	 * keep this empty.
 	 */
 	colliders: SerializedCollider[];
+	visible = true;
 
-	constructor(geometry: Geometry, transform = mat4.create(), colliders: SerializedCollider[] = []) {
+	constructor(name: string, geometry: Geometry, transform = mat4.create(), colliders: SerializedCollider[] = []) {
+		this.name = name;
 		this.geometry = geometry;
 		this.transform = transform;
 		this.colliders = colliders;
@@ -37,6 +40,9 @@ export class ClientEntity {
 	 * keep switching between materials.
 	 */
 	draw(view: mat4) {
+		if (!this.visible) {
+			return false;
+		}
 		const engine = this.geometry.material.engine;
 		this.geometry.material.use();
 		engine.gl.uniformMatrix4fv(this.geometry.material.uniform("u_view"), false, view);
@@ -98,6 +104,6 @@ export class ClientEntity {
 	 */
 	static from(engine: GraphicsEngine, entity: SerializedEntity): ClientEntity {
 		const transform = mat4.fromRotationTranslation(mat4.create(), entity.quaternion, entity.position);
-		return new ClientEntity(engine.tempGeometry, transform, entity.colliders);
+		return new ClientEntity(entity.name, engine.tempGeometry, transform, entity.colliders);
 	}
 }

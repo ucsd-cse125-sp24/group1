@@ -155,6 +155,20 @@ export class Game {
 	}
 
 	/**
+	 * Welcomes a new connection by bombarding it with a bunch of emails as part
+	 * of its onboarding process
+	 * @returns Messages to send to the new client
+	 */
+	handleOpen(): ServerMessage[] {
+		// TODO: Create a player corresponding to this connection and lock the
+		// client's camera to it. This may involve reworking Server.ts to give
+		// access to WebSocket connection objects that you can store in each player
+		// object; if so, you can switch the server to always use WsServer.ts (and
+		// ignore the web worker stuff) until you get it working
+		return [{ type: "camera-lock", entityName: "Player One" }];
+	}
+
+	/**
 	 * Parses a raw websocket message, and then generates a
 	 * response to the message if that is needed
 	 * @param rawData the raw message data to process

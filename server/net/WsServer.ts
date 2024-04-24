@@ -1,4 +1,4 @@
-import { Server } from "./Server";
+import { Server, ServerHandlers } from "./Server";
 import express from "express";
 import http from "http";
 import path, { dirname } from "path";
@@ -20,8 +20,8 @@ export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendTyp
 		this.#handleNewConnection = resolve;
 	});
 
-	constructor(handleMessage: (data: ReceiveType) => SendType | undefined) {
-		super(handleMessage);
+	constructor(handlers?: ServerHandlers<ReceiveType, SendType>) {
+		super(handlers);
 
 		this.#app.use(express.static(path.join(__dirname, "..", "public")));
 
@@ -31,6 +31,9 @@ export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendTyp
 
 		this.#wss.on("connection", (ws) => {
 			this.#handleNewConnection();
+			for (const message of this.handleOpen()) {
+				ws.send(JSON.stringify(message));
+			}
 			ws.on("message", (rawData) => {
 				const response = this.handleMessage(rawData);
 				if (response) {
