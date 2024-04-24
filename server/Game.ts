@@ -13,7 +13,7 @@ import { ClientInputs, ClientMessage, SerializedEntity, ServerMessage } from "..
 import { PlayerEntity } from "./entities/PlayerEntity";
 import { CubeEntity } from "./entities/CubeEntity";
 import { Entity } from "./entities/Entity";
-import { Body } from "cannon-es";
+import { Body, Cylinder, Sphere } from "cannon-es";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import type { Model } from "../common/models";
 
@@ -62,6 +62,71 @@ export class Game {
 
 		let rock = new CubeEntity("rock", [0, 100, 0], ["fish1"]);
 		this.registerEntity(rock);
+
+		// TEMP(Sean): Add some other objects to test our renderer. Feel free to
+		// remove!
+		this.registerEntity({
+			name: "temp sphere 1",
+			type: "temp",
+			body: new Body({
+				mass: 10,
+				position: v3(1, 20, 1),
+				shape: new Sphere(2),
+			}),
+			model: [],
+			getPos() {
+				return this.body.position;
+			},
+			getRot() {
+				return this.body.quaternion;
+			},
+			addToWorld(world) {
+				world.addBody(this.body);
+			},
+			removeFromWorld(world) {
+				world.removeBody(this.body);
+			},
+			serialize() {
+				return {
+					name: this.name,
+					model: this.model,
+					position: this.body.position.toArray(),
+					quaternion: this.body.quaternion.toArray(),
+					colliders: [{ type: "sphere", radius: 2 }],
+				};
+			},
+		});
+		this.registerEntity({
+			name: "temp cylinder 1",
+			type: "temp",
+			body: new Body({
+				mass: 0.5,
+				position: v3(1, 20, 5),
+				shape: new Cylinder(1.5, 0.5, 5, 7),
+			}),
+			model: [],
+			getPos() {
+				return this.body.position;
+			},
+			getRot() {
+				return this.body.quaternion;
+			},
+			addToWorld(world) {
+				world.addBody(this.body);
+			},
+			removeFromWorld(world) {
+				world.removeBody(this.body);
+			},
+			serialize() {
+				return {
+					name: this.name,
+					model: this.model,
+					position: this.body.position.toArray(),
+					quaternion: this.body.quaternion.toArray(),
+					colliders: [{ type: "cylinder", radiusTop: 1.5, radiusBottom: 0.5, height: 5, numSegments: 7 }],
+				};
+			},
+		});
 
 		let input1 = new PlayerInput();
 		this.#playerInputs.push(input1);
