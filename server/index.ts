@@ -24,6 +24,9 @@ const server: Server<ClientMessage, ServerMessage> = BROWSER
 (async () => {
 	game.setup();
 	while (true) {
+		// If there is no one connected, wait until someone connects
+		await server.hasConnection;
+
 		//check time at beginning of gamestep
 		let startTimeCheck = Date.now();
 

@@ -8,6 +8,8 @@
  */
 export abstract class Server<ReceiveType, SendType> {
 	#handleMessage: (data: ReceiveType) => SendType | undefined;
+	/** A promise that resolves when there's a connection */
+	abstract hasConnection: Promise<void>;
 
 	/**
 	 * @param handleMessage Handles a message sent from the client, and decides

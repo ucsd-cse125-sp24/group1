@@ -18,6 +18,8 @@ import { Server } from "./Server";
  * control multiple "clients" on different tabs.
  */
 export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendType> {
+	hasConnection = Promise.resolve();
+
 	constructor(handleMessage: (data: ReceiveType) => SendType | undefined) {
 		super(handleMessage);
 	}
