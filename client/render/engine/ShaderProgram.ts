@@ -18,13 +18,9 @@ export class ShaderProgram {
 		this.engine.gl.useProgram(this.#program);
 	}
 
-	uniform(name: string): WebGLUniformLocation {
+	uniform(name: string): WebGLUniformLocation | null {
 		this.#uniformLocations[name] ??= this.engine.gl.getUniformLocation(this.#program, name);
-		const location = this.#uniformLocations[name];
-		if (location === null) {
-			throw new ReferenceError(`Uniform ${name} not found`);
-		}
-		return location;
+		return this.#uniformLocations[name];
 	}
 
 	setUniforms(
