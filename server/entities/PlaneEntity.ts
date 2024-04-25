@@ -22,7 +22,7 @@ export class PlaneEntity extends Entity {
 			position: v3(...pos),
 			quaternion: q4(...rotation).normalize(),
 			fixedRotation: true,
-			shape: new phys.Plane()
+			shape: new phys.Plane(),
 		});
 	}
 
