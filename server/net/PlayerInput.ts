@@ -42,6 +42,7 @@ export class PlayerInput {
 			if (!this.#data[key] && newData[key]) {
 				this.#posedge[key] = true;
 			}
+			this.#data[key] = newData[key];
 		}
 	}
 

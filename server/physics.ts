@@ -54,6 +54,7 @@ export class PhysicsWorld {
 
 	/**
 	 * Serialize this TheWorld into a format that represents the state of this class
+	 * @deprecated
 	 */
 	serialize(): SerializedEntity[] {
 		let serial = [];

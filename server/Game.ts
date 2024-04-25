@@ -65,7 +65,7 @@ export class Game {
 		let rock = new CubeEntity("rock", [0, 100, 0], ["fish1"]);
 		this.registerEntity(rock);
 
-		let plane = new PlaneEntity("normal plane", [0, -20, 0], [-1, 0, 0, 1]);
+		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1]);
 		this.registerEntity(plane);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
@@ -82,6 +82,9 @@ export class Game {
 		for (let [idx, playerInput] of this.#playerInputs.entries()) {
 			let inputs = playerInput.getInputs();
 			let player = this.#players[idx];
+
+			console.clear();
+			console.log(inputs);
 
 			// Make dedicated movement information object to avoid letting the
 			// player entity

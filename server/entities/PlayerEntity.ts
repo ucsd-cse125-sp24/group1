@@ -27,7 +27,7 @@ export class PlayerEntity extends Entity {
 		this.model = model;
 
 		// Magic numbers!!! WOOHOO
-		this.speed = 1000;
+		this.speed = 100;
 		this.jumping = false;
 
 		this.body = new phys.Body({
