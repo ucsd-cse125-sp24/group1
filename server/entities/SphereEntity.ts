@@ -1,28 +1,26 @@
 import { Entity } from "./Entity";
 import * as phys from "cannon-es";
-import { Quaternion, Vector3 } from "../../common/commontypes";
+import { Vector3 } from "../../common/commontypes";
 import type { Model } from "../../common/models";
-import { PhysicsWorld, q4, v3 } from "../physics";
+import { v3 } from "../physics";
 import { SerializedEntity } from "../../common/messages";
 
-export class PlaneEntity extends Entity {
+export class SphereEntity extends Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
 	model: Model[];
 
-	constructor(name: string, pos: Vector3, rotation: Quaternion, model: Model[] = []) {
+	constructor(name: string, pos: Vector3, radius: number, model: Model[] = []) {
 		super(name, model);
-		this.type = "plane";
+		this.type = "sphere";
 		this.name = name;
 		this.model = model;
 
 		this.body = new phys.Body({
-			type: phys.Body.STATIC,
+			mass: 1.0,
 			position: v3(...pos),
-			quaternion: q4(...rotation).normalize(),
-			fixedRotation: true,
-			shape: new phys.Plane()
+			shape: new phys.Sphere(radius),
 		});
 	}
 
@@ -34,7 +32,8 @@ export class PlaneEntity extends Entity {
 			quaternion: this.body.quaternion.toArray(),
 			colliders: [
 				{
-					type: "plane",
+					type: "sphere",
+					radius: (this.body.shapes[0] as phys.Sphere).radius,
 				},
 			],
 		};

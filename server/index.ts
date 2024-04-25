@@ -1,6 +1,5 @@
-import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
+import { ClientMessage, ServerMessage } from "../common/messages";
 import { delay } from "../common/lib/delay";
-import { TheWorld } from "./physics";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { Server } from "./net/Server";
 import { WebWorker } from "./net/WebWorker";

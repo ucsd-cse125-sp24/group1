@@ -2,14 +2,15 @@ import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { Model } from "../../common/models";
-import { PhysicsWorld, TheWorld } from "../physics";
 import { SerializedEntity } from "../../common/messages";
 
-export class PlayerEntity implements Entity {
+export class PlayerEntity extends Entity {
 	type: string;
 	name: string;
 	body: phys.Body;
 	model: Model[];
+
+	// Game properties
 	speed: number;
 	jumping: boolean;
 
@@ -19,6 +20,8 @@ export class PlayerEntity implements Entity {
 	sphereBot: phys.Sphere;
 
 	constructor(name: string, pos: Vector3, model: Model[] = []) {
+		super(name, model);
+
 		this.type = "player";
 		this.name = name;
 		this.model = model;
@@ -53,17 +56,7 @@ export class PlayerEntity implements Entity {
 		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.25, 0));
 	}
 
-	getPos() {
-		return this.body.position;
-	}
-
-	getRot() {
-		return this.body.quaternion;
-	}
-
 	move(movement: MovementInfo) {
-		//movement.lookDir
-
 		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
 		let rightVector = forwardVector.cross(forwardVector, new phys.Vec3(0, 1, 0));
 
@@ -83,16 +76,7 @@ export class PlayerEntity implements Entity {
 		}
 
 		movementVector.normalize();
-		console.log();
 		this.body.applyForce(movementVector.scale(this.speed));
-	}
-
-	addToWorld(world: PhysicsWorld): void {
-		world.addBody(this.body);
-	}
-
-	removeFromWorld(world: PhysicsWorld): void {
-		world.removeBody(this.body);
 	}
 
 	serialize(): SerializedEntity {
