@@ -1,0 +1,18 @@
+name: Auto-format code with Prettier
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Format
+        run: |
+          npm install
+          npm run format
+      # https://stackoverflow.com/a/58393457
+      - name: Push changes
+        run: |
+          git commit -am "style: autoformat"
+          git push
