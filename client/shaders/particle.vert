@@ -3,9 +3,7 @@ layout(location=0) in vec3 a_position;
 layout(location=1) in vec3 a_velocity; //which direction to move an how fast
 layout(location=2) in float a_age;	//current age of particle in seconds
 layout(location=3) in float a_life;	//Length of age a particle is allowed to live
-layout(location=4) in vec3 a_normal;
 
-layout(location=5) in vec3 a_texcoord;
 
 out vec3 v_position;
 out vec3 v_velocity;
@@ -30,7 +28,7 @@ float random(vec2 st) {
 }
 
 void main(void) {
-    float age = u_time - a_age + a_normal.x * 0.0 + a_texcoord.x * 0.0;
+    float age = u_time - a_age;
     gl_PointSize = 10.0;
 
     if(age > a_life){
@@ -48,7 +46,5 @@ void main(void) {
         v_age = a_age;
         v_life = a_life;
     }
-    vec3 unused = a_normal;
-    float unusedx = a_normal.x;
     gl_Position = u_view * u_model * vec4(v_position, 1.0);
 }

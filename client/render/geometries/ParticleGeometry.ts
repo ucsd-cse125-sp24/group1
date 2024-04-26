@@ -1,9 +1,9 @@
 import { vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
-import { Material } from "../materials/Material";
 import { Geometry } from "./Geometry";
 import texture from "../../../assets/test-texture.png";
 import { loadImage } from "../../lib/loadImage";
+import { ShaderProgram } from "../engine/ShaderProgram";
 
 const textureLoaded = loadImage(texture);
 
@@ -14,7 +14,7 @@ export class particleGeometry extends Geometry {
 	totalParticles: number;
 	startTime = Date.now();
 	vaoCurrent: number;
-	constructor(material: Material, size: vec3) {
+	constructor(material: ShaderProgram, size: vec3) {
 		super(material);
 
 		const gl = material.engine.gl;
@@ -23,7 +23,7 @@ export class particleGeometry extends Geometry {
 			dy = size[1] / 2,
 			dz = size[2] / 2;
 
-		const aPos = new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+		const aPos = new Float32Array([3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 		const aVel = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]);
 		const aAge = new Float32Array([-9000, -9000, -9000, -9000]); //sinceStart, starts at 0, utime - age needs to be negative so the two cancel out and makes it a possitive, so time0 + age > life can happen.
 		const aLife = new Float32Array([8000, 5000, 3000, 7000]);
@@ -53,7 +53,7 @@ export class particleGeometry extends Geometry {
 			const VBO_velocity = gl.createBuffer() ?? expect("Failed to create VAO normal buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_velocity);
 			gl.bufferData(gl.ARRAY_BUFFER, aVel, gl.STREAM_COPY);
-			gl.vertexAttribPointer(material.attrib("a_velocity"), 1, gl.FLOAT, false, 0, 0);
+			gl.vertexAttribPointer(material.attrib("a_velocity"), 3, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(material.attrib("a_velocity"));
 
 			const VBO_age = gl.createBuffer() ?? expect("Failed to create VAO texcoord buffer");
@@ -119,21 +119,5 @@ export class particleGeometry extends Geometry {
 
 		this.material.engine.checkError();
 
-		// var ctx = gl.ctx;
-
-		// var idx = (this.vaoCurrent + 1) % 2; //Alternate between the VAOs
-		// var vaoSource = this.vao[ this.vaoCurrent ];
-		// var tfeedback = this.tFeedback[ idx ];
-
-		// gl.ctx.bindVertexArray(vaoSource);
-		// gl.ctx.bindTransformFeedback(gl.ctx.TRANSFORM_FEEDBACK,tfeedback);
-
-		// this.material.shader.setUniforms("u_time",Fungi.sinceStart);
-
-		// gl.ctx.beginTransformFeedback(gl.ctx.POINTS);
-		// gl.ctx.drawArrays(gl.ctx.POINTS, 0, this.totalParticles);
-		// gl.ctx.endTransformFeedback();
-
-		// this.vaoCurrent = idx; //Alternate between the VAOs
 	}
 }

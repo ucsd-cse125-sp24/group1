@@ -34,7 +34,7 @@ export class WebGlUtils {
 			gl.attachShader(program, vertexShader);
 			gl.attachShader(program, fragmentShader);
 			if (varNames.length != 0) {
-				gl.transformFeedbackVaryings(program, varNames, gl.INTERLEAVED_ATTRIBS);
+				gl.transformFeedbackVaryings(program, varNames, gl.SEPARATE_ATTRIBS);
 			}
 			gl.linkProgram(program);
 			if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
