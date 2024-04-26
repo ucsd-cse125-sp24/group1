@@ -5,13 +5,15 @@ import GraphicsEngine from "../GraphicsEngine";
  */
 export class Material {
 	engine: GraphicsEngine;
+	varNames: string[];
 	#program: WebGLProgram;
 	#uniformLocations: Record<string, WebGLUniformLocation | null> = {};
 	#attribLocations: Record<string, number> = {};
 
-	constructor(engine: GraphicsEngine, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
+	constructor(engine: GraphicsEngine, vertexShader: WebGLShader, fragmentShader: WebGLShader, varNames: string[] = []) {
+		this.varNames = varNames;
 		this.engine = engine;
-		this.#program = engine.createProgram(vertexShader, fragmentShader);
+		this.#program = engine.createProgram(vertexShader, fragmentShader, varNames);
 	}
 
 	use() {
@@ -53,4 +55,11 @@ export class Material {
 		}
 		return this.#attribLocations[name];
 	}
+
+	addTransformFeedback(varNames: string[]) {
+		this.engine.gl.transformFeedbackVaryings(this.#program, varNames, this.engine.gl.INTERLEAVED_ATTRIBS);
+		return this;
+	}
+
+	
 }

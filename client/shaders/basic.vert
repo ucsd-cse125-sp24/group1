@@ -4,6 +4,7 @@ attribute vec2 a_texcoord;
 
 uniform mat4 u_view;
 uniform mat4 u_model;
+uniform float u_time;
 
 varying vec3 v_normal;
 varying vec3 v_diffuseColor;
@@ -16,7 +17,7 @@ void main() {
   // for the normals
   v_normal = normalize(vec3(u_model * vec4(a_normal, 0)));
 
-  v_diffuseColor = 0.5 * (a_normal + vec3(1));
+  v_diffuseColor = 0.5 * (a_normal + vec3(1)) + vec3(u_time * 0.0);
   v_position = a_position;
   v_texcoord = a_texcoord;
 }

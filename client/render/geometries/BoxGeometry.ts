@@ -188,6 +188,7 @@ export class BoxGeometry extends Geometry {
 		gl.uniform1f(this.material.uniform("uShininess"), 0.5);
 		gl.uniform1f(this.material.uniform("uTones"), 5.0);
 		gl.uniform1f(this.material.uniform("uSpecularTones"), 32.0);
+		gl.uniform1f(this.material.uniform("u_time"), 1.5);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
 	}
 }

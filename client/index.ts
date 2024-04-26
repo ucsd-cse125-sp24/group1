@@ -14,6 +14,9 @@ import GraphicsEngine from "./render/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
+import { particleGeometry } from "./render/geometries/ParticleGeometry";
+
+
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -105,8 +108,11 @@ const inputListener = new InputListener({
 
 const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
+const box3 = new ClientEntity(new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)))
 const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
 const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
+
+
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
@@ -133,6 +139,7 @@ const paint = () => {
 	const view = camera.getViewProjectionMatrix();
 	box1.draw(view);
 	box2.draw(view);
+	box3.draw(view);
 	for (const entity of entities) {
 		entity.draw(view);
 	}

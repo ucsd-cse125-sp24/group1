@@ -4,12 +4,14 @@ import gltfFragmentSource from "../shaders/gltf.frag";
 import gltfVertexSource from "../shaders/gltf.vert";
 import wireframeFragmentSource from "../shaders/wireframe.frag";
 import wireframeVertexSource from "../shaders/wireframe.vert";
-import toonShaderSouce from "../shaders/toon.frag";
 import toonShaderSouce2 from "../shaders/toon2.frag";
+import particleFragmentSource from "../shaders/particle.frag";
+import particleVertexSource from "../shaders/particle.vert";
 import { WebGlUtils } from "./WebGlUtils";
 import { BoxGeometry } from "./geometries/BoxGeometry";
 import { HardCodedGeometry } from "./geometries/HardCodedGeometry";
 import { Material } from "./materials/Material";
+
 
 /**
  * Handles helper functions for interacting with WebGL.
@@ -35,12 +37,22 @@ class GraphicsEngine extends WebGlUtils {
 		this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
 	);
 
-	createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader): WebGLProgram {
+	particleMaterial = new Material(
+		this,
+		this.createShader("vertex", particleVertexSource, "particle.vert"),
+		this.createShader("fragment", particleFragmentSource, "particle.frag"),
+		["v_position", "v_velocity", "v_age", "v_life"]
+	);
+
+	createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader, varNames: string[]): WebGLProgram {
 		const gl = this.gl;
 		const program = gl.createProgram();
 		if (program) {
 			gl.attachShader(program, vertexShader);
 			gl.attachShader(program, fragmentShader);
+			if (varNames.length != 0) {
+				gl.transformFeedbackVaryings(program, varNames, gl.INTERLEAVED_ATTRIBS);
+			}
 			gl.linkProgram(program);
 			if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
 				return program;
