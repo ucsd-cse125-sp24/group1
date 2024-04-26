@@ -61,7 +61,11 @@ export class ClientEntity {
 	drawWireframe() {
 		const engine = this.geometry.material.engine;
 		for (const collider of this.colliders) {
-			engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_model"), false, this.transform);
+			engine.gl.uniformMatrix4fv(
+				engine.wireframeMaterial.uniform("u_model"),
+				false,
+				mat4.translate(mat4.create(), this.transform, collider.offset ?? [0, 0, 0]),
+			);
 			if (collider.type === "box") {
 				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 1);
 				engine.gl.uniform4f(engine.wireframeMaterial.uniform("u_size"), ...collider.size, 0);
