@@ -1,4 +1,4 @@
-import { parseGltf } from "../../../client/model/gltf-parser";
+import { parseGltf } from "../../../client/render/model/gltf-parser";
 import fins from "./fins.png";
 import finsfins from "./finsfins.png";
 import fishTexture from "./fish texture.png";

@@ -1,6 +1,5 @@
-import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
+import { ClientMessage, ServerMessage } from "../common/messages";
 import { delay } from "../common/lib/delay";
-import { TheWorld } from "./physics";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { Server } from "./net/Server";
 import { WebWorker } from "./net/WebWorker";
@@ -16,26 +15,28 @@ declare var BROWSER: boolean;
 const game = new Game(1);
 
 const server: Server<ClientMessage, ServerMessage> = BROWSER
-	? new WebWorker(game.handleMessage.bind(game))
+	? new WebWorker(game)
 	: // In the browser, we don't want to import WsServer
-		new (await import("./net/WsServer")).WsServer(game.handleMessage.bind(game));
+		new (await import("./net/WsServer")).WsServer(game);
 
 //what actually runs the game loop
 (async () => {
 	game.setup();
 	while (true) {
+		// If there is no one connected, wait until someone connects
+		await server.hasConnection;
+
 		//check time at beginning of gamestep
 		let startTimeCheck = Date.now();
 
 		// update game state
 		game.updateGameState();
 
-		console.log(TheWorld.serialize());
-
 		// send updated state to all clients
 		server.broadcast({
 			type: "entire-game-state",
-			entities: TheWorld.serialize(), //the game instead!
+			entities: game.serialize(), //the game instead!
+			// ... other game data
 		});
 		// wait until end of tick
 		// broadcast(wss, )

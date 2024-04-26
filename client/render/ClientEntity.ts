@@ -1,7 +1,7 @@
 import { mat4 } from "gl-matrix";
 import { Geometry } from "./geometries/Geometry";
 import { SerializedCollider, SerializedEntity } from "../../common/messages";
-import GraphicsEngine from "./GraphicsEngine";
+import GraphicsEngine from "./engine/GraphicsEngine";
 
 /**
  * An entity on the client. These entities are deserialized from the server and
@@ -10,6 +10,7 @@ import GraphicsEngine from "./GraphicsEngine";
  * The client does not handle moving the entities around.
  */
 export class ClientEntity {
+	name: string;
 	geometry: Geometry;
 	/**
 	 * A transformation to apply to all the models in the entity. You can think of
@@ -22,8 +23,10 @@ export class ClientEntity {
 	 * keep this empty.
 	 */
 	colliders: SerializedCollider[];
+	visible = true;
 
-	constructor(geometry: Geometry, transform = mat4.create(), colliders: SerializedCollider[] = []) {
+	constructor(name: string, geometry: Geometry, transform = mat4.create(), colliders: SerializedCollider[] = []) {
+		this.name = name;
 		this.geometry = geometry;
 		this.transform = transform;
 		this.colliders = colliders;
@@ -37,6 +40,9 @@ export class ClientEntity {
 	 * keep switching between materials.
 	 */
 	draw(view: mat4) {
+		if (!this.visible) {
+			return false;
+		}
 		const engine = this.geometry.material.engine;
 		this.geometry.material.use();
 		engine.gl.uniformMatrix4fv(this.geometry.material.uniform("u_view"), false, view);
@@ -55,28 +61,38 @@ export class ClientEntity {
 	drawWireframe() {
 		const engine = this.geometry.material.engine;
 		for (const collider of this.colliders) {
-			const scale =
-				collider.type === "box"
-					? mat4.fromScaling(mat4.create(), collider.size)
-					: collider.type === "plane"
-						? mat4.create()
-						: collider.type === "sphere"
-							? mat4.fromScaling(mat4.create(), [collider.radius, collider.radius, collider.radius])
-							: mat4.create();
-			engine.gl.uniformMatrix4fv(
-				engine.wireframeBox.material.uniform("u_model"),
-				false,
-				mat4.multiply(scale, this.transform, scale),
-			);
+			engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_model"), false, this.transform);
 			if (collider.type === "box") {
-				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 1);
-				engine.wireframeBox.draw();
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 1);
+				engine.gl.uniform4f(engine.wireframeMaterial.uniform("u_size"), ...collider.size, 0);
+				engine.wireframeGeometry.vertices = 36;
+				engine.wireframeGeometry.draw();
 			} else if (collider.type === "plane") {
-				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 2);
-				engine.wireframePlane.draw();
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 2);
+				engine.wireframeGeometry.vertices = 6;
+				engine.wireframeGeometry.draw();
 			} else if (collider.type === "sphere") {
-				engine.gl.uniform1i(engine.wireframeBox.material.uniform("u_shape"), 3);
-				engine.wireframeSphere.draw();
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 3);
+				engine.gl.uniform4f(
+					engine.wireframeMaterial.uniform("u_size"),
+					collider.radius,
+					collider.radius,
+					collider.radius,
+					0,
+				);
+				engine.wireframeGeometry.vertices = 18;
+				engine.wireframeGeometry.draw();
+			} else if (collider.type === "cylinder") {
+				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 4);
+				engine.gl.uniform4f(
+					engine.wireframeMaterial.uniform("u_size"),
+					collider.radiusTop,
+					collider.radiusBottom,
+					collider.height / 2,
+					(2 * Math.PI) / collider.numSegments,
+				);
+				engine.wireframeGeometry.vertices = 12 + 6 * collider.numSegments;
+				engine.wireframeGeometry.draw();
 			}
 			engine.checkError();
 		}
@@ -88,6 +104,6 @@ export class ClientEntity {
 	 */
 	static from(engine: GraphicsEngine, entity: SerializedEntity): ClientEntity {
 		const transform = mat4.fromRotationTranslation(mat4.create(), entity.quaternion, entity.position);
-		return new ClientEntity(engine.tempGeometry, transform, entity.colliders);
+		return new ClientEntity(entity.name, engine.tempGeometry, transform, entity.colliders);
 	}
 }

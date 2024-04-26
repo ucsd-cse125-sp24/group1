@@ -13,45 +13,108 @@ import { ClientInputs, ClientMessage, SerializedEntity, ServerMessage } from "..
 import { PlayerEntity } from "./entities/PlayerEntity";
 import { CubeEntity } from "./entities/CubeEntity";
 import { Entity } from "./entities/Entity";
-import { Body } from "cannon-es";
+import { Body, Cylinder, Plane, Sphere } from "cannon-es";
+import { MovementInfo, Vector3 } from "../common/commontypes";
+import { PlaneEntity } from "./entities/PlaneEntity";
+import { SphereEntity } from "./entities/SphereEntity";
+import { CylinderEntity } from "./entities/CylinderEntity";
 
 export class Game {
 	// Store all of the player inputs, there is just one for now
-	#playerInput: PlayerInput;
+	#playerInputs: PlayerInput[];
+	#players: PlayerEntity[];
+
 	#entities: { [key: string]: Entity };
-	#entityMap: Map<Body, Entity>;
+	#bodyToEntityMap: Map<Body, Entity>;
 	// player array
 	// mapping from socket to player
 
 	constructor(numPlayers: number) {
-		this.#playerInput = new PlayerInput(); //new Array(numPlayers).fill(0).map((_) => new PlayerInput());
+		this.#playerInputs = [];
+		this.#players = [];
 		this.#entities = {};
-		this.#entityMap = new Map();
+		this.#bodyToEntityMap = new Map();
 	}
 
-	//TODO: Create a fucntion that can more easily create Entities
-	//by god please
+	/**
+	 * Registers an entity in the physics world and in the game state
+	 * so that it can be interacted with. Unregistered entities do not
+	 * affect the game in any way
+	 * @param entity the constructed entity to register
+	 */
+	registerEntity(entity: Entity) {
+		this.#entities[entity.name] = entity;
+		this.#bodyToEntityMap.set(entity.body, entity);
+		entity.addToWorld(TheWorld);
+	}
+
+	unregisterEntity(entity: Entity) {
+		delete this.#entities[entity.name];
+		this.#bodyToEntityMap.delete(entity.body);
+		entity.removeFromWorld(TheWorld);
+	}
 
 	/**
 	 * A function that sets up the base state for the game
 	 */
 	setup() {
-		// let p1 = new PlayerEntity("Player One", [0, 0, 0], ["fish1"]);
-		// this.#entities.p1 = p1;
-		// this.#entityMap.set(p1.body, p1);
-		// p1.addToWorld(TheWorld);
+		let p1 = new PlayerEntity("Player One", [20, 20, 20], ["fish1"]);
+		this.#players.push(p1);
+		this.registerEntity(p1);
 
 		let rock = new CubeEntity("rock", [0, 100, 0], ["fish1"]);
-		this.#entityMap.set(rock.body, rock);
-		this.#entities.rock = rock;
-		rock.addToWorld(TheWorld);
+		this.registerEntity(rock);
+
+		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1]);
+		this.registerEntity(plane);
+
+		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
+		this.registerEntity(tempSphere);
+
+		let tempCylinder = new CylinderEntity("temp cylinder 1", [1, 20, 5], 1.5, 5);
+		this.registerEntity(tempCylinder);
+
+		let input1 = new PlayerInput();
+		this.#playerInputs.push(input1);
 	}
 
 	updateGameState() {
-		if (this.#playerInput.getInputs().forward) {
-			this.#entities.rock.body.applyForce(v3(0, 0, -3));
+		for (let [idx, playerInput] of this.#playerInputs.entries()) {
+			let inputs = playerInput.getInputs();
+			let player = this.#players[idx];
+
+			console.clear();
+			console.log(inputs);
+
+			// Make dedicated movement information object to avoid letting the
+			// player entity
+			let movement: MovementInfo = {
+				forward: inputs.forward,
+				backward: inputs.backward,
+				right: inputs.right,
+				left: inputs.left,
+				jump: inputs.jump,
+				lookDir: inputs.lookDir,
+			};
+
+			player.move(movement);
 		}
+
 		this.#nextTick();
+	}
+
+	/**
+	 * Welcomes a new connection by bombarding it with a bunch of emails as part
+	 * of its onboarding process
+	 * @returns Messages to send to the new client
+	 */
+	handleOpen(): ServerMessage[] {
+		// TODO: Create a player corresponding to this connection and lock the
+		// client's camera to it. This may involve reworking Server.ts to give
+		// access to WebSocket connection objects that you can store in each player
+		// object; if so, you can switch the server to always use WsServer.ts (and
+		// ignore the web worker stuff) until you get it working
+		return [{ type: "camera-lock", entityName: "Player One" }];
 	}
 
 	/**
@@ -71,7 +134,7 @@ export class Game {
 					type: "ping",
 				};
 			case "client-input": //THIS ONLY CHECKS PLAYER 1
-				this.#playerInput.updateInputs(data);
+				this.#playerInputs[0].updateInputs(data);
 				break;
 		}
 		return;
@@ -79,13 +142,17 @@ export class Game {
 
 	#nextTick() {
 		TheWorld.nextTick();
-		this.#playerInput.serverTick();
-		//for (let input of this.#playerInput) {
-		//	input.serverTick();
-		//}
+		for (let input of this.#playerInputs) {
+			input.serverTick();
+		}
 	}
 
-	serialize(): SerializedEntity[] | null {
-		return null;
+	serialize(): SerializedEntity[] {
+		let serial = [];
+
+		for (let entity of Object.values(this.#entities)) {
+			serial.push(entity.serialize());
+		}
+		return serial;
 	}
 }

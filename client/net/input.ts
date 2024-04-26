@@ -14,7 +14,9 @@ export class InputListener<Inputs extends string> {
 	}
 
 	#handleInput(key: Inputs | null, pressed: boolean): void {
-		if (!key) {
+		// Don't send anything if inputs don't change (e.g. if keydown is fired
+		// multiple times while repeating a key)
+		if (!key || this.#inputs[key] === pressed) {
 			return;
 		}
 		this.#inputs[key] = pressed;

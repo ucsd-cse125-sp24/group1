@@ -1,32 +1,26 @@
-import GraphicsEngine from "../GraphicsEngine";
+import GraphicsEngine from "./GraphicsEngine";
 
 /**
  * A material represents a shader program.
  */
-export class Material {
+export class ShaderProgram {
 	engine: GraphicsEngine;
-	varNames: string[];
 	#program: WebGLProgram;
 	#uniformLocations: Record<string, WebGLUniformLocation | null> = {};
 	#attribLocations: Record<string, number> = {};
 
-	constructor(engine: GraphicsEngine, vertexShader: WebGLShader, fragmentShader: WebGLShader, varNames: string[] = []) {
-		this.varNames = varNames;
+	constructor(engine: GraphicsEngine, program: WebGLProgram) {
 		this.engine = engine;
-		this.#program = engine.createProgram(vertexShader, fragmentShader, varNames);
+		this.#program = program;
 	}
 
 	use() {
 		this.engine.gl.useProgram(this.#program);
 	}
 
-	uniform(name: string): WebGLUniformLocation {
+	uniform(name: string): WebGLUniformLocation | null {
 		this.#uniformLocations[name] ??= this.engine.gl.getUniformLocation(this.#program, name);
-		const location = this.#uniformLocations[name];
-		if (location === null) {
-			throw new ReferenceError(`Uniform ${name} not found`);
-		}
-		return location;
+		return this.#uniformLocations[name];
 	}
 
 	setUniforms(

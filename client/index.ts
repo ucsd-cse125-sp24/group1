@@ -2,15 +2,15 @@ import { mat4, vec3 } from "gl-matrix";
 import { fish1 } from "../assets/models/fish1";
 import { fish2 } from "../assets/models/fish2";
 import { Vector3 } from "../common/commontypes";
-import { ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
+import { ClientInputMessage, ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
-import { GltfModelWrapper } from "./model/gltf-parser";
+import { GltfModelWrapper } from "./render/model/gltf-parser";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/input";
-import { PlayerCamera } from "./render/PlayerCamera";
+import { PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
-import GraphicsEngine from "./render/GraphicsEngine";
+import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
@@ -30,6 +30,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 
 let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
+let cameraLockTarget: string | null = null;
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -44,6 +45,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 		case "entire-game-state":
 			entities = data.entities.map((entity) => ClientEntity.from(engine, entity));
 			break;
+		case "camera-lock":
+			cameraLockTarget = data.entityName;
+			break;
+		default:
+			throw new Error(`Unsupported message type '${data["type"]}'`);
 	}
 };
 const connection = new Connection<ServerMessage, ClientMessage>(
@@ -74,20 +80,21 @@ const inputListener = new InputListener({
 		attack: false,
 		use: false,
 		emote: false,
+		lookDir: [0, 0, 0],
 	}),
 	handleKey: (key) => {
-		switch (typeof key === "string" ? key.toLowerCase() : key) {
-			case "w":
+		switch (key) {
+			case "KeyW":
 				return "forward";
-			case "a":
+			case "KeyA":
 				return "left";
-			case "s":
+			case "KeyS":
 				return "backward";
-			case "d":
+			case "KeyD":
 				return "right";
-			case "space":
+			case "Space":
 				return "jump";
-			case "e":
+			case "KeyE":
 				return "emote";
 			case 0: // Left mouse button
 				return "attack";
@@ -98,17 +105,18 @@ const inputListener = new InputListener({
 		}
 	},
 	handleInputs: (inputs) => {
-		connection.send({
+		let msg: ClientInputMessage = {
 			type: "client-input",
 			...inputs,
 			lookDir: Array.from(camera.getForwardDir()) as Vector3,
-		});
+		};
+		connection.send(msg);
 	},
 });
 
-const box1 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
-const box2 = new ClientEntity(new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
-const box3 = new ClientEntity(new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)))
+const box1 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
+const box2 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
+const box3 = new ClientEntity("", new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)))
 const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
 const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
 
@@ -128,6 +136,15 @@ const paint = () => {
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
 
+	for (const entity of entities) {
+		entity.visible = entity.name !== cameraLockTarget;
+	}
+
+	const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
+	if (cameraTarget) {
+		camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+	}
+
 	engine.clear();
 
 	for (const light of tempLights) {
@@ -143,8 +160,8 @@ const paint = () => {
 	for (const entity of entities) {
 		entity.draw(view);
 	}
-	engine.wireframeBox.material.use();
-	engine.gl.uniformMatrix4fv(engine.wireframeBox.material.uniform("u_view"), false, view);
+	engine.wireframeMaterial.use();
+	engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_view"), false, view);
 	engine.gl.disable(engine.gl.CULL_FACE);
 	for (const entity of entities) {
 		entity.drawWireframe();

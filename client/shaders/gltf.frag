@@ -41,22 +41,6 @@ float linearizeDepth(float depth) {
 // end TEMP
 
 void main() {
-  // TEMP: these lines are just here so the uniforms don't get discarded
-  float unused;
-  unused += u_base_color.x;
-  unused += u_metallic;
-  unused += u_roughness;
-  unused += u_emissive.x;
-  unused += texture2D(u_texture_metallic_roughness, v_texcoord1).x;
-  unused += texture2D(u_texture_normal, v_texcoord2).x;
-  int unusedInt;
-  unusedInt += u_has_texture_color;
-  unusedInt += u_has_texture_metallic_roughness;
-  unusedInt += u_has_texture_normal;
-  unusedInt += u_has_texture_occlusion;
-  unusedInt += u_has_texture_emissive;
-  // end TEMP
-
   vec4 base_color =
       u_base_color * (u_has_texture_color == 1
                           ? texture2D(u_texture_color, v_texcoord0)
@@ -84,16 +68,18 @@ void main() {
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
     to_light = to_light / distance;
-    float shadow_dist = linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
+    float shadow_dist =
+        linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
     if (shadow_dist < distance - 0.005) {
       // occluded
       continue;
     }
     vec3 half_vector = normalize(to_light + to_eye);
     vec4 intensity = vec4(u_point_intensities[i], 1.0) / (distance * distance);
-    irradiance +=
-        base_color * max(dot(to_light, v_normal), 0.0) * intensity +
-        specular * pow(max(dot(half_vector, v_normal), 0.0), shininess) * intensity;
+    irradiance += base_color * max(dot(to_light, v_normal), 0.0) * intensity +
+                  specular *
+                      pow(max(dot(half_vector, v_normal), 0.0), shininess) *
+                      intensity;
   }
   gl_FragColor = irradiance;
 

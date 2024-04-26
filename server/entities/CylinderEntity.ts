@@ -5,22 +5,24 @@ import type { Model } from "../../common/models";
 import { v3 } from "../physics";
 import { SerializedEntity } from "../../common/messages";
 
-export class CubeEntity extends Entity {
+export class CylinderEntity extends Entity {
+	static NUM_SEGMENTS = 20;
+
 	name: string;
 	type: string;
 	body: phys.Body;
 	model: Model[];
 
-	constructor(name: string, pos: Vector3, model: Model[] = []) {
+	constructor(name: string, pos: Vector3, radius: number, height: number, model: Model[] = []) {
 		super(name, model);
+		this.type = "cylinder";
 		this.name = name;
-		this.type = "cube";
 		this.model = model;
 
 		this.body = new phys.Body({
 			mass: 1.0,
 			position: v3(...pos),
-			shape: new phys.Box(v3(1, 1, 2)),
+			shape: new phys.Cylinder(radius, radius, height, CylinderEntity.NUM_SEGMENTS),
 		});
 	}
 
@@ -32,8 +34,8 @@ export class CubeEntity extends Entity {
 			quaternion: this.body.quaternion.toArray(),
 			colliders: [
 				{
-					type: "box",
-					size: (this.body.shapes[0] as phys.Box).halfExtents.toArray(),
+					type: "sphere",
+					radius: (this.body.shapes[0] as phys.Sphere).radius,
 				},
 			],
 		};

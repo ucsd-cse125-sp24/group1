@@ -1,13 +1,21 @@
 export class Connection<ReceiveType, SendType> {
+	static MAX_RECONNECT_ATTEMPTS = 3;
+
 	url: string;
-	#ws: WebSocket | null = null;
-	#indicator?: HTMLElement | null;
-	#lastTime = performance.now();
-	#wsError = false;
 	handleMessage: (data: ReceiveType) => SendType | undefined;
 
+	#ws: WebSocket | null = null;
 	#worker: Worker | null = null;
+
+	#lastTime = performance.now();
+	#wsError = false;
+
+	#sendQueue: SendType[] = [];
+	#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
+
+	#indicator?: HTMLElement | null;
 	#workerBtn = Object.assign(document.createElement("button"), { textContent: "Use worker" });
+	#retryBtn = Object.assign(document.createElement("button"), { textContent: "Reconnect" });
 
 	constructor(url: string, handleMessage: (data: ReceiveType) => SendType | undefined, indicator?: HTMLElement | null) {
 		this.url = url;
@@ -15,14 +23,15 @@ export class Connection<ReceiveType, SendType> {
 		this.handleMessage = handleMessage;
 
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
+		this.#retryBtn.addEventListener("click", () => this.connect(true));
 	}
 
-	connect() {
+	connect(reconnecting = false) {
 		if (this.#ws) {
 			throw new Error("connect() has already been called");
 		}
 		if (this.#indicator) {
-			this.#indicator.textContent = "🤔 Connecting...";
+			this.#indicator.textContent = reconnecting ? "🤔 Connecting..." : "🤔 Connection lost. Reconnecting...";
 		}
 		try {
 			this.#ws = new WebSocket(this.url);
@@ -40,9 +49,15 @@ export class Connection<ReceiveType, SendType> {
 
 	#handleOpen = () => {
 		console.log("Connected :D");
+		this.#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 		if (this.#indicator) {
 			this.#indicator.textContent = "✅ Connected";
 			this.#lastTime = performance.now();
+		}
+		const queue = this.#sendQueue;
+		this.#sendQueue = [];
+		for (const message of queue) {
+			this.send(message);
 		}
 	};
 
@@ -84,11 +99,10 @@ export class Connection<ReceiveType, SendType> {
 			// default)
 			fetch("./worker/index.js")
 				.then((r) => r.ok)
+				.catch(() => false)
 				.then((ok) => {
-					if (ok) {
-						if (this.#indicator) {
-							this.#indicator.append(this.#workerBtn);
-						}
+					if (ok && this.#indicator) {
+						this.#indicator.append(this.#workerBtn);
 					}
 				});
 			this.#ws = null;
@@ -100,19 +114,26 @@ export class Connection<ReceiveType, SendType> {
 	#handleClose = ({ code, reason, wasClean }: CloseEvent) => {
 		console.log("Connection closed", { code, reason, wasClean });
 		if (this.#indicator && !this.#wsError) {
-			this.#indicator.textContent = "⛔ Connection closed";
-			this.#ws = null;
+			this.#indicator.textContent = "⛔ Connection closed. ";
+		}
+		this.#ws = null;
+		this.#worker = null;
+		// Try to reconnect
+		if (this.#reconnectAttempts > 0) {
+			this.#reconnectAttempts--;
+			this.connect();
+		} else if (this.#indicator) {
+			this.#indicator.append(this.#retryBtn);
 		}
 	};
 
-	// TODO: Queue unsent messages while offline(?)
 	send(message: SendType): void {
-		if (this.#ws) {
+		if (this.#ws?.readyState === WebSocket.OPEN) {
 			this.#ws.send(JSON.stringify(message));
 		} else if (this.#worker) {
 			this.#worker.postMessage(JSON.stringify(message));
 		} else {
-			throw new Error("connect() has not yet been called");
+			this.#sendQueue.push(message);
 		}
 	}
 

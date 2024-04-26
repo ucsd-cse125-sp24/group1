@@ -1,4 +1,4 @@
-import { Server } from "./Server";
+import { Server, ServerHandlers } from "./Server";
 import express from "express";
 import http from "http";
 import path, { dirname } from "path";
@@ -15,8 +15,13 @@ export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendTyp
 	#server = http.createServer(this.#app);
 	#wss = new WebSocketServer({ server: this.#server });
 
-	constructor(handleMessage: (data: ReceiveType) => SendType | undefined) {
-		super(handleMessage);
+	#handleNewConnection = () => {};
+	hasConnection = new Promise<void>((resolve) => {
+		this.#handleNewConnection = resolve;
+	});
+
+	constructor(handlers?: ServerHandlers<ReceiveType, SendType>) {
+		super(handlers);
 
 		this.#app.use(express.static(path.join(__dirname, "..", "public")));
 
@@ -25,10 +30,21 @@ export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendTyp
 		});
 
 		this.#wss.on("connection", (ws) => {
+			this.#handleNewConnection();
+			for (const message of this.handleOpen()) {
+				ws.send(JSON.stringify(message));
+			}
 			ws.on("message", (rawData) => {
 				const response = this.handleMessage(rawData);
 				if (response) {
 					ws.send(JSON.stringify(response));
+				}
+			});
+			ws.on("close", () => {
+				if (this.#wss.clients.size === 0) {
+					this.hasConnection = new Promise<void>((resolve) => {
+						this.#handleNewConnection = resolve;
+					});
 				}
 			});
 		});

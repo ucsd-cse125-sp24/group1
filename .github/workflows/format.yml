@@ -1,0 +1,21 @@
+name: Auto-format code with Prettier
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Format
+        run: |
+          npm install
+          npm run format
+      # https://stackoverflow.com/a/58393457
+      # gitHub-actions[bot] https://github.com/pypa/pipenv/issues/4328
+      - name: Push changes
+        run: |
+          git config --local user.name 'Github Actions'
+          git config --local user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit -am "style: autoformat"
+          git push

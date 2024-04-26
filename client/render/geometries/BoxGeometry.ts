@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
-import { Material } from "../materials/Material";
+import { ShaderProgram } from "../engine/ShaderProgram";
 import { Geometry } from "./Geometry";
 import texture from "../../../assets/test-texture.png";
 import { loadImage } from "../../lib/loadImage";
@@ -11,7 +11,7 @@ export class BoxGeometry extends Geometry {
 	#VAO: WebGLVertexArrayObject;
 	#texture: WebGLTexture;
 
-	constructor(material: Material, size: vec3) {
+	constructor(material: ShaderProgram, size: vec3) {
 		super(material);
 
 		const gl = material.engine.gl;

@@ -24,41 +24,15 @@ export class PhysicsWorld {
 			gravity: v3(...setup.gravity),
 		});
 		this.#colliders = [];
-		this.initWorld();
-	}
-
-	initWorld() {
-		// // create a funny box
-		// this.#colliders.push(new Body({
-		// 	position: v3(0, 6, 5),
-		// 	velocity: v3(0, 0, 0),
-		// 	quaternion: q4(1, 2, 3, 4).normalize(),
-		// 	shape: new Box(v3(1, 0.5, 1)),
-		// 	mass: 200,
-		// 	material: new Material({
-		// 		friction: 3,
-		// 		restitution: 20,
-		// 	}),
-		// }));
-
-		// Create a plane pointing up at positive y,
-		this.#colliders.push(
-			new Body({
-				shape: new Plane(),
-				position: v3(0, -5, 0),
-				quaternion: q4(-1, 0, 0, 1).normalize(),
-				type: phys.Body.STATIC,
-			}),
-		);
-
-		for (let collider of this.#colliders) {
-			this.#world.addBody(collider);
-		}
 	}
 
 	addBody(body: Body) {
 		this.#world.addBody(body);
 		this.#colliders.push(body);
+	}
+	removeBody(body: Body) {
+		this.#world.removeBody(body);
+		this.#colliders.splice(this.#colliders.indexOf(body), 1);
 	}
 
 	#time = 0;
@@ -80,14 +54,15 @@ export class PhysicsWorld {
 
 	/**
 	 * Serialize this TheWorld into a format that represents the state of this class
+	 * @deprecated
 	 */
 	serialize(): SerializedEntity[] {
 		let serial = [];
 
 		for (let body of Object.values(this.#colliders)) {
 			let entity: SerializedEntity = {
-				geometryId: body.id,
-				materialId: 0,
+				name: body.id.toString(),
+				model: ["debuggable"],
 				position: body.position.toArray(),
 				quaternion: body.quaternion.toArray(),
 				colliders: [],

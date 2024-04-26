@@ -5,14 +5,16 @@ precision mediump float;
 #define BOX 1
 #define PLANE 2
 #define SPHERE 3
+#define CYLINDER 4
 
 uniform lowp int u_shape;
 
 in vec2 v_uv;
+flat in int v_face;
 out vec4 fragColor;
 
 void main() {
-  if (u_shape == BOX) {
+  if (u_shape == BOX || u_shape == CYLINDER && v_face == 1) {
     if (pow(abs(v_uv.x * 2.0 - 1.0), 30.0) +
             pow(abs(v_uv.y * 2.0 - 1.0), 30.0) <
         0.5) {
@@ -25,9 +27,9 @@ void main() {
             0.005) {
       discard;
     }
-  } else if (u_shape == SPHERE) {
+  } else if (u_shape == SPHERE || u_shape == CYLINDER && v_face == 0) {
     float radius = length(v_uv * 2.0 - vec2(1.0, 1.0));
-    if (radius < 0.99 || radius > 1.0) {
+    if (radius < 0.98 || radius > 1.0) {
       discard;
     }
   }

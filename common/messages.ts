@@ -1,12 +1,28 @@
 import { Vector2, Vector3, Quaternion } from "./commontypes";
 
-export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameState;
+export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameState | CameraLock;
 
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage;
 
 export type EntireGameState = {
 	type: "entire-game-state";
 	entities: SerializedEntity[];
+};
+
+/**
+ * A message from the server that tells the client to make the camera follow an
+ * entity, locking the camera to its position. The client is free to rotate its
+ * camera around, however.
+ */
+export type CameraLock = {
+	type: "camera-lock";
+	/**
+	 * Name of the entity to lock the camera to. If there are multiple entities
+	 * with the same name, the client will hide all of them, but only lock to the
+	 * first entity with the name. If there is no entity with such name, the
+	 * camera may stop moving.
+	 */
+	entityName: string;
 };
 
 export type ClientInputs = {
@@ -19,22 +35,26 @@ export type ClientInputs = {
 	attack: boolean;
 	use: boolean;
 	emote: boolean;
+	lookDir: Vector3;
 };
 
 export type ClientInputMessage = {
 	type: "client-input";
-	lookDir: Vector3;
 } & ClientInputs;
 
 export type SerializedEntity = {
-	geometryId: number;
-	materialId: number;
+	name: string;
+	//possible that we need to send model position
+	model: string[];
 	quaternion: Quaternion;
 	position: Vector3;
 	colliders: SerializedCollider[];
+	// for future reference we need to include velocity for movement prediction
 };
 
-export type SerializedCollider = BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider;
+export type SerializedCollider = (BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider) & {
+	offset?: Vector3;
+};
 
 /**
  * Represents an infinite plane. By default, it represents the xy-plane at z =

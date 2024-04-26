@@ -1,4 +1,4 @@
-import { Material } from "../materials/Material";
+import { ShaderProgram } from "../engine/ShaderProgram";
 import { Geometry } from "./Geometry";
 
 /**
@@ -6,14 +6,13 @@ import { Geometry } from "./Geometry";
  * are hard-coded in the shader.
  */
 export class HardCodedGeometry extends Geometry {
-	vertices: number;
+	vertices = 0;
 
 	/**
 	 * @param vertices Number of times to call the vertex shader.
 	 */
-	constructor(material: Material, vertices: number) {
+	constructor(material: ShaderProgram) {
 		super(material);
-		this.vertices = vertices;
 	}
 
 	draw() {
