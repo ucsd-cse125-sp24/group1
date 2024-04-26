@@ -10,6 +10,8 @@ import { WebGlUtils } from "./WebGlUtils";
 import { BoxGeometry } from "../geometries/BoxGeometry";
 import { HardCodedGeometry } from "../geometries/HardCodedGeometry";
 import { ShaderProgram } from "./ShaderProgram";
+import particleFragmentSource from "../shaders/particle.frag";
+import particleVertexSource from "../shaders/particle.vert";
 
 /**
  * Handles helper functions for interacting with WebGL.
@@ -37,6 +39,13 @@ class GraphicsEngine extends WebGlUtils {
 			this.createShader("vertex", gltfVertexSource, "gltf.vert"),
 			this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
 		),
+	);
+
+	particleMaterial = new ShaderProgram(
+		this, this.createProgram(
+		this.createShader("vertex", particleVertexSource, "particle.vert"),
+		this.createShader("fragment", particleFragmentSource, "particle.frag"),
+		["v_position", "v_velocity", "v_age", "v_life"])
 	);
 }
 
