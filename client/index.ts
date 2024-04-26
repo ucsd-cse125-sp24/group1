@@ -152,7 +152,7 @@ const paint = () => {
 	const view = camera.getViewProjectionMatrix();
 	box1.draw(view);
 	box2.draw(view);
-	// box3.draw(view);
+	box3.draw(view);
 	for (const entity of entities) {
 		entity.draw(view);
 	}
