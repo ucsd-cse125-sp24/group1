@@ -179,7 +179,7 @@ export type Gltf = {
 	meshes: GltfMesh[];
 	/** https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#skins */
 	skins?: unknown[];
-	textures: {
+	textures?: {
 		sampler: number;
 		source: number;
 	}[];
@@ -187,14 +187,14 @@ export type Gltf = {
 	 * Ignore colorspace information. See Web Implementation Note at
 	 * https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#images
 	 */
-	images: (
+	images?: (
 		| {
 				/** May be a data URI */
 				uri: string;
 		  }
 		| { bufferView: number; mimeType: string }
 	)[];
-	samplers: {
+	samplers?: {
 		magFilter: WebGL2RenderingContext["NEAREST" | "LINEAR"];
 		minFilter: WebGL2RenderingContext[
 			| "NEAREST"
