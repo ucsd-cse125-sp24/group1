@@ -29,6 +29,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
 let cameraLockTarget: string | null = null;
+let freecam: boolean = false; // for debug purposes
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -112,6 +113,20 @@ const inputListener = new InputListener({
 	},
 });
 
+// for debug purposes
+const handleFreecam = (e: KeyboardEvent) => {
+	if (e.code === "KeyP") {
+		freecam = !freecam;
+		camera.setFree(freecam);
+		if (freecam) {
+			inputListener.disconnect();
+		} else {
+			inputListener.listen();
+		}
+	}
+};
+window.addEventListener("keydown", handleFreecam);
+
 const box1 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
 const box3 = new ClientEntity("", new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)));
@@ -122,8 +137,10 @@ const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
  * Up to 8 lights allowed by the gltf.frag shader
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(10, 10, 10)),
-	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(10, 10, 10)),
+	new PointLight(engine, vec3.fromValues(5, 5, 5), vec3.fromValues(10, 10, 10)),
+	new PointLight(engine, vec3.fromValues(3, 1, 3), vec3.fromValues(10, 2, 2)),
+	new PointLight(engine, vec3.fromValues(8, 1, 8), vec3.fromValues(2, 2, 10)),
+	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(30, 30, 30)),
 ];
 
 const paint = () => {
@@ -132,13 +149,17 @@ const paint = () => {
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
 
-	for (const entity of entities) {
-		entity.visible = entity.name !== cameraLockTarget;
-	}
+	if (!freecam) {
+		for (const entity of entities) {
+			entity.visible = entity.name !== cameraLockTarget;
+		}
 
-	const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
-	if (cameraTarget) {
-		camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+		const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
+		if (cameraTarget) {
+			camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+		}
+	} else {
+		camera.update();
 	}
 
 	engine.clear();
