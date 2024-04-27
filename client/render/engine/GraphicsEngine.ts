@@ -104,6 +104,8 @@ class GraphicsEngine extends WebGlUtils {
 		// Reallocate textures if canvas size has changed
 		if (gl.canvas.width !== this.#textureWidth || gl.canvas.height !== this.#textureHeight) {
 			this.resizeTextures(gl.canvas.width, gl.canvas.height);
+			this.#textureWidth = gl.canvas.width;
+			this.#textureHeight = gl.canvas.height;
 		}
 
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.#framebuffer);
@@ -120,6 +122,7 @@ class GraphicsEngine extends WebGlUtils {
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
 		gl.bindTexture(gl.TEXTURE_2D, this.#depthTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, width, height, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
+		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
 	draw() {
@@ -144,6 +147,10 @@ class GraphicsEngine extends WebGlUtils {
 		gl.disableVertexAttribArray(positionAttribLoc);
 		gl.disableVertexAttribArray(texCoordAttribLoc);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 }
 
