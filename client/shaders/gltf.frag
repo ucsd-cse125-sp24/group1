@@ -85,7 +85,7 @@ void main() {
   }
   gl_FragColor = irradiance;
 
-  if (gl_FragColor.a < u_alpha_cutoff) {
+  if (base_color.a < u_alpha_cutoff) {
     discard;
   }
 }
