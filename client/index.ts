@@ -15,6 +15,8 @@ import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
 import { particleGeometry } from "./render/geometries/ParticleGeometry";
+import { cavecube } from "../assets/models/cavecube";
+import { defaultCubeColor } from "../assets/models/default-cube-color";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -132,14 +134,15 @@ const box2 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.from
 const box3 = new ClientEntity("", new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)));
 const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
 const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
+const cavecubeModel = GltfModelWrapper.from(engine.gltfMaterial, cavecube);
+const defaultCubeColorModel = GltfModelWrapper.from(engine.gltfMaterial, defaultCubeColor);
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, -3, 10), vec3.fromValues(30, 30, 30)),
-	new PointLight(engine, vec3.fromValues(5, -3, 0), vec3.fromValues(10, 2, 2)),
-	new PointLight(engine, vec3.fromValues(-5, -3, 0), vec3.fromValues(2, 2, 10)),
+	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(10, 10, 10)),
+	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(30, 30, 30)),
 ];
 
 const paint = () => {
@@ -186,12 +189,19 @@ const paint = () => {
 	engine.gl.enable(engine.gl.CULL_FACE);
 	engine.gltfMaterial.use();
 
+	tempLights[0].intensity = vec3.fromValues(
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 100,
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 50,
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 10,
+	);
+	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 10, 3, Math.sin(Date.now() / 300) * 10);
+
 	const lightPositions: number[] = [];
 	const lightIntensities: number[] = [];
 	for (let i = 0; i < tempLights.length; i++) {
 		const light = tempLights[i];
-		lightPositions.push(...light.getPosition());
-		lightIntensities.push(...light.getIntensity());
+		lightPositions.push(...light.position);
+		lightIntensities.push(...light.intensity);
 		const shadowMap = light.getShadowMap();
 		// Bind up to 8 shadow maps to texture indices 4..11
 		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
@@ -204,7 +214,14 @@ const paint = () => {
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
-	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 10000);
+	engine.gl.uniformMatrix4fv(
+		engine.gltfMaterial.uniform("u_model"),
+		false,
+		mat4.fromTranslation(mat4.create(), [5, -10, 5]),
+	);
+	cavecubeModel.draw();
+	defaultCubeColorModel.draw();
+	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
 	mat4.multiply(transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), transform);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);

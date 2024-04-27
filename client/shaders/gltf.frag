@@ -6,6 +6,7 @@ varying vec3 v_tangent;
 varying vec2 v_texcoord0;
 varying vec2 v_texcoord1;
 varying vec2 v_texcoord2;
+varying vec4 v_color0;
 
 uniform vec4 u_base_color;
 uniform sampler2D u_texture_color;
@@ -42,9 +43,10 @@ float linearizeDepth(float depth) {
 
 void main() {
   vec4 base_color =
-      u_base_color * (u_has_texture_color == 1
-                          ? texture2D(u_texture_color, v_texcoord0)
-                          : vec4(1, 1, 1, 1));
+      u_base_color *
+      (u_has_texture_color == 1 ? texture2D(u_texture_color, v_texcoord0)
+                                : vec4(1, 1, 1, 1)) *
+      v_color0;
   float metallic =
       u_metallic * (u_has_texture_metallic_roughness == 1
                         ? texture2D(u_texture_metallic_roughness, v_texcoord1).b
@@ -83,7 +85,7 @@ void main() {
   }
   gl_FragColor = irradiance;
 
-  if (gl_FragColor.a < u_alpha_cutoff) {
+  if (base_color.a < u_alpha_cutoff) {
     discard;
   }
 }

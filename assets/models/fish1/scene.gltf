@@ -51,12 +51,7 @@
 			"min": [0.008827149868011475, 0.008827149868011475],
 			"type": "VEC2"
 		},
-		{
-			"bufferView": 0,
-			"componentType": 5125,
-			"count": 3864,
-			"type": "SCALAR"
-		}
+		{ "bufferView": 0, "componentType": 5125, "count": 3864, "type": "SCALAR" }
 	],
 	"asset": {
 		"extras": {
@@ -69,12 +64,7 @@
 		"version": "2.0"
 	},
 	"bufferViews": [
-		{
-			"buffer": 0,
-			"byteLength": 15456,
-			"name": "floatBufferViews",
-			"target": 34963
-		},
+		{ "buffer": 0, "byteLength": 15456, "name": "floatBufferViews", "target": 34963 },
 		{
 			"buffer": 0,
 			"byteLength": 16224,
@@ -100,22 +90,11 @@
 			"target": 34962
 		}
 	],
-	"buffers": [
-		{
-			"byteLength": 58720,
-			"uri": "scene.bin"
-		}
-	],
+	"buffers": [{ "byteLength": 58720, "uri": "scene.bin" }],
 	"images": [
-		{
-			"uri": "textures/Full_Fish_Material_baseColor.png"
-		},
-		{
-			"uri": "textures/Full_Fish_Material_metallicRoughness.png"
-		},
-		{
-			"uri": "textures/Full_Fish_Material_normal.png"
-		}
+		{ "uri": "textures/Full_Fish_Material_baseColor.png" },
+		{ "uri": "textures/Full_Fish_Material_metallicRoughness.png" },
+		{ "uri": "textures/Full_Fish_Material_normal.png" }
 	],
 	"materials": [
 		{
@@ -123,17 +102,11 @@
 			"alphaMode": "MASK",
 			"doubleSided": true,
 			"name": "Full_Fish_Material",
-			"normalTexture": {
-				"index": 2
-			},
+			"normalTexture": { "index": 2 },
 			"pbrMetallicRoughness": {
-				"baseColorTexture": {
-					"index": 0
-				},
+				"baseColorTexture": { "index": 0 },
 				"metallicFactor": 0.0,
-				"metallicRoughnessTexture": {
-					"index": 1
-				}
+				"metallicRoughnessTexture": { "index": 1 }
 			}
 		}
 	],
@@ -142,14 +115,7 @@
 			"name": "FISH_Combined_Full Fish Material_0",
 			"primitives": [
 				{
-					"attributes": {
-						"NORMAL": 1,
-						"POSITION": 0,
-						"TANGENT": 2,
-						"TEXCOORD_0": 3,
-						"TEXCOORD_1": 4,
-						"TEXCOORD_2": 5
-					},
+					"attributes": { "NORMAL": 1, "POSITION": 0, "TANGENT": 2, "TEXCOORD_0": 3, "TEXCOORD_1": 4, "TEXCOORD_2": 5 },
 					"indices": 6,
 					"material": 0,
 					"mode": 4
@@ -174,10 +140,7 @@
 			],
 			"name": "Fish_Red-Fin.fbx"
 		},
-		{
-			"children": [3],
-			"name": "RootNode"
-		},
+		{ "children": [3], "name": "RootNode" },
 		{
 			"children": [4],
 			"matrix": [
@@ -186,38 +149,14 @@
 			],
 			"name": "FISH_Combined"
 		},
-		{
-			"mesh": 0,
-			"name": "FISH_Combined_Full Fish Material_0"
-		}
+		{ "mesh": 0, "name": "FISH_Combined_Full Fish Material_0" }
 	],
-	"samplers": [
-		{
-			"magFilter": 9729,
-			"minFilter": 9987,
-			"wrapS": 10497,
-			"wrapT": 10497
-		}
-	],
+	"samplers": [{ "magFilter": 9729, "minFilter": 9987, "wrapS": 10497, "wrapT": 10497 }],
 	"scene": 0,
-	"scenes": [
-		{
-			"name": "Sketchfab_Scene",
-			"nodes": [0]
-		}
-	],
+	"scenes": [{ "name": "Sketchfab_Scene", "nodes": [0] }],
 	"textures": [
-		{
-			"sampler": 0,
-			"source": 0
-		},
-		{
-			"sampler": 0,
-			"source": 1
-		},
-		{
-			"sampler": 0,
-			"source": 2
-		}
+		{ "sampler": 0, "source": 0 },
+		{ "sampler": 0, "source": 1 },
+		{ "sampler": 0, "source": 2 }
 	]
 }

@@ -59,7 +59,7 @@ export async function parseGltf(root: Gltf, uriMap: Record<string, string>): Pro
 	);
 
 	const images = await Promise.all(
-		root.images.map((image) => {
+		root.images?.map((image) => {
 			if ("uri" in image) {
 				// gl.texImage2D is much faster with ImageBitmap than
 				// HTMLImageElement (380 ms to 60 ms)
@@ -71,7 +71,7 @@ export async function parseGltf(root: Gltf, uriMap: Record<string, string>): Pro
 				const data = new Uint8Array(buffers[bufferView.buffer], bufferView.byteOffset, bufferView.byteLength);
 				return createImageBitmap(new Blob([data], { type: image.mimeType }));
 			}
-		}),
+		}) ?? [],
 	);
 
 	const nodes = root.nodes.map((node): Node => {
@@ -124,7 +124,7 @@ type Accessor = {
 type ModelMesh = {
 	vao: WebGLVertexArrayObject;
 	materialOptions: GltfMaterial;
-	meshTextures: { texture: WebGLTexture; name: string }[];
+	meshTextures: { texture: WebGLTexture | null; name: string }[];
 	indices: Accessor | null;
 	count: number;
 	transform: mat4;
@@ -142,11 +142,18 @@ export class GltfModel {
 
 		const glBuffers = root.accessors.map((accessor): Accessor => {
 			const bufferView = root.bufferViews[accessor.bufferView];
+			const length =
+				accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type];
 			const data = new Uint8Array(
 				buffers[bufferView.buffer],
 				(bufferView.byteOffset ?? 0) + (accessor.byteOffset ?? 0),
-				accessor.count * componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type],
+				length,
 			);
+			if (data.length < length) {
+				throw new RangeError(
+					`glTF data not big enough. Was told there'd be ${accessor.count} elements, but buffer only has ${data.length / (componentTypes[accessor.componentType].BYTES_PER_ELEMENT * componentSizes[accessor.type])} elements.`,
+				);
+			}
 			const buffer = gl.createBuffer() ?? expect("Failed to create buffer");
 			gl.bindBuffer(bufferView.target, buffer);
 			gl.bufferData(bufferView.target, data, gl.STATIC_DRAW);
@@ -163,25 +170,26 @@ export class GltfModel {
 			};
 		});
 
-		const textures = root.textures.map(({ source, sampler: samplerIndex }) => {
-			const image = images[source];
-			const sampler = root.samplers[samplerIndex];
-			const texture = gl.createTexture() ?? expect("Failed to create texture");
-			gl.bindTexture(gl.TEXTURE_2D, texture);
-			console.time(`uploading texture ${source}`);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-			console.timeEnd(`uploading texture ${source}`);
-			if (sampler.wrapS) {
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
-			}
-			if (sampler.wrapT) {
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
-			}
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
-			gl.generateMipmap(gl.TEXTURE_2D);
-			return texture;
-		});
+		const textures =
+			root.textures?.map(({ source, sampler: samplerIndex }) => {
+				const image = images[source];
+				const sampler = (root.samplers ?? [])[samplerIndex];
+				const texture = gl.createTexture() ?? expect("Failed to create texture");
+				gl.bindTexture(gl.TEXTURE_2D, texture);
+				console.time(`uploading texture ${source}`);
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+				console.timeEnd(`uploading texture ${source}`);
+				if (sampler.wrapS) {
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
+				}
+				if (sampler.wrapT) {
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
+				}
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
+				gl.generateMipmap(gl.TEXTURE_2D);
+				return texture;
+			}) ?? [];
 
 		this.#meshes = meshes.map((mesh) => {
 			const materialOptions = root.materials[mesh.material];
@@ -206,12 +214,15 @@ export class GltfModel {
 				mesh.attributes.TEXCOORD_2 !== undefined
 					? { ...glBuffers[mesh.attributes.TEXCOORD_2], attribName: "a_texcoord2" }
 					: null,
+				mesh.attributes.COLOR_0 !== undefined
+					? { ...glBuffers[mesh.attributes.COLOR_0], attribName: "a_color0" }
+					: null,
 			].filter(exists);
 			let count = Infinity;
 			for (const vbo of vbos) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, vbo.buffer);
-				gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
 				gl.enableVertexAttribArray(material.attrib(vbo.attribName));
+				gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
 				if (vbo.count < count) {
 					count = vbo.count;
 				}
@@ -225,28 +236,35 @@ export class GltfModel {
 			}
 
 			const meshTextures = [
-				materialOptions.pbrMetallicRoughness.baseColorTexture && {
-					texture: textures[materialOptions.pbrMetallicRoughness.baseColorTexture.index],
+				{
+					texture: materialOptions.pbrMetallicRoughness.baseColorTexture
+						? textures[materialOptions.pbrMetallicRoughness.baseColorTexture.index]
+						: null,
 					name: "texture_color",
 				},
-				materialOptions.pbrMetallicRoughness.metallicRoughnessTexture && {
-					texture: textures[materialOptions.pbrMetallicRoughness.metallicRoughnessTexture.index],
+				{
+					texture: materialOptions.pbrMetallicRoughness.metallicRoughnessTexture
+						? textures[materialOptions.pbrMetallicRoughness.metallicRoughnessTexture.index]
+						: null,
 					name: "texture_metallic_roughness",
 				},
-				materialOptions.normalTexture && {
-					texture: textures[materialOptions.normalTexture.index],
+				{
+					texture: materialOptions.normalTexture ? textures[materialOptions.normalTexture.index] : null,
 					name: "texture_normal",
 				},
-				materialOptions.occlusionTexture && {
-					texture: textures[materialOptions.occlusionTexture.index],
+				{
+					texture: materialOptions.occlusionTexture ? textures[materialOptions.occlusionTexture.index] : null,
 					name: "texture_occlusion",
 				},
-				materialOptions.emissiveTexture && {
-					texture: textures[materialOptions.emissiveTexture.index],
+				{
+					texture: materialOptions.emissiveTexture ? textures[materialOptions.emissiveTexture.index] : null,
 					name: "texture_emissive",
 				},
-			].filter(exists);
+			];
 
+			gl.bindVertexArray(null);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 			material.engine.checkError();
 
 			return {
@@ -272,12 +290,16 @@ export class GltfModel {
 				material.engine.checkError();
 			}
 			for (const [i, { name, texture }] of meshTextures.entries()) {
-				gl.activeTexture(gl.TEXTURE0 + i);
-				material.engine.checkError();
-				gl.bindTexture(gl.TEXTURE_2D, texture);
-				material.engine.checkError();
-				gl.uniform1i(material.uniform(`u_${name}`), i);
-				gl.uniform1i(material.uniform(`u_has_${name}`), 1);
+				if (texture) {
+					gl.activeTexture(gl.TEXTURE0 + i);
+					material.engine.checkError();
+					gl.bindTexture(gl.TEXTURE_2D, texture);
+					material.engine.checkError();
+					gl.uniform1i(material.uniform(`u_${name}`), i);
+					gl.uniform1i(material.uniform(`u_has_${name}`), 1);
+				} else {
+					gl.uniform1i(material.uniform(`u_has_${name}`), 0);
+				}
 				material.engine.checkError();
 			}
 			gl.uniformMatrix4fv(material.uniform("u_model_part"), false, transform);
@@ -292,7 +314,8 @@ export class GltfModel {
 			gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness.metallicFactor ?? 1);
 			gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness.roughnessFactor ?? 1);
 			gl.uniform3fv(material.uniform("u_emissive"), materialOptions.emissiveFactor ?? [0, 0, 0]);
-			material.engine.checkError();
+			// Default vertex color is white (since the base color is multiplied by it)
+			gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
 			gl.bindVertexArray(vao);
 			material.engine.checkError();
 			if (indices) {
@@ -301,10 +324,11 @@ export class GltfModel {
 				gl.drawArrays(mode ?? gl.TRIANGLES, 0, count);
 			}
 			material.engine.checkError();
+			gl.bindVertexArray(null);
 			if (materialOptions.doubleSided) {
 				gl.enable(gl.CULL_FACE);
-				material.engine.checkError();
 			}
+			material.engine.checkError();
 		}
 	}
 }
