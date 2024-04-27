@@ -137,10 +137,9 @@ const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
  * Up to 8 lights allowed by the gltf.frag shader
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(5, 5, 5), vec3.fromValues(10, 10, 10)),
-	new PointLight(engine, vec3.fromValues(3, 1, 3), vec3.fromValues(10, 2, 2)),
-	new PointLight(engine, vec3.fromValues(8, 1, 8), vec3.fromValues(2, 2, 10)),
-	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(30, 30, 30)),
+	new PointLight(engine, vec3.fromValues(0, -3, 10), vec3.fromValues(30, 30, 30)),
+	new PointLight(engine, vec3.fromValues(5, -3, 0), vec3.fromValues(10, 2, 2)),
+	new PointLight(engine, vec3.fromValues(-5, -3, 0), vec3.fromValues(2, 2, 10)),
 ];
 
 const paint = () => {
@@ -168,6 +167,7 @@ const paint = () => {
 		light.renderShadowMap(entities);
 	}
 
+	engine.startRender();
 	engine.clear();
 
 	const view = camera.getViewProjectionMatrix();
@@ -193,7 +193,7 @@ const paint = () => {
 		lightPositions.push(...light.getPosition());
 		lightIntensities.push(...light.getIntensity());
 		const shadowMap = light.getShadowMap();
-		// Bind up to 8 shadow maps to texture indices 8..15
+		// Bind up to 8 shadow maps to texture indices 4..11
 		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
 		engine.gl.bindTexture(engine.gl.TEXTURE_CUBE_MAP, shadowMap);
 	}
@@ -204,14 +204,19 @@ const paint = () => {
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
-	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
+	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 10000);
 	mat4.scale(transform, transform, [10, 10, 10]);
+	mat4.multiply(transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), transform);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
 	fish1Model.draw();
 	transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
-	mat4.rotateY(transform, transform, -Date.now() / 200);
+	mat4.rotateY(transform, transform, -Date.now() / 10000);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
 	fish2Model.draw();
+
+	engine.stopRender();
+
+	engine.draw();
 
 	window.requestAnimationFrame(paint);
 };
