@@ -1,23 +1,24 @@
 import { vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
-import { Geometry } from "./Geometry";
 import texture from "../../../assets/test-texture.png";
 import { loadImage } from "../../lib/loadImage";
 import { ShaderProgram } from "../engine/ShaderProgram";
+import { Model } from "../model/Model";
 
 const textureLoaded = loadImage(texture);
 
-export class particleGeometry extends Geometry {
+export class particleGeometry implements Model {
+	shader: ShaderProgram;
 	#VAO: WebGLVertexArrayObject[];
 	#texture: WebGLTexture;
 	tFeedback: WebGLTransformFeedback[];
 	totalParticles: number;
 	startTime = Date.now();
 	vaoCurrent: number;
-	constructor(material: ShaderProgram, size: vec3) {
-		super(material);
+	constructor(shader: ShaderProgram, size: vec3) {
+		this.shader = shader;
 
-		const gl = material.engine.gl;
+		const gl = shader.engine.gl;
 
 		const dx = size[0] / 2,
 			dy = size[1] / 2,
@@ -47,26 +48,26 @@ export class particleGeometry extends Geometry {
 			const VBO_positions = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_positions);
 			gl.bufferData(gl.ARRAY_BUFFER, aPos, gl.STREAM_COPY);
-			gl.vertexAttribPointer(material.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(material.attrib("a_position"));
+			gl.vertexAttribPointer(shader.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shader.attrib("a_position"));
 
 			const VBO_velocity = gl.createBuffer() ?? expect("Failed to create VAO normal buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_velocity);
 			gl.bufferData(gl.ARRAY_BUFFER, aVel, gl.STREAM_COPY);
-			gl.vertexAttribPointer(material.attrib("a_velocity"), 3, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(material.attrib("a_velocity"));
+			gl.vertexAttribPointer(shader.attrib("a_velocity"), 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shader.attrib("a_velocity"));
 
 			const VBO_age = gl.createBuffer() ?? expect("Failed to create VAO texcoord buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_age);
 			gl.bufferData(gl.ARRAY_BUFFER, aAge, gl.STREAM_COPY);
-			gl.vertexAttribPointer(material.attrib("a_age"), 1, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(material.attrib("a_age"));
+			gl.vertexAttribPointer(shader.attrib("a_age"), 1, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shader.attrib("a_age"));
 
 			const VBO_life = gl.createBuffer() ?? expect("Failed to create VAO texcoord buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_life);
 			gl.bufferData(gl.ARRAY_BUFFER, aLife, gl.STREAM_COPY);
-			gl.vertexAttribPointer(material.attrib("a_life"), 1, gl.FLOAT, false, 0, 0);
-			gl.enableVertexAttribArray(material.attrib("a_life"));
+			gl.vertexAttribPointer(shader.attrib("a_life"), 1, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shader.attrib("a_life"));
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
@@ -96,7 +97,7 @@ export class particleGeometry extends Geometry {
 	}
 
 	draw() {
-		const gl = this.material.engine.gl;
+		const gl = this.shader.engine.gl;
 		// gl.bindVertexArray(this.#VAO);
 		// gl.uniform1f(this.material.uniform("u_time"), Date.now() - this.startTime);
 		// gl.drawArrays(gl.POINTS, 0, 4);
@@ -109,7 +110,7 @@ export class particleGeometry extends Geometry {
 		gl.bindVertexArray(vaoSource);
 		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tfeedback);
 
-		gl.uniform1f(this.material.uniform("u_time"), Date.now() - this.startTime);
+		gl.uniform1f(this.shader.uniform("u_time"), Date.now() - this.startTime);
 
 		gl.beginTransformFeedback(gl.POINTS);
 		gl.drawArrays(gl.POINTS, 0, this.totalParticles);
@@ -117,7 +118,6 @@ export class particleGeometry extends Geometry {
 
 		this.vaoCurrent = idx; //Alternate between the VAOs
 
-		this.material.engine.checkError();
-
+		this.shader.engine.checkError();
 	}
 }

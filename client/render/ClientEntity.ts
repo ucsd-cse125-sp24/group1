@@ -1,7 +1,7 @@
 import { mat4 } from "gl-matrix";
-import { Geometry } from "./geometries/Geometry";
 import { SerializedCollider, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./engine/GraphicsEngine";
+import { Model } from "./model/Model";
 
 /**
  * An entity on the client. These entities are deserialized from the server and
@@ -10,8 +10,9 @@ import GraphicsEngine from "./engine/GraphicsEngine";
  * The client does not handle moving the entities around.
  */
 export class ClientEntity {
+	engine: GraphicsEngine;
 	name: string;
-	geometry: Geometry;
+	models: Model[];
 	/**
 	 * A transformation to apply to all the models in the entity. You can think of
 	 * it like the anchor position and rotation of the entity.
@@ -25,9 +26,16 @@ export class ClientEntity {
 	colliders: SerializedCollider[];
 	visible = true;
 
-	constructor(name: string, geometry: Geometry, transform = mat4.create(), colliders: SerializedCollider[] = []) {
+	constructor(
+		engine: GraphicsEngine,
+		name: string,
+		model: Model[],
+		transform = mat4.create(),
+		colliders: SerializedCollider[] = [],
+	) {
+		this.engine = engine;
 		this.name = name;
-		this.geometry = geometry;
+		this.models = model;
 		this.transform = transform;
 		this.colliders = colliders;
 	}
@@ -43,62 +51,31 @@ export class ClientEntity {
 		if (!this.visible) {
 			return false;
 		}
-		const engine = this.geometry.material.engine;
-		this.geometry.material.use();
-		engine.gl.uniformMatrix4fv(this.geometry.material.uniform("u_view"), false, view);
-		engine.gl.uniformMatrix4fv(this.geometry.material.uniform("u_model"), false, this.transform);
-		this.geometry.draw();
-		engine.checkError();
+		for (const model of this.models) {
+			model.shader.use();
+			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_view"), false, view);
+			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_model"), false, this.transform);
+			model.draw();
+			this.engine.checkError();
+		}
 	}
 
 	/**
 	 * Draw the entity's colliders.
 	 *
-	 * This method assumes that the wireframe material is already in use, and the
-	 * camera matrix `u_view` uniform is already set. This is because the same
-	 * shader is used to draw all the colliders' wireframes.
+	 * Preconditions:
+	 * - The wireframe shader program is in use.
+	 * - `u_view` is set.
 	 */
 	drawWireframe() {
-		const engine = this.geometry.material.engine;
 		for (const collider of this.colliders) {
-			engine.gl.uniformMatrix4fv(
-				engine.wireframeMaterial.uniform("u_model"),
+			this.engine.gl.uniformMatrix4fv(
+				this.engine.wireframeMaterial.uniform("u_model"),
 				false,
 				mat4.translate(mat4.create(), this.transform, collider.offset ?? [0, 0, 0]),
 			);
-			if (collider.type === "box") {
-				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 1);
-				engine.gl.uniform4f(engine.wireframeMaterial.uniform("u_size"), ...collider.size, 0);
-				engine.wireframeGeometry.vertices = 36;
-				engine.wireframeGeometry.draw();
-			} else if (collider.type === "plane") {
-				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 2);
-				engine.wireframeGeometry.vertices = 6;
-				engine.wireframeGeometry.draw();
-			} else if (collider.type === "sphere") {
-				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 3);
-				engine.gl.uniform4f(
-					engine.wireframeMaterial.uniform("u_size"),
-					collider.radius,
-					collider.radius,
-					collider.radius,
-					0,
-				);
-				engine.wireframeGeometry.vertices = 18;
-				engine.wireframeGeometry.draw();
-			} else if (collider.type === "cylinder") {
-				engine.gl.uniform1i(engine.wireframeMaterial.uniform("u_shape"), 4);
-				engine.gl.uniform4f(
-					engine.wireframeMaterial.uniform("u_size"),
-					collider.radiusTop,
-					collider.radiusBottom,
-					collider.height / 2,
-					(2 * Math.PI) / collider.numSegments,
-				);
-				engine.wireframeGeometry.vertices = 12 + 6 * collider.numSegments;
-				engine.wireframeGeometry.draw();
-			}
-			engine.checkError();
+			this.engine.drawWireframe(collider);
+			this.engine.checkError();
 		}
 	}
 
@@ -108,6 +85,12 @@ export class ClientEntity {
 	 */
 	static from(engine: GraphicsEngine, entity: SerializedEntity): ClientEntity {
 		const transform = mat4.fromRotationTranslation(mat4.create(), entity.quaternion, entity.position);
-		return new ClientEntity(entity.name, engine.tempGeometry, transform, entity.colliders);
+		return new ClientEntity(
+			engine,
+			entity.name,
+			entity.model.map((model) => engine.models[model]),
+			transform,
+			entity.colliders,
+		);
 	}
 }

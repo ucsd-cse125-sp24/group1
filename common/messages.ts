@@ -1,4 +1,5 @@
 import { Vector2, Vector3, Quaternion } from "./commontypes";
+import { ModelId } from "./models";
 
 export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameState | CameraLock;
 
@@ -45,7 +46,7 @@ export type ClientInputMessage = {
 export type SerializedEntity = {
 	name: string;
 	//possible that we need to send model position
-	model: string[];
+	model: ModelId[];
 	quaternion: Quaternion;
 	position: Vector3;
 	colliders: SerializedCollider[];

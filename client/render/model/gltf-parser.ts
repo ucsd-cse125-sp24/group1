@@ -13,6 +13,7 @@ import {
 	componentSizes,
 	componentTypes,
 } from "./gltf-types";
+import { Model } from "./Model";
 
 type Node = {
 	parent?: Node;
@@ -333,12 +334,14 @@ export class GltfModel {
 	}
 }
 
-export class GltfModelWrapper {
+export class GltfModelWrapper implements Model {
+	shader: ShaderProgram;
 	#model: GltfModel | null = null;
 
-	constructor(material: ShaderProgram, promise: Promise<GltfParser>) {
+	constructor(shader: ShaderProgram, promise: Promise<GltfParser>) {
+		this.shader = shader;
 		promise.then((model) => {
-			this.#model = new GltfModel(material, model);
+			this.#model = new GltfModel(shader, model);
 		});
 	}
 

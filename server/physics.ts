@@ -62,7 +62,7 @@ export class PhysicsWorld {
 		for (let body of Object.values(this.#colliders)) {
 			let entity: SerializedEntity = {
 				name: body.id.toString(),
-				model: ["debuggable"],
+				model: ["donut"],
 				position: body.position.toArray(),
 				quaternion: body.quaternion.toArray(),
 				colliders: [],

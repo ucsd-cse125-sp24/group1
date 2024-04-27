@@ -130,14 +130,9 @@ const handleFreecam = (e: KeyboardEvent) => {
 };
 window.addEventListener("keydown", handleFreecam);
 
-const box1 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
-const box2 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
-const box3 = new ClientEntity("", new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)));
-const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
-const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
-const cavecubeModel = GltfModelWrapper.from(engine.gltfMaterial, cavecube);
-const defaultCubeColorModel = GltfModelWrapper.from(engine.gltfMaterial, defaultCubeColor);
-const donutModel = GltfModelWrapper.from(engine.gltfMaterial, donut);
+const box1 = new ClientEntity(engine, "", [engine.models.box1]);
+const box2 = new ClientEntity(engine, "", [engine.models.box2]);
+const box3 = new ClientEntity(engine, "", [engine.models.box3]);
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
@@ -221,23 +216,23 @@ const paint = () => {
 		false,
 		mat4.fromTranslation(mat4.create(), [7, -5, 7]),
 	);
-	donutModel.draw();
+	engine.models.donut.draw();
 	engine.gl.uniformMatrix4fv(
 		engine.gltfMaterial.uniform("u_model"),
 		false,
 		mat4.fromTranslation(mat4.create(), [5, -10, 5]),
 	);
-	cavecubeModel.draw();
-	defaultCubeColorModel.draw();
+	engine.models.cavecube.draw();
+	engine.models.defaultCubeColor.draw();
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
 	mat4.multiply(transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), transform);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	fish1Model.draw();
+	engine.models.fish1.draw();
 	transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
 	mat4.rotateY(transform, transform, -Date.now() / 10000);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	fish2Model.draw();
+	engine.models.fish2.draw();
 
 	engine.stopRender();
 

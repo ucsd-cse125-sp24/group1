@@ -1,20 +1,21 @@
 import { vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
 import { ShaderProgram } from "../engine/ShaderProgram";
-import { Geometry } from "./Geometry";
 import texture from "../../../assets/test-texture.png";
 import { loadImage } from "../../lib/loadImage";
+import { Model } from "../model/Model";
 
 const textureLoaded = loadImage(texture);
 
-export class BoxGeometry extends Geometry {
+export class BoxGeometry implements Model {
+	shader: ShaderProgram;
 	#VAO: WebGLVertexArrayObject;
 	#texture: WebGLTexture;
 
-	constructor(material: ShaderProgram, size: vec3) {
-		super(material);
+	constructor(shader: ShaderProgram, size: vec3) {
+		this.shader = shader;
 
-		const gl = material.engine.gl;
+		const gl = shader.engine.gl;
 
 		const dx = size[0] / 2,
 			dy = size[1] / 2,
@@ -141,20 +142,20 @@ export class BoxGeometry extends Geometry {
 		const VBO_positions = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, VBO_positions);
 		gl.bufferData(gl.ARRAY_BUFFER, positionArray, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(material.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(material.attrib("a_position"));
+		gl.vertexAttribPointer(shader.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(shader.attrib("a_position"));
 
 		const VBO_normals = gl.createBuffer() ?? expect("Failed to create VAO normal buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, VBO_normals);
 		gl.bufferData(gl.ARRAY_BUFFER, normalArray, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(material.attrib("a_normal"), 3, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(material.attrib("a_normal"));
+		gl.vertexAttribPointer(shader.attrib("a_normal"), 3, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(shader.attrib("a_normal"));
 
 		const VBO_texcoords = gl.createBuffer() ?? expect("Failed to create VAO texcoord buffer");
 		gl.bindBuffer(gl.ARRAY_BUFFER, VBO_texcoords);
 		gl.bufferData(gl.ARRAY_BUFFER, texcoordArray, gl.STATIC_DRAW);
-		gl.vertexAttribPointer(material.attrib("a_texcoord"), 2, gl.FLOAT, false, 0, 0);
-		gl.enableVertexAttribArray(material.attrib("a_texcoord"));
+		gl.vertexAttribPointer(shader.attrib("a_texcoord"), 2, gl.FLOAT, false, 0, 0);
+		gl.enableVertexAttribArray(shader.attrib("a_texcoord"));
 
 		this.#texture = gl.createTexture() ?? expect("Failed to create texture");
 		gl.bindTexture(gl.TEXTURE_2D, this.#texture);
@@ -172,23 +173,23 @@ export class BoxGeometry extends Geometry {
 	}
 
 	draw() {
-		const gl = this.material.engine.gl;
+		const gl = this.shader.engine.gl;
 		gl.bindVertexArray(this.#VAO);
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.#texture);
-		gl.uniform1i(this.material.uniform("u_texture"), 0);
-		gl.uniform3fv(this.material.uniform("uLightAmbient"), [0.2, 0.2, 0.2]);
-		gl.uniform3fv(this.material.uniform("uLightDiffuse"), [0.5, 0.5, 0.5]);
-		gl.uniform3fv(this.material.uniform("uLightSpecular"), [1.0, 1.0, 1.0]);
-		gl.uniform3fv(this.material.uniform("uLightPosition"), [0, 15.0, 0]);
+		gl.uniform1i(this.shader.uniform("u_texture"), 0);
+		gl.uniform3fv(this.shader.uniform("uLightAmbient"), [0.2, 0.2, 0.2]);
+		gl.uniform3fv(this.shader.uniform("uLightDiffuse"), [0.5, 0.5, 0.5]);
+		gl.uniform3fv(this.shader.uniform("uLightSpecular"), [1.0, 1.0, 1.0]);
+		gl.uniform3fv(this.shader.uniform("uLightPosition"), [0, 15.0, 0]);
 
-		gl.uniform3fv(this.material.uniform("uAmbient"), [0.1, 0.1, 0.1]);
-		gl.uniform3fv(this.material.uniform("uDiffuse"), [0.7, 0.7, 0.7]);
-		gl.uniform3fv(this.material.uniform("uSpecular"), [0.5, 0.5, 0.5]);
-		gl.uniform1f(this.material.uniform("uShininess"), 0.5);
-		gl.uniform1f(this.material.uniform("uTones"), 5.0);
-		gl.uniform1f(this.material.uniform("uSpecularTones"), 32.0);
-		gl.uniform1f(this.material.uniform("u_time"), 1.5);
+		gl.uniform3fv(this.shader.uniform("uAmbient"), [0.1, 0.1, 0.1]);
+		gl.uniform3fv(this.shader.uniform("uDiffuse"), [0.7, 0.7, 0.7]);
+		gl.uniform3fv(this.shader.uniform("uSpecular"), [0.5, 0.5, 0.5]);
+		gl.uniform1f(this.shader.uniform("uShininess"), 0.5);
+		gl.uniform1f(this.shader.uniform("uTones"), 5.0);
+		gl.uniform1f(this.shader.uniform("uSpecularTones"), 32.0);
+		gl.uniform1f(this.shader.uniform("u_time"), 1.5);
 		gl.drawArrays(gl.TRIANGLES, 0, 36);
 	}
 }

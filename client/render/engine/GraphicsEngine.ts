@@ -8,12 +8,13 @@ import toonShaderSouce from "../../shaders/toon.frag";
 import toonShaderSouce2 from "../../shaders/toon2.frag";
 import { WebGlUtils } from "./WebGlUtils";
 import { BoxGeometry } from "../geometries/BoxGeometry";
-import { HardCodedGeometry } from "../geometries/HardCodedGeometry";
 import { ShaderProgram } from "./ShaderProgram";
 import particleFragmentSource from "../../shaders/particle.frag";
 import particleVertexSource from "../../shaders/particle.vert";
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
+import { getModels } from "../../../assets/models";
+import { SerializedCollider } from "../../../common/messages";
 
 /**
  * Handles helper functions for interacting with WebGL.
@@ -34,7 +35,6 @@ class GraphicsEngine extends WebGlUtils {
 			this.createShader("fragment", wireframeFragmentSource, "wireframe.frag"),
 		),
 	);
-	wireframeGeometry = new HardCodedGeometry(this.wireframeMaterial);
 	gltfMaterial = new ShaderProgram(
 		this,
 		this.createProgram(
@@ -50,6 +50,7 @@ class GraphicsEngine extends WebGlUtils {
 			["v_position", "v_velocity", "v_age", "v_life"],
 		),
 	);
+	models = getModels(this);
 
 	#framebuffer: WebGLFramebuffer | null;
 	#colorTexture: WebGLTexture | null;
@@ -151,6 +152,38 @@ class GraphicsEngine extends WebGlUtils {
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
+
+	/**
+	 * Draws a wireframe.
+	 *
+	 * Preconditions:
+	 * - The shader program is in use.
+	 * - `u_view` and `u_model` are set.
+	 */
+	drawWireframe(collider: SerializedCollider): void {
+		if (collider.type === "box") {
+			this.gl.uniform1i(this.wireframeMaterial.uniform("u_shape"), 1);
+			this.gl.uniform4f(this.wireframeMaterial.uniform("u_size"), ...collider.size, 0);
+			this.gl.drawArrays(this.gl.TRIANGLES, 0, 36);
+		} else if (collider.type === "plane") {
+			this.gl.uniform1i(this.wireframeMaterial.uniform("u_shape"), 2);
+			this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+		} else if (collider.type === "sphere") {
+			this.gl.uniform1i(this.wireframeMaterial.uniform("u_shape"), 3);
+			this.gl.uniform4f(this.wireframeMaterial.uniform("u_size"), collider.radius, collider.radius, collider.radius, 0);
+			this.gl.drawArrays(this.gl.TRIANGLES, 0, 18);
+		} else if (collider.type === "cylinder") {
+			this.gl.uniform1i(this.wireframeMaterial.uniform("u_shape"), 4);
+			this.gl.uniform4f(
+				this.wireframeMaterial.uniform("u_size"),
+				collider.radiusTop,
+				collider.radiusBottom,
+				collider.height / 2,
+				(2 * Math.PI) / collider.numSegments,
+			);
+			this.gl.drawArrays(this.gl.TRIANGLES, 0, 12 + 6 * collider.numSegments);
+		}
 	}
 }
 
