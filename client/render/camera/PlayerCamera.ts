@@ -1,6 +1,7 @@
 import { vec3 } from "gl-matrix";
 import { Camera } from "./Camera";
 import GraphicsEngine from "../engine/GraphicsEngine";
+import { InputListener } from "../../net/input";
 
 /** How fast the camera rotates in radians per pixel moved by the mouse */
 const ROTATION_RATE: number = (0.5 * Math.PI) / 180;
@@ -10,6 +11,9 @@ const ROTATION_RATE: number = (0.5 * Math.PI) / 180;
  */
 export class PlayerCamera extends Camera {
 	#sensitivity: number = 1;
+	#isFree: boolean = false;
+	#inputListener: InputListener<string>;
+	#inputs: Record<string, boolean>;
 
 	constructor(
 		position: vec3,
@@ -23,6 +27,39 @@ export class PlayerCamera extends Camera {
 	) {
 		super(position, orientation, upDir, fovY, aspectRatio, nearBound, farBound, engine);
 		this.#checkPointerLock();
+		this.#inputs = {};
+		this.#inputListener = new InputListener({
+			reset: () => ({ right: false, left: false, up: false, down: false, backward: false, forward: false }),
+			handleKey: (key) => {
+				switch (key) {
+					case "KeyW":
+						return "forward";
+					case "KeyA":
+						return "left";
+					case "KeyS":
+						return "backward";
+					case "KeyD":
+						return "right";
+					case "Space":
+						return "up";
+					case "ShiftLeft":
+						return "down";
+				}
+				return null;
+			},
+			handleInputs: (inputs) => {
+				this.#inputs = inputs;
+			},
+		});
+	}
+
+	setFree(isFree: boolean) {
+		this.#isFree = isFree;
+		if (isFree) {
+			this.#inputListener.listen();
+		} else {
+			this.#inputListener.disconnect();
+		}
 	}
 
 	listen(): void {
@@ -79,4 +116,33 @@ export class PlayerCamera extends Camera {
 			this._orientation[1] - movementX * this.#sensitivity * ROTATION_RATE,
 		);
 	};
+
+	update(): void {
+		if (!this.#isFree) {
+			return;
+		}
+		const forward = vec3.fromValues(this._forwardDir[0], 0, this._forwardDir[2]);
+		const right = vec3.cross(vec3.create(), forward, this._upDir);
+		const translation = vec3.create();
+		if (this.#inputs.forward) {
+			vec3.add(translation, translation, forward);
+		} else if (this.#inputs.backward) {
+			vec3.subtract(translation, translation, forward);
+		}
+		if (this.#inputs.right) {
+			vec3.add(translation, translation, right);
+		} else if (this.#inputs.left) {
+			vec3.subtract(translation, translation, right);
+		}
+		if (this.#inputs.up) {
+			vec3.add(translation, translation, this._upDir);
+		} else if (this.#inputs.down) {
+			vec3.subtract(translation, translation, this._upDir);
+		}
+		if (vec3.length(translation) === 0) {
+			return;
+		}
+		vec3.scale(translation, translation, 0.5 / vec3.length(translation));
+		this.setPosition(vec3.add(vec3.create(), this._position, translation));
+	}
 }

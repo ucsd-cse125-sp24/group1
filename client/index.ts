@@ -32,6 +32,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
 let cameraLockTarget: string | null = null;
+let freecam: boolean = false; // for debug purposes
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -115,6 +116,20 @@ const inputListener = new InputListener({
 	},
 });
 
+// for debug purposes
+const handleFreecam = (e: KeyboardEvent) => {
+	if (e.code === "KeyP") {
+		freecam = !freecam;
+		camera.setFree(freecam);
+		if (freecam) {
+			inputListener.disconnect();
+		} else {
+			inputListener.listen();
+		}
+	}
+};
+window.addEventListener("keydown", handleFreecam);
+
 const box1 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)));
 const box2 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
 const box3 = new ClientEntity("", new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)));
@@ -138,13 +153,17 @@ const paint = () => {
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
 
-	for (const entity of entities) {
-		entity.visible = entity.name !== cameraLockTarget;
-	}
+	if (!freecam) {
+		for (const entity of entities) {
+			entity.visible = entity.name !== cameraLockTarget;
+		}
 
-	const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
-	if (cameraTarget) {
-		camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+		const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
+		if (cameraTarget) {
+			camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+		}
+	} else {
+		camera.update();
 	}
 
 	engine.clear();
@@ -153,6 +172,7 @@ const paint = () => {
 		light.renderShadowMap(entities);
 	}
 
+	engine.startRender();
 	engine.clear();
 
 	const view = camera.getViewProjectionMatrix();
@@ -185,7 +205,7 @@ const paint = () => {
 		lightPositions.push(...light.position);
 		lightIntensities.push(...light.intensity);
 		const shadowMap = light.getShadowMap();
-		// Bind up to 8 shadow maps to texture indices 8..15
+		// Bind up to 8 shadow maps to texture indices 4..11
 		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
 		engine.gl.bindTexture(engine.gl.TEXTURE_CUBE_MAP, shadowMap);
 	}
@@ -211,12 +231,17 @@ const paint = () => {
 	defaultCubeColorModel.draw();
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
+	mat4.multiply(transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), transform);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
 	fish1Model.draw();
 	transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
-	mat4.rotateY(transform, transform, -Date.now() / 200);
+	mat4.rotateY(transform, transform, -Date.now() / 10000);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
 	fish2Model.draw();
+
+	engine.stopRender();
+
+	engine.draw();
 
 	window.requestAnimationFrame(paint);
 };
