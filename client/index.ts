@@ -127,7 +127,7 @@ const defaultCubeColorModel = GltfModelWrapper.from(engine.gltfMaterial, default
  */
 const tempLights = [
 	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(10, 10, 10)),
-	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(10, 10, 10)),
+	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(30, 30, 30)),
 ];
 
 const paint = () => {
@@ -169,12 +169,19 @@ const paint = () => {
 	engine.gl.enable(engine.gl.CULL_FACE);
 	engine.gltfMaterial.use();
 
+	tempLights[0].intensity = vec3.fromValues(
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 100,
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 50,
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 10,
+	);
+	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 10, 3, Math.sin(Date.now() / 300) * 10);
+
 	const lightPositions: number[] = [];
 	const lightIntensities: number[] = [];
 	for (let i = 0; i < tempLights.length; i++) {
 		const light = tempLights[i];
-		lightPositions.push(...light.getPosition());
-		lightIntensities.push(...light.getIntensity());
+		lightPositions.push(...light.position);
+		lightIntensities.push(...light.intensity);
 		const shadowMap = light.getShadowMap();
 		// Bind up to 8 shadow maps to texture indices 8..15
 		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
