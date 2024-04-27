@@ -16,6 +16,8 @@ import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
 import { particleGeometry } from "./render/geometries/ParticleGeometry";
 import { cavecube } from "../assets/models/cavecube";
+import { defaultCube } from "../assets/models/default-cube";
+import { defaultCubeColor } from "../assets/models/default-cube-color";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -117,8 +119,11 @@ const box1 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.from
 const box2 = new ClientEntity("", new BoxGeometry(engine.tempMaterial, vec3.fromValues(1, 2, 3)));
 const box3 = new ClientEntity("", new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)));
 // const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
-// const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
+const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
+// const cavecubeModel2 = GltfModelWrapper.from(engine.gltfMaterial, cavecube);
 const cavecubeModel = GltfModelWrapper.from(engine.gltfMaterial, cavecube);
+// const defaultCubeModel = GltfModelWrapper.from(engine.gltfMaterial, defaultCube);
+// const defaultCubeColorModel = GltfModelWrapper.from(engine.gltfMaterial, defaultCubeColor);
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
@@ -191,6 +196,7 @@ const paint = () => {
 		mat4.fromTranslation(mat4.create(), [5, -10, 5]),
 	);
 	cavecubeModel.draw();
+	// defaultCubeColorModel.draw();
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);

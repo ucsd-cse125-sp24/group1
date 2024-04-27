@@ -221,8 +221,8 @@ export class GltfModel {
 			let count = Infinity;
 			for (const vbo of vbos) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, vbo.buffer);
-				gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
 				gl.enableVertexAttribArray(material.attrib(vbo.attribName));
+				gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
 				if (vbo.count < count) {
 					count = vbo.count;
 				}
@@ -258,6 +258,9 @@ export class GltfModel {
 				},
 			].filter(exists);
 
+			gl.bindVertexArray(null);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 			material.engine.checkError();
 
 			return {
@@ -303,17 +306,26 @@ export class GltfModel {
 			gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness.metallicFactor ?? 1);
 			gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness.roughnessFactor ?? 1);
 			gl.uniform3fv(material.uniform("u_emissive"), materialOptions.emissiveFactor ?? [0, 0, 0]);
-			// Default color to white
+			// Default vertex color is white (since the base color is multiplied by it)
 			gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
-			material.engine.checkError();
 			gl.bindVertexArray(vao);
 			material.engine.checkError();
+			console.log({
+				a_position: gl.getVertexAttrib(material.attrib("a_position"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+				a_normal: gl.getVertexAttrib(material.attrib("a_normal"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+				a_tangent: gl.getVertexAttrib(material.attrib("a_tangent"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+				a_texcoord0: gl.getVertexAttrib(material.attrib("a_texcoord0"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+				a_texcoord1: gl.getVertexAttrib(material.attrib("a_texcoord1"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+				a_texcoord2: gl.getVertexAttrib(material.attrib("a_texcoord2"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+				a_color0: gl.getVertexAttrib(material.attrib("a_color0"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+			});
 			if (indices) {
 				gl.drawElements(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
 			} else {
 				gl.drawArrays(mode ?? gl.TRIANGLES, 0, count);
 			}
 			material.engine.checkError();
+			gl.bindVertexArray(null);
 			if (materialOptions.doubleSided) {
 				gl.enable(gl.CULL_FACE);
 				material.engine.checkError();
