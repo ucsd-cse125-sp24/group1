@@ -124,7 +124,7 @@ type Accessor = {
 type ModelMesh = {
 	vao: WebGLVertexArrayObject;
 	materialOptions: GltfMaterial;
-	meshTextures: { texture: WebGLTexture; name: string }[];
+	meshTextures: { texture: WebGLTexture | null; name: string }[];
 	indices: Accessor | null;
 	count: number;
 	transform: mat4;
@@ -236,27 +236,31 @@ export class GltfModel {
 			}
 
 			const meshTextures = [
-				materialOptions.pbrMetallicRoughness.baseColorTexture && {
-					texture: textures[materialOptions.pbrMetallicRoughness.baseColorTexture.index],
+				{
+					texture: materialOptions.pbrMetallicRoughness.baseColorTexture
+						? textures[materialOptions.pbrMetallicRoughness.baseColorTexture.index]
+						: null,
 					name: "texture_color",
 				},
-				materialOptions.pbrMetallicRoughness.metallicRoughnessTexture && {
-					texture: textures[materialOptions.pbrMetallicRoughness.metallicRoughnessTexture.index],
+				{
+					texture: materialOptions.pbrMetallicRoughness.metallicRoughnessTexture
+						? textures[materialOptions.pbrMetallicRoughness.metallicRoughnessTexture.index]
+						: null,
 					name: "texture_metallic_roughness",
 				},
-				materialOptions.normalTexture && {
-					texture: textures[materialOptions.normalTexture.index],
+				{
+					texture: materialOptions.normalTexture ? textures[materialOptions.normalTexture.index] : null,
 					name: "texture_normal",
 				},
-				materialOptions.occlusionTexture && {
-					texture: textures[materialOptions.occlusionTexture.index],
+				{
+					texture: materialOptions.occlusionTexture ? textures[materialOptions.occlusionTexture.index] : null,
 					name: "texture_occlusion",
 				},
-				materialOptions.emissiveTexture && {
-					texture: textures[materialOptions.emissiveTexture.index],
+				{
+					texture: materialOptions.emissiveTexture ? textures[materialOptions.emissiveTexture.index] : null,
 					name: "texture_emissive",
 				},
-			].filter(exists);
+			];
 
 			gl.bindVertexArray(null);
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -286,12 +290,16 @@ export class GltfModel {
 				material.engine.checkError();
 			}
 			for (const [i, { name, texture }] of meshTextures.entries()) {
-				gl.activeTexture(gl.TEXTURE0 + i);
-				material.engine.checkError();
-				gl.bindTexture(gl.TEXTURE_2D, texture);
-				material.engine.checkError();
-				gl.uniform1i(material.uniform(`u_${name}`), i);
-				gl.uniform1i(material.uniform(`u_has_${name}`), 1);
+				if (texture) {
+					gl.activeTexture(gl.TEXTURE0 + i);
+					material.engine.checkError();
+					gl.bindTexture(gl.TEXTURE_2D, texture);
+					material.engine.checkError();
+					gl.uniform1i(material.uniform(`u_${name}`), i);
+					gl.uniform1i(material.uniform(`u_has_${name}`), 1);
+				} else {
+					gl.uniform1i(material.uniform(`u_has_${name}`), 0);
+				}
 				material.engine.checkError();
 			}
 			gl.uniformMatrix4fv(material.uniform("u_model_part"), false, transform);
@@ -310,15 +318,6 @@ export class GltfModel {
 			gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
 			gl.bindVertexArray(vao);
 			material.engine.checkError();
-			console.log({
-				a_position: gl.getVertexAttrib(material.attrib("a_position"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
-				a_normal: gl.getVertexAttrib(material.attrib("a_normal"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
-				a_tangent: gl.getVertexAttrib(material.attrib("a_tangent"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
-				a_texcoord0: gl.getVertexAttrib(material.attrib("a_texcoord0"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
-				a_texcoord1: gl.getVertexAttrib(material.attrib("a_texcoord1"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
-				a_texcoord2: gl.getVertexAttrib(material.attrib("a_texcoord2"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
-				a_color0: gl.getVertexAttrib(material.attrib("a_color0"), gl.VERTEX_ATTRIB_ARRAY_ENABLED),
-			});
 			if (indices) {
 				gl.drawElements(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
 			} else {
@@ -328,8 +327,8 @@ export class GltfModel {
 			gl.bindVertexArray(null);
 			if (materialOptions.doubleSided) {
 				gl.enable(gl.CULL_FACE);
-				material.engine.checkError();
 			}
+			material.engine.checkError();
 		}
 	}
 }

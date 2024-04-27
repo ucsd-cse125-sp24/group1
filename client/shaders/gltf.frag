@@ -83,7 +83,7 @@ void main() {
                       pow(max(dot(half_vector, v_normal), 0.0), shininess) *
                       intensity;
   }
-  gl_FragColor = base_color;
+  gl_FragColor = irradiance;
 
   if (gl_FragColor.a < u_alpha_cutoff) {
     discard;
