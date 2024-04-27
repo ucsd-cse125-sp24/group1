@@ -1,1 +1,1 @@
-export type { Model } from "../assets/models";
+export type { ModelId } from "../assets/models";

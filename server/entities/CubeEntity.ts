@@ -1,7 +1,7 @@
 import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import type { Model } from "../../common/models";
+import type { ModelId } from "../../common/models";
 import { v3 } from "../physics";
 import { SerializedEntity } from "../../common/messages";
 
@@ -9,9 +9,9 @@ export class CubeEntity extends Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: Model[];
+	model: ModelId[];
 
-	constructor(name: string, pos: Vector3, model: Model[] = []) {
+	constructor(name: string, pos: Vector3, model: ModelId[] = []) {
 		super(name, model);
 		this.name = name;
 		this.type = "cube";

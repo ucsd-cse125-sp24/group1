@@ -6,4 +6,4 @@ export const models = {
 	fish2,
 };
 
-export type Model = keyof typeof models;
+export type ModelId = keyof typeof models;

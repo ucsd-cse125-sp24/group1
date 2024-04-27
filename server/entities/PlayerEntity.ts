@@ -1,14 +1,14 @@
 import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import type { Model } from "../../common/models";
+import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
 
 export class PlayerEntity extends Entity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: Model[];
+	model: ModelId[];
 
 	// Game properties
 	speed: number;
@@ -19,7 +19,7 @@ export class PlayerEntity extends Entity {
 	sphereTop: phys.Sphere;
 	sphereBot: phys.Sphere;
 
-	constructor(name: string, pos: Vector3, model: Model[] = []) {
+	constructor(name: string, pos: Vector3, model: ModelId[] = []) {
 		super(name, model);
 
 		this.type = "player";

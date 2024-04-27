@@ -1,7 +1,7 @@
 import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { Quaternion, Vector3 } from "../../common/commontypes";
-import type { Model } from "../../common/models";
+import type { ModelId } from "../../common/models";
 import { PhysicsWorld, q4, v3 } from "../physics";
 import { SerializedEntity } from "../../common/messages";
 
@@ -9,9 +9,9 @@ export class PlaneEntity extends Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: Model[];
+	model: ModelId[];
 
-	constructor(name: string, pos: Vector3, rotation: Quaternion, model: Model[] = []) {
+	constructor(name: string, pos: Vector3, rotation: Quaternion, model: ModelId[] = []) {
 		super(name, model);
 		this.type = "plane";
 		this.name = name;

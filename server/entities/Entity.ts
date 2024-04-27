@@ -1,5 +1,5 @@
 import * as phys from "cannon-es";
-import type { Model } from "../../common/models";
+import type { ModelId } from "../../common/models";
 import { PhysicsWorld } from "../physics";
 import { SerializedEntity } from "../../common/messages";
 
@@ -7,9 +7,9 @@ export abstract class Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: Model[];
+	model: ModelId[];
 
-	constructor(name: string, model: Model[] = []) {
+	constructor(name: string, model: ModelId[] = []) {
 		this.name = name;
 		this.type = "entity";
 		this.body = new phys.Body();
