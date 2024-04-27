@@ -17,6 +17,7 @@ import { PointLight } from "./render/lights/PointLight";
 import { particleGeometry } from "./render/geometries/ParticleGeometry";
 import { cavecube } from "../assets/models/cavecube";
 import { defaultCubeColor } from "../assets/models/default-cube-color";
+import { donut } from "../assets/models/donut";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -121,6 +122,7 @@ const fish1Model = GltfModelWrapper.from(engine.gltfMaterial, fish1);
 const fish2Model = GltfModelWrapper.from(engine.gltfMaterial, fish2);
 const cavecubeModel = GltfModelWrapper.from(engine.gltfMaterial, cavecube);
 const defaultCubeColorModel = GltfModelWrapper.from(engine.gltfMaterial, defaultCubeColor);
+const donutModel = GltfModelWrapper.from(engine.gltfMaterial, donut);
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
@@ -194,6 +196,12 @@ const paint = () => {
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
+	engine.gl.uniformMatrix4fv(
+		engine.gltfMaterial.uniform("u_model"),
+		false,
+		mat4.fromTranslation(mat4.create(), [7, -5, 7]),
+	);
+	donutModel.draw();
 	engine.gl.uniformMatrix4fv(
 		engine.gltfMaterial.uniform("u_model"),
 		false,
