@@ -105,19 +105,17 @@ export class Connection<ReceiveType, SendType> {
 						this.#indicator.append(this.#workerBtn);
 					}
 				});
-			this.#ws = null;
 		}
+		this.#ws = null;
 		this.#wsError = true;
 	};
 
-	// TODO: Try to reconnect
 	#handleClose = ({ code, reason, wasClean }: CloseEvent) => {
 		console.log("Connection closed", { code, reason, wasClean });
 		if (this.#indicator && !this.#wsError) {
 			this.#indicator.textContent = "⛔ Connection closed. ";
 		}
 		this.#ws = null;
-		this.#worker = null;
 		// Try to reconnect
 		if (this.#reconnectAttempts > 0) {
 			this.#reconnectAttempts--;
