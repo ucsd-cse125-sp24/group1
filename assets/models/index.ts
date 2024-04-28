@@ -11,6 +11,8 @@ import { donut } from "./donut";
 import { fish1 } from "./fish1";
 import { fish2 } from "./fish2";
 import { twoTextureTest } from "./two-texture-test";
+import { sampleMap } from "./sample_map";
+import { samplePlayer } from "./sample_player";
 
 export const getModels = (engine: GraphicsEngine) =>
 	({
@@ -21,6 +23,8 @@ export const getModels = (engine: GraphicsEngine) =>
 		defaultCubeColor: GltfModelWrapper.from(engine.gltfMaterial, defaultCubeColor),
 		donut: GltfModelWrapper.from(engine.gltfMaterial, donut),
 		twoTextureTest: GltfModelWrapper.from(engine.gltfMaterial, twoTextureTest),
+		sampleMap: GltfModelWrapper.from(engine.gltfMaterial, sampleMap),
+		samplePlayer: GltfModelWrapper.from(engine.gltfMaterial, samplePlayer),
 		box1: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
 		box2: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
 		box3: new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)),

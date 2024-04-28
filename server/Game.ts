@@ -58,14 +58,14 @@ export class Game {
 	 * A function that sets up the base state for the game
 	 */
 	setup() {
-		let p1 = new PlayerEntity("Player One", [20, 20, 20], ["fish1"]);
+		let p1 = new PlayerEntity("Player One", [20, 20, 20], ["samplePlayer"]);
 		this.#players.push(p1);
 		this.registerEntity(p1);
 
 		let rock = new CubeEntity("rock", [0, 100, 0], ["fish1"]);
 		this.registerEntity(rock);
 
-		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1]);
+		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], ["sampleMap"]);
 		this.registerEntity(plane);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);

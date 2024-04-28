@@ -44,7 +44,7 @@ export type GltfPrimitive = {
 		Record<`WEIGHTS_${number}`, number>;
 	/** Accessor of indices */
 	indices?: number;
-	material: number;
+	material?: number;
 	mode?: GltfMode;
 	/** Morph targets */
 	targets?: ({
@@ -66,7 +66,7 @@ export type GltfMaterial = {
 	 *
 	 * `index` is index of texture object.
 	 */
-	pbrMetallicRoughness: {
+	pbrMetallicRoughness?: {
 		baseColorFactor?: [r: number, g: number, b: number, a: number];
 		baseColorTexture?: { index: number; texCoord?: number };
 		metallicFactor?: number;
@@ -206,7 +206,7 @@ export type Gltf = {
 		wrapS?: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
 		wrapT?: WebGL2RenderingContext["REPEAT" | "MIRRORED_REPEAT" | "CLAMP_TO_EDGE"];
 	}[];
-	materials: GltfMaterial[];
+	materials?: GltfMaterial[];
 	cameras?: GltfCamera[];
 	animations?: unknown[];
 };

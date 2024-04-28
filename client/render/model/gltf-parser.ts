@@ -196,7 +196,7 @@ export class GltfModel {
 			}) ?? [];
 
 		this.#meshes = meshes.map((mesh) => {
-			const materialOptions = root.materials[mesh.material];
+			const materialOptions = root.materials?.[mesh.material ?? 0] ?? {};
 
 			const vao = gl.createVertexArray() ?? expect("Failed to create VAO");
 			gl.bindVertexArray(vao);
@@ -241,13 +241,13 @@ export class GltfModel {
 
 			const meshTextures = [
 				{
-					texture: materialOptions.pbrMetallicRoughness.baseColorTexture
+					texture: materialOptions.pbrMetallicRoughness?.baseColorTexture
 						? textures[materialOptions.pbrMetallicRoughness.baseColorTexture.index]
 						: null,
 					name: "texture_color",
 				},
 				{
-					texture: materialOptions.pbrMetallicRoughness.metallicRoughnessTexture
+					texture: materialOptions.pbrMetallicRoughness?.metallicRoughnessTexture
 						? textures[materialOptions.pbrMetallicRoughness.metallicRoughnessTexture.index]
 						: null,
 					name: "texture_metallic_roughness",
@@ -315,10 +315,10 @@ export class GltfModel {
 			);
 			gl.uniform4fv(
 				material.uniform("u_base_color"),
-				materialOptions.pbrMetallicRoughness.baseColorFactor ?? [1, 1, 1, 1],
+				materialOptions.pbrMetallicRoughness?.baseColorFactor ?? [1, 1, 1, 1],
 			);
-			gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness.metallicFactor ?? 1);
-			gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness.roughnessFactor ?? 1);
+			gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness?.metallicFactor ?? 1);
+			gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness?.roughnessFactor ?? 1);
 			gl.uniform3fv(material.uniform("u_emissive"), materialOptions.emissiveFactor ?? [0, 0, 0]);
 			// Default vertex color is white (since the base color is multiplied by it)
 			gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
