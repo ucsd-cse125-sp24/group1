@@ -115,6 +115,8 @@ export class particleGeometry implements Model {
 		gl.drawArrays(gl.POINTS, 0, this.totalParticles);
 		gl.endTransformFeedback();
 
+		gl.bindVertexArray(null);
+		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
 		this.vaoCurrent = idx; //Alternate between the VAOs
 	}
 }
