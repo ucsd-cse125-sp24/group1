@@ -90,8 +90,10 @@ export class WebGlUtils {
 	 * `checkError` is only good for halting the entire game when an error arises,
 	 * which is helpful for debugging.
 	 *
-	 * To keep code clean, it's a good idea to remove `checkError` calls when
-	 * you're done debugging and everything works.
+	 * However, this has a significant performance impact because it requires
+	 * waiting on the GPU to finish drawing. You will have to trade off
+	 * performance with knowing what line of code caused an issue. I recommend
+	 * removing `checkError` calls after you're done debugging.
 	 */
 	checkError() {
 		const error = this.gl.getError();

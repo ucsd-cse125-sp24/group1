@@ -191,7 +191,6 @@ export class GltfModel {
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
 				gl.generateMipmap(gl.TEXTURE_2D);
-				this.#material.engine.checkError();
 				return texture;
 			}) ?? [];
 
@@ -269,7 +268,6 @@ export class GltfModel {
 			gl.bindVertexArray(null);
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-			material.engine.checkError();
 
 			return {
 				vao,
@@ -291,22 +289,18 @@ export class GltfModel {
 			// Assumes `u_model` uniform is already set
 			if (materialOptions.doubleSided) {
 				gl.disable(gl.CULL_FACE);
-				material.engine.checkError();
 			}
 			let textureIndex = 0;
 			for (const { name, texture } of meshTextures) {
 				if (texture) {
 					gl.activeTexture(gl.TEXTURE0 + textureIndex);
-					material.engine.checkError();
 					gl.bindTexture(gl.TEXTURE_2D, texture);
-					material.engine.checkError();
 					gl.uniform1i(material.uniform(`u_${name}`), textureIndex);
 					textureIndex++;
 					gl.uniform1i(material.uniform(`u_has_${name}`), 1);
 				} else {
 					gl.uniform1i(material.uniform(`u_has_${name}`), 0);
 				}
-				material.engine.checkError();
 			}
 			gl.uniformMatrix4fv(material.uniform("u_model_part"), false, transform);
 			gl.uniform1f(
@@ -323,18 +317,15 @@ export class GltfModel {
 			// Default vertex color is white (since the base color is multiplied by it)
 			gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
 			gl.bindVertexArray(vao);
-			material.engine.checkError();
 			if (indices) {
 				gl.drawElements(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
 			} else {
 				gl.drawArrays(mode ?? gl.TRIANGLES, 0, count);
 			}
-			material.engine.checkError();
 			gl.bindVertexArray(null);
 			if (materialOptions.doubleSided) {
 				gl.enable(gl.CULL_FACE);
 			}
-			material.engine.checkError();
 		}
 	}
 }

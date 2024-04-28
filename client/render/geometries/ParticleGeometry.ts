@@ -102,7 +102,6 @@ export class particleGeometry implements Model {
 		// gl.uniform1f(this.material.uniform("u_time"), Date.now() - this.startTime);
 		// gl.drawArrays(gl.POINTS, 0, 4);
 
-		// this.material.engine.checkError();
 		var idx = (this.vaoCurrent + 1) % 2; //Alternate between the VAOs
 		var vaoSource = this.#VAO[this.vaoCurrent];
 		var tfeedback = this.tFeedback[idx];
@@ -117,7 +116,5 @@ export class particleGeometry implements Model {
 		gl.endTransformFeedback();
 
 		this.vaoCurrent = idx; //Alternate between the VAOs
-
-		this.shader.engine.checkError();
 	}
 }

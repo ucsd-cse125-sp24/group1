@@ -56,7 +56,6 @@ export class ClientEntity {
 			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_view"), false, view);
 			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_model"), false, this.transform);
 			model.draw();
-			this.engine.checkError();
 		}
 	}
 
@@ -75,7 +74,6 @@ export class ClientEntity {
 				mat4.translate(mat4.create(), this.transform, collider.offset ?? [0, 0, 0]),
 			);
 			this.engine.drawWireframe(collider);
-			this.engine.checkError();
 		}
 	}
 

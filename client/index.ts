@@ -222,7 +222,7 @@ const paint = () => {
 		false,
 		mat4.fromTranslation(mat4.create(), [5, -10, 5]),
 	);
-	// engine.models.cavecube.draw();
+	engine.models.cavecube.draw();
 	engine.models.defaultCubeColor.draw();
 	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
 	mat4.scale(transform, transform, [10, 10, 10]);
@@ -239,6 +239,8 @@ const paint = () => {
 	engine.draw();
 
 	window.requestAnimationFrame(paint);
+
+	engine.checkError();
 };
 
 connection.connect();
