@@ -133,10 +133,12 @@ type ModelMesh = {
 };
 
 export class GltfModel {
+	name: string;
 	#material: ShaderProgram;
 	#meshes: ModelMesh[];
 
 	constructor(material: ShaderProgram, { root, buffers, images, meshes }: GltfParser) {
+		this.name = root.buffers[0].uri;
 		this.#material = material;
 
 		const gl = material.engine.gl;
@@ -177,9 +179,9 @@ export class GltfModel {
 				const sampler = (root.samplers ?? [])[samplerIndex];
 				const texture = gl.createTexture() ?? expect("Failed to create texture");
 				gl.bindTexture(gl.TEXTURE_2D, texture);
-				console.time(`uploading texture ${source}`);
+				console.time(`uploading texture ${source} (${this.name})`);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-				console.timeEnd(`uploading texture ${source}`);
+				console.timeEnd(`uploading texture ${source} (${this.name})`);
 				if (sampler.wrapS) {
 					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
 				}
@@ -189,6 +191,7 @@ export class GltfModel {
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
 				gl.generateMipmap(gl.TEXTURE_2D);
+				this.#material.engine.checkError();
 				return texture;
 			}) ?? [];
 
@@ -290,13 +293,15 @@ export class GltfModel {
 				gl.disable(gl.CULL_FACE);
 				material.engine.checkError();
 			}
-			for (const [i, { name, texture }] of meshTextures.entries()) {
+			let textureIndex = 0;
+			for (const { name, texture } of meshTextures) {
 				if (texture) {
-					gl.activeTexture(gl.TEXTURE0 + i);
+					gl.activeTexture(gl.TEXTURE0 + textureIndex);
 					material.engine.checkError();
 					gl.bindTexture(gl.TEXTURE_2D, texture);
 					material.engine.checkError();
-					gl.uniform1i(material.uniform(`u_${name}`), i);
+					gl.uniform1i(material.uniform(`u_${name}`), textureIndex);
+					textureIndex++;
 					gl.uniform1i(material.uniform(`u_has_${name}`), 1);
 				} else {
 					gl.uniform1i(material.uniform(`u_has_${name}`), 0);
@@ -349,7 +354,7 @@ export class GltfModelWrapper implements Model {
 		this.#model?.draw();
 	}
 
-	static from(material: ShaderProgram, promise: Promise<GltfParser>): GltfModelWrapper {
-		return new GltfModelWrapper(material, promise);
+	static from(shader: ShaderProgram, promise: Promise<GltfParser>): GltfModelWrapper {
+		return new GltfModelWrapper(shader, promise);
 	}
 }

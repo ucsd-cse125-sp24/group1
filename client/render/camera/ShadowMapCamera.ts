@@ -92,6 +92,15 @@ export class ShadowMapCamera extends Camera {
 
 	renderShadowMap(entities: ClientEntity[]): void {
 		const gl = this._engine.gl;
+		// Clear all textures to avoid "GL_INVALID_OPERATION: Feedback loop formed
+		// between Framebuffer and active Texture."
+		// TODO: this is pretty brute force. could minimize the textures needed to
+		// be unbound
+		for (let i = 0; i < 8; i++) {
+			gl.activeTexture(gl.TEXTURE0 + i);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+			gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.#framebuffer);
 		gl.viewport(0, 0, this.#textureSize, this.#textureSize);
 		for (let side = 0; side < 6; side++) {
