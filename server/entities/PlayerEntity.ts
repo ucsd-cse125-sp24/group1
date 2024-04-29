@@ -3,6 +3,7 @@ import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
+import { PlayerMaterial } from "../materials/SourceMaterials";
 
 export class PlayerEntity extends Entity {
 	type: string;
@@ -34,6 +35,7 @@ export class PlayerEntity extends Entity {
 			mass: 1.0, //fuckable
 			position: new phys.Vec3(...pos),
 			fixedRotation: true,
+			material: PlayerMaterial,
 		});
 
 		// Add player cylinder

@@ -4,6 +4,7 @@ import { Quaternion, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { PhysicsWorld, q4, v3 } from "../physics";
 import { SerializedEntity } from "../../common/messages";
+import { GroundMaterial } from "../materials/SourceMaterials";
 
 export class PlaneEntity extends Entity {
 	name: string;
@@ -23,6 +24,7 @@ export class PlaneEntity extends Entity {
 			quaternion: q4(...rotation).normalize(),
 			fixedRotation: true,
 			shape: new phys.Plane(),
+			material: GroundMaterial,
 		});
 	}
 

@@ -4,6 +4,7 @@ import { Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { v3 } from "../physics";
 import { SerializedEntity } from "../../common/messages";
+import { SlipperyMaterial } from "../materials/SourceMaterials";
 
 export class SphereEntity extends Entity {
 	name: string;
@@ -21,6 +22,7 @@ export class SphereEntity extends Entity {
 			mass: 1.0,
 			position: v3(...pos),
 			shape: new phys.Sphere(radius),
+			material: SlipperyMaterial,
 		});
 	}
 
