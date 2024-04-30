@@ -55,18 +55,24 @@ export class PlayerEntity extends Entity {
 		this.body.addShape(this.sphereTop, new phys.Vec3(0, 0.25, 0));
 
 		// Add player capsule bottom
+		
+		
 		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.25, 0));
 	}
 
 	move(movement: MovementInfo) {
+		//this is bugged!
+
 		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
+		forwardVector.normalize();
 
-		let rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0)); //this doesn't work
+		let rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0)); 
 
-		
+
+
 
 		let movementVector = new phys.Vec3(0, 0, 0);
-
+		
 		if (movement.forward) {
 			movementVector = movementVector.vadd(forwardVector);
 		}
@@ -80,7 +86,15 @@ export class PlayerEntity extends Entity {
 			movementVector = movementVector.vadd(rightVector.negate());
 		}
 
+		
+
 		movementVector.normalize();
+
+		if(movement.forward) {
+			console.log(forwardVector);
+			console.log(movementVector);
+		}
+
 		this.body.applyForce(movementVector.scale(this.speed));
 	}
 
