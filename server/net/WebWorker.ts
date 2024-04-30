@@ -17,7 +17,9 @@ import { Server } from "./Server";
  * In the future, we could explore moving this to a service worker so it can
  * control multiple "clients" on different tabs.
  */
-export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendType> {
+export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendType, symbol> {
+	static #CONN_ID = Symbol();
+
 	hasConnection = Promise.resolve();
 
 	broadcast(message: SendType): void {
@@ -25,12 +27,12 @@ export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendTy
 	}
 
 	listen(_port: number): void {
-		for (const message of this.handleOpen()) {
+		for (const message of this.handleOpen(WebWorker.#CONN_ID)) {
 			self.postMessage(JSON.stringify(message));
 		}
 
 		self.addEventListener("message", (e) => {
-			const response = this.handleMessage(e.data);
+			const response = this.handleMessage(e.data, WebWorker.#CONN_ID);
 			if (response) {
 				self.postMessage(JSON.stringify(response));
 			}

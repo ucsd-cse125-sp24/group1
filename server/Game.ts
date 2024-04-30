@@ -18,8 +18,9 @@ import { MovementInfo, Vector3 } from "../common/commontypes";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
+import { ServerHandlers } from "./net/Server";
 
-export class Game {
+export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	// Store all of the player inputs, there is just one for now
 	#playerInputs: PlayerInput[];
 	#players: PlayerEntity[];
@@ -84,7 +85,7 @@ export class Game {
 			let posedge = playerInput.getInputs();
 			let player = this.#players[idx];
 
-			console.clear();
+			//console.clear();
 			//console.log(inputs);
 
 			// Make dedicated movement information object to avoid letting the
@@ -109,7 +110,7 @@ export class Game {
 	 * of its onboarding process
 	 * @returns Messages to send to the new client
 	 */
-	handleOpen(): ServerMessage[] {
+	handleOpen(id: number): ServerMessage[] {
 		// TODO: Create a player corresponding to this connection and lock the
 		// client's camera to it. This may involve reworking Server.ts to give
 		// access to WebSocket connection objects that you can store in each player
@@ -119,12 +120,14 @@ export class Game {
 	}
 
 	/**
-	 * Parses a raw websocket message, and then generates a
-	 * response to the message if that is needed
+	 * Parses a raw websocket message, and then generates a response to the
+	 * message if that is needed
 	 * @param rawData the raw message data to process
+	 * @param id A unique ID for the connection. Note that the same player may
+	 * disconnect and reconnect, and this new connection will have a new ID.
 	 * @returns a ServerMessage
 	 */
-	handleMessage(data: ClientMessage): ServerMessage | undefined {
+	handleMessage(data: ClientMessage, id: number): ServerMessage | undefined {
 		switch (data.type) {
 			case "ping":
 				return {

@@ -2,12 +2,12 @@ export type ServerHandlers<ReceiveType, SendType> = {
 	/**
 	 * Handle a new connection and decide what messages to send to it.
 	 */
-	handleOpen?: () => SendType[];
+	handleOpen?: (id: number) => SendType[];
 	/**
 	 * Handles a message sent from the client, and decides what to reply with. It
 	 * can return `undefined` to not send back anything.
 	 */
-	handleMessage?: (data: ReceiveType) => SendType | undefined;
+	handleMessage?: (data: ReceiveType, id: number) => SendType | undefined;
 };
 
 /**
@@ -18,8 +18,9 @@ export type ServerHandlers<ReceiveType, SendType> = {
  * web worker that runs in the client. See the `WebWorker` class for why we're
  * doing that.
  */
-export abstract class Server<ReceiveType, SendType> {
+export abstract class Server<ReceiveType, SendType, Connection extends {} = unknown & {}> {
 	#handlers: ServerHandlers<ReceiveType, SendType>;
+	#connectionIds = new WeakMap<Connection, number>();
 	/** A promise that resolves when there's a connection */
 	abstract hasConnection: Promise<void>;
 
@@ -27,11 +28,24 @@ export abstract class Server<ReceiveType, SendType> {
 		this.#handlers = handlers;
 	}
 
-	handleOpen(): SendType[] {
-		return this.#handlers.handleOpen?.() ?? [];
+	#nextId = 1;
+	#getId(conn: Connection): number {
+		const id = this.#connectionIds.get(conn);
+		if (id) {
+			return id;
+		} else {
+			const id = this.#nextId;
+			this.#connectionIds.set(conn, id);
+			this.#nextId++;
+			return id;
+		}
 	}
 
-	handleMessage(rawData: unknown): SendType | undefined {
+	handleOpen(conn: Connection): SendType[] {
+		return this.#handlers.handleOpen?.(this.#getId(conn)) ?? [];
+	}
+
+	handleMessage(rawData: unknown, conn: Connection): SendType | undefined {
 		const stringData = Array.isArray(rawData) ? rawData.join("") : String(rawData);
 
 		let data: ReceiveType;
@@ -42,7 +56,7 @@ export abstract class Server<ReceiveType, SendType> {
 			return;
 		}
 
-		return this.#handlers.handleMessage?.(data);
+		return this.#handlers.handleMessage?.(data, this.#getId(conn));
 	}
 
 	/**

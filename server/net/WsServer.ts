@@ -2,7 +2,7 @@ import { Server, ServerHandlers } from "./Server";
 import express from "express";
 import http from "http";
 import path, { dirname } from "path";
-import { WebSocketServer } from "ws";
+import { WebSocket, WebSocketServer } from "ws";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -10,7 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 /**
  * An implementation of `Server` that starts a WebSocket server.
  */
-export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendType> {
+export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendType, WebSocket> {
 	#app = express();
 	#server = http.createServer(this.#app);
 	#wss = new WebSocketServer({ server: this.#server });
@@ -31,11 +31,11 @@ export class WsServer<ReceiveType, SendType> extends Server<ReceiveType, SendTyp
 
 		this.#wss.on("connection", (ws) => {
 			this.#handleNewConnection();
-			for (const message of this.handleOpen()) {
+			for (const message of this.handleOpen(ws)) {
 				ws.send(JSON.stringify(message));
 			}
 			ws.on("message", (rawData) => {
-				const response = this.handleMessage(rawData);
+				const response = this.handleMessage(rawData, ws);
 				if (response) {
 					ws.send(JSON.stringify(response));
 				}
