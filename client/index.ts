@@ -209,6 +209,7 @@ const paint = () => {
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_intensities[0]"), lightIntensities);
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
+	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), 0.2, 0.2, 0.2, 1);
 
 	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
 	engine.gl.uniformMatrix4fv(

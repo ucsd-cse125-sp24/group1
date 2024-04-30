@@ -30,6 +30,7 @@ uniform int u_num_lights;
 uniform vec3 u_point_lights[MAX_LIGHTS];
 uniform vec3 u_point_intensities[MAX_LIGHTS];
 uniform samplerCube u_point_shadow_maps[MAX_LIGHTS];
+uniform vec4 u_ambient_light;
 
 // TEMP: converting from shadow map to world space
 float near = 0.001;
@@ -62,7 +63,7 @@ void main() {
   vec3 to_eye = normalize(u_eye_pos - v_position);
   vec4 specular = vec4(0.5, 0.5, 0.5, 1.0);
   float shininess = 4.0;
-  vec4 irradiance = vec4(0.0, 0.0, 0.0, 1.0);
+  vec4 irradiance = u_ambient_light * base_color;
   for (int i = 0; i < MAX_LIGHTS; i++) {
     if (i >= u_num_lights) {
       break;
