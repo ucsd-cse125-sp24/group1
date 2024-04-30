@@ -46,6 +46,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	registerEntity(entity: Entity) {
 		this.#entities[entity.name] = entity;
 		this.#bodyToEntityMap.set(entity.body, entity);
+
+		// this is one way to implement collision that uses bodyToEntityMap without passing Game reference to entities
+		entity.body.addEventListener(Body.COLLIDE_EVENT_NAME, (params: { body: Body; contact: any }) => {
+			const otherBody: Body = params.body;
+			const otherEntity: Entity | undefined = this.#bodyToEntityMap.get(otherBody);
+			if (otherEntity) entity.onCollide(otherEntity);
+		});
+
 		entity.addToWorld(TheWorld);
 	}
 
@@ -82,7 +90,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	updateGameState() {
 		for (let [idx, playerInput] of this.#playerInputs.entries()) {
 			let inputs = playerInput.getInputs();
-			let posedge = playerInput.getInputs();
+			let posedge = playerInput.getPosedge();
 			let player = this.#players[idx];
 
 			//console.clear();
