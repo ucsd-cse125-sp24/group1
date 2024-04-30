@@ -58,6 +58,11 @@ export class PlayerInput {
 		return combined;
 	}
 
+	// Getting posedge
+	getPosedge(): ClientInputs {
+		return this.#posedge;
+	}
+
 	// This function is called to update the player inputs
 	serverTick() {
 		for (let key of Object.keys(this.#posedge)) {

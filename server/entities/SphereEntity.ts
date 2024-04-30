@@ -7,10 +7,10 @@ import { SerializedEntity } from "../../common/messages";
 import { SlipperyMaterial } from "../materials/SourceMaterials";
 
 export class SphereEntity extends Entity {
-	name: string;
-	type: string;
-	body: phys.Body;
-	model: ModelId[];
+	// name: string;
+	// type: string;
+	// body: phys.Body;
+	// model: ModelId[];
 
 	constructor(name: string, pos: Vector3, radius: number, model: ModelId[] = []) {
 		super(name, model);

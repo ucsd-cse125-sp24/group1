@@ -8,10 +8,10 @@ import { SerializedEntity } from "../../common/messages";
 export class CylinderEntity extends Entity {
 	static NUM_SEGMENTS = 20;
 
-	name: string;
-	type: string;
-	body: phys.Body;
-	model: ModelId[];
+	// name: string;
+	// type: string;
+	// body: phys.Body;
+	// model: ModelId[];
 
 	constructor(name: string, pos: Vector3, radius: number, height: number, model: ModelId[] = []) {
 		super(name, model);
