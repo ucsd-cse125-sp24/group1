@@ -110,6 +110,7 @@ export class PlayerEntity extends Entity {
 	}
 
 	checkOnGround(): void {
+		// apparently this generate a ray segment and only check intersection within that segment
 		const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
 		const result = TheWorld.castRay(checkerRay, {
 			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
