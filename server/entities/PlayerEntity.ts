@@ -60,7 +60,10 @@ export class PlayerEntity extends Entity {
 
 	move(movement: MovementInfo) {
 		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
-		let rightVector = forwardVector.cross(forwardVector, new phys.Vec3(0, 1, 0));
+
+		let rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0)); //this doesn't work
+
+		
 
 		let movementVector = new phys.Vec3(0, 0, 0);
 

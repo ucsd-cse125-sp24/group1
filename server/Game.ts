@@ -84,7 +84,7 @@ export class Game {
 			let player = this.#players[idx];
 
 			console.clear();
-			console.log(inputs);
+			//console.log(inputs);
 
 			// Make dedicated movement information object to avoid letting the
 			// player entity
