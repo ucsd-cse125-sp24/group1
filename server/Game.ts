@@ -82,6 +82,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	updateGameState() {
 		for (let [idx, playerInput] of this.#playerInputs.entries()) {
 			let inputs = playerInput.getInputs();
+			let posedge = playerInput.getInputs();
 			let player = this.#players[idx];
 
 			//console.clear();
@@ -94,7 +95,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				backward: inputs.backward,
 				right: inputs.right,
 				left: inputs.left,
-				jump: inputs.jump,
+				jump: posedge.jump,
 				lookDir: inputs.lookDir,
 			};
 

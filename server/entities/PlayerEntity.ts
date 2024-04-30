@@ -6,14 +6,15 @@ import { SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 
 export class PlayerEntity extends Entity {
-	type: string;
-	name: string;
-	body: phys.Body;
-	model: ModelId[];
+	// type: string;
+	// name: string;
+	// body: phys.Body;
+	// model: ModelId[];
 
 	// Game properties
 	speed: number;
 	jumping: boolean;
+	onGround: boolean;
 
 	// shapes
 	cylinder: phys.Cylinder;
@@ -26,10 +27,12 @@ export class PlayerEntity extends Entity {
 		this.type = "player";
 		this.name = name;
 		this.model = model;
+		this.tags.add("player");
 
 		// Magic numbers!!! WOOHOO
 		this.speed = 100;
 		this.jumping = false;
+		this.onGround = false;
 
 		this.body = new phys.Body({
 			mass: 1.0, //fuckable
@@ -55,8 +58,7 @@ export class PlayerEntity extends Entity {
 		this.body.addShape(this.sphereTop, new phys.Vec3(0, 0.25, 0));
 
 		// Add player capsule bottom
-		
-		
+
 		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.25, 0));
 	}
 
@@ -66,13 +68,10 @@ export class PlayerEntity extends Entity {
 		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
 		forwardVector.normalize();
 
-		let rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0)); 
-
-
-
+		let rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0));
 
 		let movementVector = new phys.Vec3(0, 0, 0);
-		
+
 		if (movement.forward) {
 			movementVector = movementVector.vadd(forwardVector);
 		}
@@ -86,11 +85,9 @@ export class PlayerEntity extends Entity {
 			movementVector = movementVector.vadd(rightVector.negate());
 		}
 
-		
-
 		movementVector.normalize();
 
-		if(movement.forward) {
+		if (movement.forward) {
 			console.log(forwardVector);
 			console.log(movementVector);
 		}

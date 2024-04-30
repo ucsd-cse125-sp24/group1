@@ -7,16 +7,17 @@ import { SerializedEntity } from "../../common/messages";
 import { GroundMaterial } from "../materials/SourceMaterials";
 
 export class PlaneEntity extends Entity {
-	name: string;
-	type: string;
-	body: phys.Body;
-	model: ModelId[];
+	// name: string;
+	// type: string;
+	// body: phys.Body;
+	// model: ModelId[];
 
 	constructor(name: string, pos: Vector3, rotation: Quaternion, model: ModelId[] = []) {
 		super(name, model);
 		this.type = "plane";
 		this.name = name;
 		this.model = model;
+		this.tags.add("environment");
 
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
