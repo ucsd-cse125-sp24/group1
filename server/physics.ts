@@ -16,6 +16,7 @@ export function q4(x: number, y: number, z: number, w: number) {
 	return new phys.Quaternion(x, y, z, w);
 }
 
+
 export class PhysicsWorld {
 	#world: phys.World;
 	#colliders: phys.Body[];
@@ -31,6 +32,7 @@ export class PhysicsWorld {
 		this.#world.addContactMaterial(SlipperyGroundCM);
 		this.#world.addContactMaterial(PlayerSlipperyCM);
 	}
+
 
 	addBody(body: Body) {
 		this.#world.addBody(body);

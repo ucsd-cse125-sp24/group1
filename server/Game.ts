@@ -84,8 +84,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let inputs = playerInput.getInputs();
 			let player = this.#players[idx];
 
-			console.clear();
-			console.log(inputs);
+			//console.clear();
+			//console.log(inputs);
 
 			// Make dedicated movement information object to avoid letting the
 			// player entity
