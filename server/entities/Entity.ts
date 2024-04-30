@@ -8,12 +8,16 @@ export abstract class Entity {
 	type: string;
 	body: phys.Body;
 	model: ModelId[];
+	// tags system is very helpful for scalablilities and is also used in Unity
+	// example: a crafting table entity that players can also jump on
+	tags: Set<string>;
 
 	constructor(name: string, model: ModelId[] = []) {
 		this.name = name;
 		this.type = "entity";
 		this.body = new phys.Body();
 		this.model = model;
+		this.tags = new Set();
 	}
 
 	getPos(): phys.Vec3 {
@@ -29,7 +33,14 @@ export abstract class Entity {
 		world.removeBody(this.body);
 	}
 
+	onCollide(otherEntity: Entity): void {
+		// console.log("wow collide");
+	}
+
 	abstract serialize(): SerializedEntity;
+
+	static readonly ENVIRONMENT_COLLISION_GROUP = 2;
+	static readonly EPSILON = 0.01;
 }
 
 /**

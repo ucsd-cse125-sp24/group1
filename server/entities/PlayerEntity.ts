@@ -4,6 +4,7 @@ import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
+import { TheWorld } from "../physics";
 
 export class PlayerEntity extends Entity {
 	// type: string;
@@ -64,6 +65,7 @@ export class PlayerEntity extends Entity {
 
 	move(movement: MovementInfo) {
 		//this is bugged!
+		this.checkOnGround();
 
 		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
 		forwardVector.normalize();
@@ -87,13 +89,44 @@ export class PlayerEntity extends Entity {
 
 		movementVector.normalize();
 
-		if (movement.forward) {
-			console.log(forwardVector);
-			console.log(movementVector);
+		// if (movement.forward) {
+		// 	console.log(forwardVector);
+		// 	console.log(movementVector);
+		// }
+
+		// if (movement.jump) console.log("jump");
+		// if (this.onGround) console.log("based");
+		if (movement.jump && this.onGround) {
+			// chatGPT for debug string
+			const stringsArray = ["weeeee", "yahooooo", "mario", "yap", "hawaii"];
+			const randomIndex = Math.floor(Math.random() * stringsArray.length);
+			const randomString = stringsArray[randomIndex];
+			console.log(randomString);
 		}
 
-		this.body.applyForce(movementVector.scale(this.speed));
+		if (this.body.force.length() < 2) {
+			this.body.applyForce(movementVector.scale(this.speed));
+		}
 	}
+
+	checkOnGround(): void {
+		const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
+		const result = TheWorld.castRay(checkerRay, {
+			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
+			checkCollisionResponse: false,
+		});
+		// console.log(checkerRay);
+		// console.log(result);
+
+		this.onGround = false;
+		if (result.hasHit) {
+			if (result.distance <= 0.5 + Entity.EPSILON) {
+				this.onGround = true;
+			}
+		}
+	}
+
+	override onCollide(otherEntity: Entity): void {}
 
 	serialize(): SerializedEntity {
 		return {
