@@ -1,6 +1,4 @@
 import { mat4, vec3 } from "gl-matrix";
-import { fish1 } from "../assets/models/fish1";
-import { fish2 } from "../assets/models/fish2";
 import { Vector3 } from "../common/commontypes";
 import { ClientInputMessage, ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
@@ -130,9 +128,20 @@ const handleFreecam = (e: KeyboardEvent) => {
 };
 window.addEventListener("keydown", handleFreecam);
 
+// Define client-side only entities (to debug rendering)
 const box1 = new ClientEntity(engine, "", [engine.models.box1]);
 const box2 = new ClientEntity(engine, "", [engine.models.box2]);
 const box3 = new ClientEntity(engine, "", [engine.models.box3]);
+const fish1 = new ClientEntity(engine, "", [engine.models.fish1]);
+const fish2 = new ClientEntity(engine, "", [engine.models.fish2]);
+const tempEntities = [
+	box1,
+	box2,
+	box3,
+	new ClientEntity(engine, "", [engine.models.donut], mat4.fromTranslation(mat4.create(), [7, -5, 7])),
+	new ClientEntity(engine, "", [engine.models.cavecube], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
+	new ClientEntity(engine, "", [engine.models.defaultCubeColor], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
+];
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
@@ -147,7 +156,19 @@ const paint = () => {
 	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
 	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
 	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
+	fish1.transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
+	mat4.scale(fish1.transform, fish1.transform, [10, 10, 10]);
+	mat4.multiply(fish1.transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), fish1.transform);
+	fish2.transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
+	mat4.rotateY(fish2.transform, fish2.transform, -Date.now() / 10000);
+	tempLights[0].intensity = vec3.fromValues(
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 100,
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 50,
+		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 10,
+	);
+	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 10, 3, Math.sin(Date.now() / 300) * 10);
 
+	// Set camera position
 	if (!freecam) {
 		for (const entity of entities) {
 			entity.visible = entity.name !== cameraLockTarget;
@@ -163,36 +184,15 @@ const paint = () => {
 
 	engine.clear();
 
+	// Cast shadows
 	for (const light of tempLights) {
-		light.renderShadowMap(entities);
+		light.renderShadowMap([...entities, ...tempEntities]);
 	}
 
 	engine.startRender();
 	engine.clear();
 
-	const view = camera.getViewProjectionMatrix();
-	box1.draw(view);
-	box2.draw(view);
-	box3.draw(view);
-	for (const entity of entities) {
-		entity.draw(view);
-	}
-	engine.wireframeMaterial.use();
-	engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_view"), false, view);
-	engine.gl.disable(engine.gl.CULL_FACE);
-	for (const entity of entities) {
-		entity.drawWireframe();
-	}
-	engine.gl.enable(engine.gl.CULL_FACE);
-	engine.gltfMaterial.use();
-
-	tempLights[0].intensity = vec3.fromValues(
-		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 100,
-		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 50,
-		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 10,
-	);
-	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 10, 3, Math.sin(Date.now() / 300) * 10);
-
+	// Set up lighting
 	const lightPositions: number[] = [];
 	const lightIntensities: number[] = [];
 	for (let i = 0; i < tempLights.length; i++) {
@@ -211,29 +211,20 @@ const paint = () => {
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), 0.2, 0.2, 0.2, 1);
 
-	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_view"), false, view);
-	engine.gl.uniformMatrix4fv(
-		engine.gltfMaterial.uniform("u_model"),
-		false,
-		mat4.fromTranslation(mat4.create(), [7, -5, 7]),
-	);
-	engine.models.donut.draw();
-	engine.gl.uniformMatrix4fv(
-		engine.gltfMaterial.uniform("u_model"),
-		false,
-		mat4.fromTranslation(mat4.create(), [5, -10, 5]),
-	);
-	engine.models.cavecube.draw();
-	engine.models.defaultCubeColor.draw();
-	let transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
-	mat4.scale(transform, transform, [10, 10, 10]);
-	mat4.multiply(transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), transform);
-	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	engine.models.fish1.draw();
-	transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
-	mat4.rotateY(transform, transform, -Date.now() / 10000);
-	engine.gl.uniformMatrix4fv(engine.gltfMaterial.uniform("u_model"), false, transform);
-	engine.models.fish2.draw();
+	// Draw entities
+	const view = camera.getViewProjectionMatrix();
+	for (const entity of [...entities, ...tempEntities]) {
+		entity.draw(view);
+	}
+
+	// Draw wireframes
+	engine.wireframeMaterial.use();
+	engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_view"), false, view);
+	engine.gl.disable(engine.gl.CULL_FACE);
+	for (const entity of entities) {
+		entity.drawWireframe();
+	}
+	engine.gl.enable(engine.gl.CULL_FACE);
 
 	engine.stopRender();
 
