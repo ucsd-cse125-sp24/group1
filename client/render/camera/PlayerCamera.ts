@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
-import { Camera } from "./Camera";
 import GraphicsEngine from "../engine/GraphicsEngine";
 import { InputListener } from "../../net/input";
+import { Camera } from "./Camera";
 
 /** How fast the camera rotates in radians per pixel moved by the mouse */
 const ROTATION_RATE: number = (0.5 * Math.PI) / 180;

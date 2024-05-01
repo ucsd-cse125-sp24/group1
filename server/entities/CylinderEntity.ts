@@ -1,9 +1,9 @@
-import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { v3 } from "../physics";
 import { SerializedEntity } from "../../common/messages";
+import { Entity } from "./Entity";
 
 export class CylinderEntity extends Entity {
 	static NUM_SEGMENTS = 20;

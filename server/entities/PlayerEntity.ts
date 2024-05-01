@@ -1,10 +1,10 @@
-import { Entity } from "./Entity";
 import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
+import { Entity } from "./Entity";
 
 export class PlayerEntity extends Entity {
 	// type: string;

@@ -7,14 +7,14 @@
  * This class serves as the ground source of truth for anything concerning the game
  */
 
-import { TheWorld, v3 } from "./physics";
+import { Body } from "cannon-es";
+import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
+import { MovementInfo } from "../common/commontypes";
+import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
-import { ClientInputs, ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { PlayerEntity } from "./entities/PlayerEntity";
 import { CubeEntity } from "./entities/CubeEntity";
 import { Entity } from "./entities/Entity";
-import { Body, Cylinder, Plane, Sphere } from "cannon-es";
-import { MovementInfo, Vector3 } from "../common/commontypes";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";

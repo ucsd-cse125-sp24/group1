@@ -1,9 +1,9 @@
-import { Server, ServerHandlers } from "./Server";
-import express from "express";
 import http from "http";
 import path, { dirname } from "path";
-import { WebSocket, WebSocketServer } from "ws";
 import { fileURLToPath } from "url";
+import { WebSocket, WebSocketServer } from "ws";
+import express from "express";
+import { Server, ServerHandlers } from "./Server";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

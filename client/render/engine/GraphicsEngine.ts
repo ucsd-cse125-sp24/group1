@@ -1,20 +1,18 @@
-import basicFragmentSource from "../../shaders/basic.frag";
 import basicVertexSource from "../../shaders/basic.vert";
 import gltfFragmentSource from "../../shaders/gltf.frag";
 import gltfVertexSource from "../../shaders/gltf.vert";
 import wireframeFragmentSource from "../../shaders/wireframe.frag";
 import wireframeVertexSource from "../../shaders/wireframe.vert";
-import toonShaderSouce from "../../shaders/toon.frag";
 import toonShaderSouce2 from "../../shaders/toon2.frag";
-import { WebGlUtils } from "./WebGlUtils";
 import { BoxGeometry } from "../geometries/BoxGeometry";
-import { ShaderProgram } from "./ShaderProgram";
 import particleFragmentSource from "../../shaders/particle.frag";
 import particleVertexSource from "../../shaders/particle.vert";
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
 import { getModels } from "../../../assets/models";
 import { SerializedCollider } from "../../../common/messages";
+import { ShaderProgram } from "./ShaderProgram";
+import { WebGlUtils } from "./WebGlUtils";
 
 /**
  * Handles helper functions for interacting with WebGL.

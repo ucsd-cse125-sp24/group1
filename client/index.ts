@@ -3,19 +3,13 @@ import { Vector3 } from "../common/commontypes";
 import { ClientInputMessage, ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
-import { GltfModelWrapper } from "./render/model/gltf-parser";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/input";
 import { PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
-import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
-import { particleGeometry } from "./render/geometries/ParticleGeometry";
-import { cavecube } from "../assets/models/cavecube";
-import { defaultCubeColor } from "../assets/models/default-cube-color";
-import { donut } from "../assets/models/donut";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {

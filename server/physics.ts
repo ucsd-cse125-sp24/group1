@@ -1,5 +1,5 @@
 import * as phys from "cannon-es";
-import { Box, Material, Body, Plane, World } from "cannon-es";
+import { Box, Body, Plane, World } from "cannon-es";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { SerializedCollider, SerializedEntity } from "../common/messages";
 import { PlayerGroundCM, PlayerPlayerCM, PlayerSlipperyCM, SlipperyGroundCM } from "./materials/ContactMaterials";
