@@ -33,7 +33,8 @@ void main(void) {
     gl_PointSize = 20.0 * (1.0 - (age / a_life));
 
     if(age > a_life){
-        float r = random(vec2(gl_VertexID, u_time));
+        //float r = random(vec2(gl_VertexID, u_time));
+        float r = random(vec2(gl_InstanceID,u_time));
         float ra = 6.283 * r;
         float rx = r * cos(ra);
         float rz = r * sin(ra);
@@ -42,7 +43,7 @@ void main(void) {
         v_age = u_time;
         v_life = a_life;
     } else {
-        v_velocity = a_velocity - vec3(0.0, 0.01, 0.0);
+        v_velocity = a_velocity; // - vec3(0.0, 0.01, 0.0);
         v_position = a_position + 0.01 * v_velocity;
         v_age = a_age;
         v_life = a_life;
