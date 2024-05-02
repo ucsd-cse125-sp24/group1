@@ -33,7 +33,7 @@ export class particleGeometry implements Model {
 		var aVert 	= new Float32Array( [0,-0.5,0] );
 		this.vertCount = aVert.length / 3;
 
-		var ti = 1000, ii;
+		var ti = 100000, ii;
 		var aPos	= new Float32Array(ti * 3);	//not really needed if shader can set data initially
 		var	aVel 	= new Float32Array(ti * 3);
 		var	aAge 	= new Float32Array(ti);

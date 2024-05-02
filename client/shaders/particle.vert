@@ -43,7 +43,7 @@ void main(void) {
         v_age = u_time;
         v_life = a_life;
     } else {
-        v_velocity = a_velocity; // - vec3(0.0, 0.01, 0.0);
+        v_velocity = a_velocity - vec3(0.0, 0.01, 0.0);
         v_position = a_position + 0.01 * v_velocity;
         v_age = a_age;
         v_life = a_life;
