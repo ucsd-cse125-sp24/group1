@@ -13,8 +13,10 @@ export class particleGeometry implements Model {
 	#texture: WebGLTexture;
 	tFeedback: WebGLTransformFeedback[];
 	totalParticles: number;
+	vertCount: number;
 	startTime = Date.now();
 	vaoCurrent: number;
+
 	constructor(shader: ShaderProgram, size: vec3) {
 		this.shader = shader;
 
@@ -24,10 +26,30 @@ export class particleGeometry implements Model {
 			dy = size[1] / 2,
 			dz = size[2] / 2;
 
-		const aPos = new Float32Array([3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
-		const aVel = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]);
-		const aAge = new Float32Array([-9000, -9000, -9000, -9000]); //sinceStart, starts at 0, utime - age needs to be negative so the two cancel out and makes it a possitive, so time0 + age > life can happen.
-		const aLife = new Float32Array([8000, 5000, 3000, 7000]);
+		// const aPos = new Float32Array([3, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+		// const aVel = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]);
+		// const aAge = new Float32Array([-9000, -9000, -9000, -9000]); //sinceStart, starts at 0, utime - age needs to be negative so the two cancel out and makes it a possitive, so time0 + age > life can happen.
+		// const aLife = new Float32Array([8000, 5000, 3000, 7000]);
+		var aVert 	= new Float32Array( [0,-0.5,0] );
+		this.vertCount = aVert.length / 3;
+
+		var ti = 10, ii;
+		var aPos	= new Float32Array(ti * 3);	//not really needed if shader can set data initially
+		var	aVel 	= new Float32Array(ti * 3);
+		var	aAge 	= new Float32Array(ti);
+		var	aLife 	= new Float32Array(ti);
+
+		for(var i=0; i < ti; i++){
+			ii = i * 3;
+			aPos[i] 	= 0; 		
+			aPos[i+1] = 0;		
+			aPos[i+2] = 0; 
+			aVel[i] 	= 0; 		
+			aVel[i+1] = 4;		
+			aVel[i+2] = 0;
+			aAge[i] 	= -9000;
+			aLife[i] 	= (Math.random() * 4000) + 2000; //Random Life between 2 to 8 Seconds
+		}
 
 		var aVao = [
 			gl.createVertexArray() ?? expect("Failed to create VAO position buffer"),
@@ -42,32 +64,47 @@ export class particleGeometry implements Model {
 		this.tFeedback = aTFB;
 		this.totalParticles = aLife.length;
 
+
+
 		for (var i = 0; i < aVao.length; i++) {
+
+
 			gl.bindVertexArray(this.#VAO[i]);
+
+			const VBO_vertices = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
+			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_vertices);
+			gl.bufferData(gl.ARRAY_BUFFER, aPos, gl.STREAM_COPY);
+			gl.vertexAttribPointer(shader.attrib("a_vertices"), 3, gl.FLOAT, false, 0, 0);
+			gl.enableVertexAttribArray(shader.attrib("a_vertices"));
 
 			const VBO_positions = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_positions);
 			gl.bufferData(gl.ARRAY_BUFFER, aPos, gl.STREAM_COPY);
 			gl.vertexAttribPointer(shader.attrib("a_position"), 3, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(shader.attrib("a_position"));
+			gl.vertexAttribDivisor(1, 1); //Instance the Buffer
 
 			const VBO_velocity = gl.createBuffer() ?? expect("Failed to create VAO normal buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_velocity);
 			gl.bufferData(gl.ARRAY_BUFFER, aVel, gl.STREAM_COPY);
 			gl.vertexAttribPointer(shader.attrib("a_velocity"), 3, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(shader.attrib("a_velocity"));
+			gl.vertexAttribDivisor(2, 1); //Instance the Buffer
+			
 
 			const VBO_age = gl.createBuffer() ?? expect("Failed to create VAO texcoord buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_age);
 			gl.bufferData(gl.ARRAY_BUFFER, aAge, gl.STREAM_COPY);
 			gl.vertexAttribPointer(shader.attrib("a_age"), 1, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(shader.attrib("a_age"));
+			gl.vertexAttribDivisor(3, 1); //Instance the Buffer
 
 			const VBO_life = gl.createBuffer() ?? expect("Failed to create VAO texcoord buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_life);
 			gl.bufferData(gl.ARRAY_BUFFER, aLife, gl.STREAM_COPY);
 			gl.vertexAttribPointer(shader.attrib("a_life"), 1, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(shader.attrib("a_life"));
+			gl.vertexAttribDivisor(4, 1);	//Instance the Buffer
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
@@ -112,7 +149,8 @@ export class particleGeometry implements Model {
 		gl.uniform1f(this.shader.uniform("u_time"), Date.now() - this.startTime);
 
 		gl.beginTransformFeedback(gl.POINTS);
-		gl.drawArrays(gl.POINTS, 0, this.totalParticles);
+		//gl.drawArrays(gl.POINTS, 0, this.totalParticles);
+		gl.drawArraysInstanced(gl.POINTS, 0, this.vertCount, this.totalParticles); //Drawing Instance
 		gl.endTransformFeedback();
 
 		gl.bindVertexArray(null);
