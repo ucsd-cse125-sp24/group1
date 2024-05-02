@@ -19,6 +19,7 @@ import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
 import { ServerHandlers } from "./net/Server";
+import { HeroEntity } from "./entities/HeroEntity";
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	// Store all of the player inputs, there is just one for now
@@ -67,7 +68,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	setup() {
-		let p1 = new PlayerEntity("Player One", [20, 20, 20], ["samplePlayer"]);
+		let p1 = new HeroEntity("Player One", [20, 20, 20], ["samplePlayer"]);
 		this.#players.push(p1);
 		this.registerEntity(p1);
 
