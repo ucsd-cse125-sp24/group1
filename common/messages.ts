@@ -13,7 +13,7 @@ export type EntireGameState = {
 /**
  * A message from the server that tells the client to make the camera follow an
  * entity, locking the camera to its position. The client is free to rotate its
- * camera around, however.
+ * camera around in first-person mode, however.
  */
 export type CameraLock = {
 	type: "camera-lock";
@@ -24,6 +24,12 @@ export type CameraLock = {
 	 * camera may stop moving.
 	 */
 	entityName: string;
+	/**
+	 * Camera point of view directive. In first-person mode, the camera locks to
+	 * the POV of the entity and can rotate freely. In top-down mode, the camera
+	 * locks to a point above the entity and has fixed rotation looking downward.
+	 */
+	pov: "first-person" | "top-down";
 };
 
 export type ClientInputs = {

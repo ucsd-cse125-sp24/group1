@@ -11,6 +11,9 @@ const ROTATION_RATE: number = (0.5 * Math.PI) / 180;
  */
 export class PlayerCamera extends Camera {
 	#sensitivity: number = 1;
+	canRotate: boolean = true;
+
+	// For freecam mode
 	#isFree: boolean = false;
 	#inputListener: InputListener<string>;
 	#inputs: Record<string, boolean>;
@@ -53,7 +56,7 @@ export class PlayerCamera extends Camera {
 		});
 	}
 
-	setFree(isFree: boolean) {
+	setFree(isFree: boolean): void {
 		this.#isFree = isFree;
 		if (isFree) {
 			this.#inputListener.listen();
@@ -111,6 +114,9 @@ export class PlayerCamera extends Camera {
 	};
 
 	#handleMouseMove = ({ movementX, movementY }: { movementX: number; movementY: number }) => {
+		if (!this.canRotate) {
+			return;
+		}
 		this.setOrientation(
 			this._orientation[0] + movementY * this.#sensitivity * ROTATION_RATE,
 			this._orientation[1] - movementX * this.#sensitivity * ROTATION_RATE,

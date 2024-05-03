@@ -124,7 +124,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		// access to WebSocket connection objects that you can store in each player
 		// object; if so, you can switch the server to always use WsServer.ts (and
 		// ignore the web worker stuff) until you get it working
-		return [{ type: "camera-lock", entityName: "Player One" }];
+		return [{ type: "camera-lock", entityName: "Player One", pov: "first-person" }];
 	}
 
 	/**

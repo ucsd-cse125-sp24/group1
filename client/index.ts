@@ -24,6 +24,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
 let cameraLockTarget: string | null = null;
+let isFirstPerson: boolean = true;
 let freecam: boolean = false; // for debug purposes
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
@@ -41,6 +42,8 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			break;
 		case "camera-lock":
 			cameraLockTarget = data.entityName;
+			isFirstPerson = data.pov === "first-person";
+			camera.canRotate = isFirstPerson;
 			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
@@ -164,13 +167,23 @@ const paint = () => {
 
 	// Set camera position
 	if (!freecam) {
-		for (const entity of entities) {
-			entity.visible = entity.name !== cameraLockTarget;
+		if (isFirstPerson) {
+			for (const entity of entities) {
+				entity.visible = entity.name !== cameraLockTarget;
+			}
 		}
 
 		const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
 		if (cameraTarget) {
-			camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+			if (isFirstPerson) {
+				camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+			} else {
+				const offset = vec3.fromValues(-2, 10, 0);
+				const position: vec3 = mat4.getTranslation(vec3.create(), cameraTarget.transform);
+				vec3.add(position, position, offset);
+				camera.setPosition(position);
+				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
+			}
 		}
 	} else {
 		camera.update();
