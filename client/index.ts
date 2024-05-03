@@ -10,6 +10,7 @@ import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
+import { RenderPipeline } from "./render/engine/RenderPipeline";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -56,6 +57,7 @@ const connection = new Connection<ServerMessage, ClientMessage>(
 );
 
 const engine = new GraphicsEngine(getGl());
+const pipeline = new RenderPipeline(engine);
 const camera = new PlayerCamera(
 	vec3.fromValues(5, 5, 5),
 	vec3.fromValues(0, Math.PI, 0),
@@ -196,7 +198,7 @@ const paint = () => {
 		light.renderShadowMap([...entities, ...tempEntities]);
 	}
 
-	engine.startRender();
+	pipeline.startRender();
 	engine.clear();
 
 	// Set up lighting
@@ -233,9 +235,9 @@ const paint = () => {
 	}
 	engine.gl.enable(engine.gl.CULL_FACE);
 
-	engine.stopRender();
+	pipeline.stopRender();
 
-	engine.draw();
+	pipeline.draw();
 
 	window.requestAnimationFrame(paint);
 
