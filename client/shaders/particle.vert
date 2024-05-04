@@ -1,8 +1,9 @@
 #version 300 es
-layout(location=0) in vec3 a_position;	
-layout(location=1) in vec3 a_velocity; //which direction to move an how fast
-layout(location=2) in float a_age;	//current age of particle in seconds
-layout(location=3) in float a_life;	//Length of age a particle is allowed to live
+layout(location=0) in vec3 a_vertices;
+layout(location=1) in vec3 a_position;
+layout(location=2) in vec3 a_velocity; //which direction to move an how fast
+layout(location=3) in float	a_age;
+layout(location=4) in float	a_life;
 
 
 out vec3 v_position;
@@ -18,21 +19,22 @@ uniform mat4 uModalMatrix;
 
 
 // A simple hash function
-float hash(float n) {
-    return fract(sin(n) * 43758.5453123);
-}
-
-// Pseudo-random number generator
-float random(vec2 st) {
-    return hash(dot(st, vec2(12.9898,78.233)));
-}
+highp float random(vec2 co){
+		highp float a = 12.9898;
+		highp float b = 78.233;
+		highp float c = 43758.5453;
+		highp float dt = dot(co.xy ,vec2(a,b));
+		highp float sn = mod(dt,3.14);
+		return fract(sin(sn) * c);
+	}
 
 void main(void) {
     float age = u_time - a_age;
-    gl_PointSize = 10.0;
+    gl_PointSize = 20.0 * (1.0 - (age / a_life));
 
     if(age > a_life){
-        float r = random(vec2(gl_VertexID, u_time));
+        //float r = random(vec2(gl_VertexID, u_time));
+        float r = random(vec2(gl_InstanceID,u_time));
         float ra = 6.283 * r;
         float rx = r * cos(ra);
         float rz = r * sin(ra);
@@ -41,10 +43,10 @@ void main(void) {
         v_age = u_time;
         v_life = a_life;
     } else {
-        v_velocity = a_velocity - vec3(0.0, 0.05, 0.0);
+        v_velocity = a_velocity - vec3(0.0, 0.01, 0.0);
         v_position = a_position + 0.01 * v_velocity;
         v_age = a_age;
         v_life = a_life;
     }
-    gl_Position = u_view * u_model * vec4(v_position, 1.0);
+    gl_Position = u_view * u_model * vec4(a_vertices + v_position, 1.0);
 }
