@@ -3,19 +3,17 @@ import { Vector3 } from "../common/commontypes";
 import { ClientInputMessage, ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
-import { GltfModelWrapper } from "./render/model/gltf-parser";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/input";
 import { PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
-import { BoxGeometry } from "./render/geometries/BoxGeometry";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
-import { particleGeometry } from "./render/geometries/ParticleGeometry";
-import { cavecube } from "../assets/models/cavecube";
-import { defaultCubeColor } from "../assets/models/default-cube-color";
-import { donut } from "../assets/models/donut";
+import { RenderPipeline } from "./render/engine/RenderPipeline";
+import { ShaderProgram } from "./render/engine/ShaderProgram";
+import filterVertexSource from "./shaders/filter.vert";
+import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -30,6 +28,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
 let cameraLockTarget: string | null = null;
+let isFirstPerson: boolean = true;
 let freecam: boolean = false; // for debug purposes
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
@@ -47,6 +46,8 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			break;
 		case "camera-lock":
 			cameraLockTarget = data.entityName;
+			isFirstPerson = data.pov === "first-person";
+			camera.canRotate = isFirstPerson;
 			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
@@ -59,6 +60,17 @@ const connection = new Connection<ServerMessage, ClientMessage>(
 );
 
 const engine = new GraphicsEngine(getGl());
+const pipeline = new RenderPipeline(engine);
+// pipeline.addFilter(pipeline.noOpFilter);
+pipeline.addFilter(
+	new ShaderProgram(
+		engine,
+		engine.createProgram(
+			engine.createShader("vertex", filterVertexSource, "filter.vert"),
+			engine.createShader("fragment", outlineFilterFragmentSource, "outlineFilter.frag"),
+		),
+	),
+);
 const camera = new PlayerCamera(
 	vec3.fromValues(5, 5, 5),
 	vec3.fromValues(0, Math.PI, 0),
@@ -147,8 +159,8 @@ const tempEntities = [
  * Up to 8 lights allowed by the gltf.frag shader
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(10, 10, 10)),
-	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(30, 30, 30)),
+	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(0.3, 0.3, 0.3)),
+	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(1, 1, 1)),
 ];
 
 const paint = () => {
@@ -161,22 +173,32 @@ const paint = () => {
 	mat4.multiply(fish1.transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), fish1.transform);
 	fish2.transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
 	mat4.rotateY(fish2.transform, fish2.transform, -Date.now() / 10000);
-	tempLights[0].intensity = vec3.fromValues(
-		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 100,
-		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 50,
-		10 + ((Math.sin(Date.now() / 500) + 1) / 2) * 10,
+	tempLights[0].color = vec3.fromValues(
+		((Math.sin(Date.now() / 500) + 1) / 2) * 1,
+		((Math.sin(Date.now() / 500) + 1) / 2) * 0.5,
+		((Math.sin(Date.now() / 500) + 1) / 2) * 0.1,
 	);
 	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 10, 3, Math.sin(Date.now() / 300) * 10);
 
 	// Set camera position
 	if (!freecam) {
-		for (const entity of entities) {
-			entity.visible = entity.name !== cameraLockTarget;
+		if (isFirstPerson) {
+			for (const entity of entities) {
+				entity.visible = entity.name !== cameraLockTarget;
+			}
 		}
 
 		const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
 		if (cameraTarget) {
-			camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+			if (isFirstPerson) {
+				camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+			} else {
+				const offset = vec3.fromValues(-2, 10, 0);
+				const position: vec3 = mat4.getTranslation(vec3.create(), cameraTarget.transform);
+				vec3.add(position, position, offset);
+				camera.setPosition(position);
+				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
+			}
 		}
 	} else {
 		camera.update();
@@ -189,16 +211,16 @@ const paint = () => {
 		light.renderShadowMap([...entities, ...tempEntities]);
 	}
 
-	engine.startRender();
+	pipeline.startRender();
 	engine.clear();
 
 	// Set up lighting
 	const lightPositions: number[] = [];
-	const lightIntensities: number[] = [];
+	const lightColors: number[] = [];
 	for (let i = 0; i < tempLights.length; i++) {
 		const light = tempLights[i];
 		lightPositions.push(...light.position);
-		lightIntensities.push(...light.intensity);
+		lightColors.push(...light.color);
 		const shadowMap = light.getShadowMap();
 		// Bind up to 8 shadow maps to texture indices 4..11
 		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
@@ -207,7 +229,7 @@ const paint = () => {
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_eye_pos"), camera.getPosition());
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_num_lights"), tempLights.length);
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
-	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_intensities[0]"), lightIntensities);
+	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), 0.2, 0.2, 0.2, 1);
 
@@ -226,9 +248,9 @@ const paint = () => {
 	}
 	engine.gl.enable(engine.gl.CULL_FACE);
 
-	engine.stopRender();
+	pipeline.stopRender();
 
-	engine.draw();
+	pipeline.draw();
 
 	window.requestAnimationFrame(paint);
 

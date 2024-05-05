@@ -28,11 +28,10 @@ uniform float u_alpha_cutoff;
 uniform vec3 u_eye_pos;
 uniform int u_num_lights;
 uniform vec3 u_point_lights[MAX_LIGHTS];
-uniform vec3 u_point_intensities[MAX_LIGHTS];
+uniform vec3 u_point_colors[MAX_LIGHTS];
 uniform samplerCube u_point_shadow_maps[MAX_LIGHTS];
 uniform vec4 u_ambient_light;
 
-// TEMP: converting from shadow map to world space
 float near = 0.001;
 float far = 100.0;
 float linearizeDepth(float depth) {
@@ -40,7 +39,6 @@ float linearizeDepth(float depth) {
   float z = depth * 2.0 - 1.0; // convert to normalized device coords [-1, 1]
   return (2.0 * near * far) / (far + near - z * (far - near));
 }
-// end TEMP
 
 void main() {
   vec4 base_color =
@@ -58,18 +56,21 @@ void main() {
            ? texture2D(u_texture_metallic_roughness, v_texcoord1).g
            : 1.0);
 
-  // gl_FragColor = base_color * (1.0 + 0.0 * unused);
-
   vec3 to_eye = normalize(u_eye_pos - v_position);
-  vec4 specular = vec4(0.5, 0.5, 0.5, 1.0);
+  vec4 base_specular = vec4(0.5, 0.5, 0.5, 1.0);
   float shininess = 4.0;
-  vec4 irradiance = u_ambient_light * base_color;
+  
+  gl_FragColor = u_ambient_light * base_color;
   for (int i = 0; i < MAX_LIGHTS; i++) {
     if (i >= u_num_lights) {
       break;
     }
+
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
+    if (distance > 10.0) {
+      continue;
+    }
     to_light = to_light / distance;
     float shadow_dist =
         linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
@@ -77,14 +78,18 @@ void main() {
       // occluded
       continue;
     }
+
     vec3 half_vector = normalize(to_light + to_eye);
-    vec4 intensity = vec4(u_point_intensities[i], 1.0) / (distance * distance);
-    irradiance += base_color * max(dot(to_light, v_normal), 0.0) * intensity +
-                  specular *
-                      pow(max(dot(half_vector, v_normal), 0.0), shininess) *
-                      intensity;
+    vec4 light_color = vec4(u_point_colors[i], 1.0); // / (distance * distance);
+    vec4 diffuse_factor = step(0.5, dot(to_light, v_normal)) * light_color;
+    vec4 diffuse = base_color * diffuse_factor;
+    vec4 specular_factor = step(
+        0.875,
+        pow(max(dot(half_vector, v_normal), 0.0), shininess) * light_color);
+    vec4 specular = base_specular * specular_factor;
+
+    gl_FragColor += diffuse + 0.0 * specular;
   }
-  gl_FragColor = irradiance;
 
   if (base_color.a < u_alpha_cutoff) {
     discard;

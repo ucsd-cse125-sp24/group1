@@ -54,6 +54,4 @@ export class ShaderProgram {
 		this.engine.gl.transformFeedbackVaryings(this.#program, varNames, this.engine.gl.INTERLEAVED_ATTRIBS);
 		return this;
 	}
-
-	
 }

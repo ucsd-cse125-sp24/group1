@@ -5,15 +5,15 @@ import { ClientEntity } from "../ClientEntity";
 
 export class PointLight {
 	position: vec3;
-	intensity: vec3;
+	color: vec3;
 	#shadowCamera: ShadowMapCamera;
 	#shadowMapSize = 1024;
 	#engine: GraphicsEngine;
 
-	constructor(engine: GraphicsEngine, position: vec3, intensity: vec3) {
+	constructor(engine: GraphicsEngine, position: vec3, color: vec3) {
 		this.#engine = engine;
 		this.position = position;
-		this.intensity = intensity;
+		this.color = color;
 		this.#shadowCamera = new ShadowMapCamera(position, 0.001, 100, this.#shadowMapSize, engine);
 	}
 
