@@ -252,9 +252,9 @@ const paint = () => {
 
 	pipeline.draw();
 
-	window.requestAnimationFrame(paint);
-
 	engine.checkError();
+
+	window.requestAnimationFrame(paint);
 };
 
 connection.connect();
