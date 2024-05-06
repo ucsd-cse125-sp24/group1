@@ -1,7 +1,8 @@
 import * as phys from "cannon-es";
-import { MovementInfo, Vector3 } from "../../../common/commontypes";
+import { Vector3 } from "../../../common/commontypes";
 import type { ModelId } from "../../../common/models";
 import { SerializedEntity } from "../../../common/messages";
+import { PlayerEntity } from "../PlayerEntity";
 import { InteractableEntity } from "./InteractableEntity";
 import { PlayerEntity } from "../PlayerEntity";
 import { HeroEntity } from "../HeroEntity";

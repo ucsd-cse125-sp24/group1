@@ -1,7 +1,8 @@
 import * as phys from "cannon-es";
-import { MovementInfo, Vector3 } from "../../../common/commontypes";
+import { Vector3 } from "../../../common/commontypes";
 import type { ModelId } from "../../../common/models";
 import { SerializedEntity } from "../../../common/messages";
+import { PlayerEntity } from "../PlayerEntity";
 import { InteractableEntity } from "./InteractableEntity";
 import { PlayerEntity } from "../PlayerEntity";
 import { HeroEntity } from "../HeroEntity";
@@ -12,6 +13,8 @@ export class Item extends InteractableEntity {
 	name: string;
 	body: phys.Body;
 	model: ModelId[];
+	radius: number;
+
 	radius: number;
 
 	// shape
@@ -25,6 +28,7 @@ export class Item extends InteractableEntity {
 		this.type = "item";
 		this.name = name;
 		this.model = model;
+		this.radius = radius;
 		this.radius = radius;
 
 		this.tags.add(tag);

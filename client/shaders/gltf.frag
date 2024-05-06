@@ -68,13 +68,10 @@ void main() {
 
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
-    if (distance > 10.0) {
-      continue;
-    }
     to_light = to_light / distance;
     float shadow_dist =
         linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
-    if (shadow_dist < distance - 0.005) {
+    if (distance > 10.0 || shadow_dist < distance - 0.005) {
       // occluded
       continue;
     }

@@ -3,10 +3,9 @@ import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
+import { TheWorld } from "../physics";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
-import { TheWorld } from "../physics";
-import { Item } from "./Interactable/Item";
 
 export class HeroEntity extends PlayerEntity {
 	type: string;
@@ -60,11 +59,13 @@ export class HeroEntity extends PlayerEntity {
 		this.body.addShape(this.sphereTop, new phys.Vec3(0, 0.25, 0));
 
 		// Add player capsule bottom
-
+		
+		
 		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.25, 0));
 	}
 
-	move(movement: MovementInfo) {
+	
+    move(movement: MovementInfo) {
 		//this is bugged!
 		this.checkOnGround();
 
