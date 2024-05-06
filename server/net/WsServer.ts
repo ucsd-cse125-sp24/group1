@@ -69,6 +69,13 @@ export class WsServer {
 			},
 		};
 
+		ws.on("open", () => {
+			this.#activeConnections.set(
+				[...crypto.getRandomValues(new Uint8Array(64))].map(x=>x.toString(16)).join(""),
+				ws
+			)
+		})
+
 		ws.on("message", (rawData) => {
 			this.handleMessage(ws, rawData, connection);
 		});
@@ -125,6 +132,11 @@ export class WsServer {
 			case "rejoin":
 				if (typeof data.id !== "string") return;
 				if (!this.#activeConnections.has(data.id)) return;
+
+				let oldId = this.getIdFromWebSocket(ws);
+				if (oldId) {
+					this.#activeConnections.delete(oldId);
+				}
 
 				this.#activeConnections.get(data.id)?.close();
 				this.#activeConnections.delete(data.id);
