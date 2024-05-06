@@ -1,4 +1,4 @@
-import { Server } from "./Server";
+import { Connection, Server } from "./Server";
 
 /**
  * Create a fake "server" that can run in a
@@ -17,9 +17,7 @@ import { Server } from "./Server";
  * In the future, we could explore moving this to a service worker so it can
  * control multiple "clients" on different tabs.
  */
-export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendType, symbol> {
-	static #CONN_ID = Symbol();
-
+export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendType> {
 	hasConnection = Promise.resolve();
 
 	broadcast(message: SendType): void {
@@ -27,15 +25,16 @@ export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendTy
 	}
 
 	listen(_port: number): void {
-		for (const message of this.handleOpen(WebWorker.#CONN_ID)) {
-			self.postMessage(JSON.stringify(message));
-		}
+		const connection: Connection<SendType> = {
+			send(message) {
+				self.postMessage(JSON.stringify(message));
+			},
+		};
+
+		this.handleOpen(connection);
 
 		self.addEventListener("message", (e) => {
-			const response = this.handleMessage(e.data, WebWorker.#CONN_ID);
-			if (response) {
-				self.postMessage(JSON.stringify(response));
-			}
+			this.handleMessage(e.data, connection);
 		});
 	}
 }

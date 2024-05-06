@@ -6,9 +6,11 @@ import { PlayerMaterial } from "../materials/SourceMaterials";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
 import { TheWorld } from "../physics";
-import { Item } from "./Interactable/Item";
 
-export class HeroEntity extends PlayerEntity {
+//LITERALLY A COPY OF THE HERO ENTITY RIGHT NOW
+//TODO FIX THIS!
+
+export class BossEntity extends PlayerEntity {
 	type: string;
 	name: string;
 	body: phys.Body;
@@ -68,8 +70,8 @@ export class HeroEntity extends PlayerEntity {
 		//this is bugged!
 		this.checkOnGround();
 
-		//this is bugged!
-		forwardVector.normali;
+		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
+		forwardVector.normalize();
 
 		let rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0));
 
@@ -100,12 +102,6 @@ export class HeroEntity extends PlayerEntity {
 
 		if (movement.jump && this.onGround) {
 			// chatGPT for debug string
-
-			if (this.itemInHands instanceof Item) {
-				//this is a little janky ngl
-				this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 0, -0.5));
-			}
-
 			const stringsArray = ["weeeee", "yahooooo", "mario", "yap", "hawaii"];
 			const randomIndex = Math.floor(Math.random() * stringsArray.length);
 			const randomString = stringsArray[randomIndex];

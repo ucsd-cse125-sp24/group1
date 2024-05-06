@@ -18,7 +18,7 @@ import { Entity } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
-import { ServerHandlers } from "./net/Server";
+import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
@@ -119,13 +119,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * of its onboarding process
 	 * @returns Messages to send to the new client
 	 */
-	handleOpen(id: number): ServerMessage[] {
+	handleOpen(conn: Connection<ServerMessage>): void {
 		// TODO: Create a player corresponding to this connection and lock the
 		// client's camera to it. This may involve reworking Server.ts to give
 		// access to WebSocket connection objects that you can store in each player
 		// object; if so, you can switch the server to always use WsServer.ts (and
 		// ignore the web worker stuff) until you get it working
-		return [{ type: "camera-lock", entityName: "Player One", pov: "first-person" }];
+		conn.send({ type: "camera-lock", entityName: "Player One", pov: "first-person" });
 	}
 
 	/**
@@ -136,21 +136,22 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * disconnect and reconnect, and this new connection will have a new ID.
 	 * @returns a ServerMessage
 	 */
-	handleMessage(data: ClientMessage, id: number): ServerMessage | undefined {
+	handleMessage(data: ClientMessage, conn: Connection<ServerMessage>): void {
 		switch (data.type) {
 			case "ping":
-				return {
+				conn.send({
 					type: "pong",
-				};
+				});
+				break;
 			case "pong":
-				return {
+				conn.send({
 					type: "ping",
-				};
+				});
+				break;
 			case "client-input": //THIS ONLY CHECKS PLAYER 1
 				this.#playerInputs[0].updateInputs(data);
 				break;
 		}
-		return;
 	}
 
 	#nextTick() {

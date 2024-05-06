@@ -1,13 +1,17 @@
+export interface Connection<SendType> {
+	send(data: SendType): void;
+}
+
 export type ServerHandlers<ReceiveType, SendType> = {
 	/**
 	 * Handle a new connection and decide what messages to send to it.
 	 */
-	handleOpen?: (id: number) => SendType[];
+	handleOpen?: (conn: Connection<SendType>) => void;
 	/**
 	 * Handles a message sent from the client, and decides what to reply with. It
 	 * can return `undefined` to not send back anything.
 	 */
-	handleMessage?: (data: ReceiveType, id: number) => SendType | undefined;
+	handleMessage?: (data: ReceiveType, conn: Connection<SendType>) => void;
 };
 
 /**
@@ -18,34 +22,32 @@ export type ServerHandlers<ReceiveType, SendType> = {
  * web worker that runs in the client. See the `WebWorker` class for why we're
  * doing that.
  */
-export abstract class Server<ReceiveType, SendType, Connection extends {} = unknown & {}> {
+export abstract class Server<ReceiveType, SendType> {
 	#handlers: ServerHandlers<ReceiveType, SendType>;
-	#connectionIds = new WeakMap<Connection, number>();
-	/** A promise that resolves when there's a connection */
+
+	/**
+	 * A promise that resolves when there's a connection.
+	 *
+	 * It's used to pause the server when no one is connected by having it wait
+	 * for this promise to resolve before continuing.
+	 */
 	abstract hasConnection: Promise<void>;
 
 	constructor(handlers: ServerHandlers<ReceiveType, SendType> = {}) {
 		this.#handlers = handlers;
 	}
 
-	#nextId = 1;
-	#getId(conn: Connection): number {
-		const id = this.#connectionIds.get(conn);
-		if (id) {
-			return id;
-		} else {
-			const id = this.#nextId;
-			this.#connectionIds.set(conn, id);
-			this.#nextId++;
-			return id;
-		}
+	/**
+	 * Why the level of indirection? This is just to mirror `handleMessage` (below) for consistency.
+	 */
+	handleOpen(conn: Connection<SendType>): void {
+		this.#handlers.handleOpen?.(conn);
 	}
 
-	handleOpen(conn: Connection): SendType[] {
-		return this.#handlers.handleOpen?.(this.#getId(conn)) ?? [];
-	}
-
-	handleMessage(rawData: unknown, conn: Connection): SendType | undefined {
+	/**
+	 * Parses the message as JSON and calls the `handleMessage` handler.
+	 */
+	handleMessage(rawData: unknown, conn: Connection<SendType>): void {
 		const stringData = Array.isArray(rawData) ? rawData.join("") : String(rawData);
 
 		let data: ReceiveType;
@@ -56,7 +58,7 @@ export abstract class Server<ReceiveType, SendType, Connection extends {} = unkn
 			return;
 		}
 
-		return this.#handlers.handleMessage?.(data, this.#getId(conn));
+		this.#handlers.handleMessage?.(data, conn);
 	}
 
 	/**
