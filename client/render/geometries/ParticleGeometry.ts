@@ -30,25 +30,26 @@ export class particleGeometry implements Model {
 		// const aVel = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]);
 		// const aAge = new Float32Array([-9000, -9000, -9000, -9000]); //sinceStart, starts at 0, utime - age needs to be negative so the two cancel out and makes it a possitive, so time0 + age > life can happen.
 		// const aLife = new Float32Array([8000, 5000, 3000, 7000]);
-		var aVert 	= new Float32Array( [0,-0.5,0] );
+		var aVert = new Float32Array([0, -0.5, 0]);
 		this.vertCount = aVert.length / 3;
 
-		var ti = 100000, ii;
-		var aPos	= new Float32Array(ti * 3);	//not really needed if shader can set data initially
-		var	aVel 	= new Float32Array(ti * 3);
-		var	aAge 	= new Float32Array(ti);
-		var	aLife 	= new Float32Array(ti);
+		var ti = 100000,
+			ii;
+		var aPos = new Float32Array(ti * 3); //not really needed if shader can set data initially
+		var aVel = new Float32Array(ti * 3);
+		var aAge = new Float32Array(ti);
+		var aLife = new Float32Array(ti);
 
-		for(var i=0; i < ti; i++){
+		for (var i = 0; i < ti; i++) {
 			ii = i * 3;
-			aPos[i] 	= 0; 		
-			aPos[i+1] = 0;		
-			aPos[i+2] = 0; 
-			aVel[i] 	= 0; 		
-			aVel[i+1] = 4;		
-			aVel[i+2] = 0;
-			aAge[i] 	= -9000;
-			aLife[i] 	= (Math.random() * 4000) + 2000; //Random Life between 2 to 8 Seconds
+			aPos[i] = 0;
+			aPos[i + 1] = 0;
+			aPos[i + 2] = 0;
+			aVel[i] = 0;
+			aVel[i + 1] = 4;
+			aVel[i + 2] = 0;
+			aAge[i] = -9000;
+			aLife[i] = Math.random() * 4000 + 2000; //Random Life between 2 to 8 Seconds
 		}
 
 		var aVao = [
@@ -64,11 +65,7 @@ export class particleGeometry implements Model {
 		this.tFeedback = aTFB;
 		this.totalParticles = aLife.length;
 
-
-
 		for (var i = 0; i < aVao.length; i++) {
-
-
 			gl.bindVertexArray(this.#VAO[i]);
 
 			const VBO_vertices = gl.createBuffer() ?? expect("Failed to create VAO position buffer");
@@ -90,7 +87,6 @@ export class particleGeometry implements Model {
 			gl.vertexAttribPointer(shader.attrib("a_velocity"), 3, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(shader.attrib("a_velocity"));
 			gl.vertexAttribDivisor(2, 1); //Instance the Buffer
-			
 
 			const VBO_age = gl.createBuffer() ?? expect("Failed to create VAO texcoord buffer");
 			gl.bindBuffer(gl.ARRAY_BUFFER, VBO_age);
@@ -104,7 +100,7 @@ export class particleGeometry implements Model {
 			gl.bufferData(gl.ARRAY_BUFFER, aLife, gl.STREAM_COPY);
 			gl.vertexAttribPointer(shader.attrib("a_life"), 1, gl.FLOAT, false, 0, 0);
 			gl.enableVertexAttribArray(shader.attrib("a_life"));
-			gl.vertexAttribDivisor(4, 1);	//Instance the Buffer
+			gl.vertexAttribDivisor(4, 1); //Instance the Buffer
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 

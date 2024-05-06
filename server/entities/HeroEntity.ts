@@ -3,9 +3,9 @@ import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
+import { TheWorld } from "../physics";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
-import { TheWorld } from "../physics";
 
 export class HeroEntity extends PlayerEntity {
 	type: string;
@@ -21,10 +21,9 @@ export class HeroEntity extends PlayerEntity {
 	cylinder: phys.Cylinder;
 	sphereTop: phys.Sphere;
 	sphereBot: phys.Sphere;
-    onGround: boolean;
+	onGround: boolean;
 
 	constructor(name: string, pos: Vector3, model: ModelId[] = []) {
-
 		super(name, pos, model, 100);
 
 		this.type = "player-hero";
@@ -34,7 +33,7 @@ export class HeroEntity extends PlayerEntity {
 		// Magic numbers!!! WOOHOO
 		this.speed = 100;
 		this.jumping = false;
-        this.onGround = false;
+		this.onGround = false;
 
 		this.body = new phys.Body({
 			mass: 1.0, //fuckable
@@ -60,13 +59,11 @@ export class HeroEntity extends PlayerEntity {
 		this.body.addShape(this.sphereTop, new phys.Vec3(0, 0.25, 0));
 
 		// Add player capsule bottom
-		
-		
+
 		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.25, 0));
 	}
 
-	
-    move(movement: MovementInfo) {
+	move(movement: MovementInfo) {
 		//this is bugged!
 		this.checkOnGround();
 
@@ -99,7 +96,7 @@ export class HeroEntity extends PlayerEntity {
 
 		// if (movement.jump) console.log("jump");
 		// if (this.onGround) console.log("based");
-		
+
 		if (movement.jump && this.onGround) {
 			// chatGPT for debug string
 			const stringsArray = ["weeeee", "yahooooo", "mario", "yap", "hawaii"];
@@ -113,7 +110,7 @@ export class HeroEntity extends PlayerEntity {
 		}
 	}
 
-    checkOnGround(): void {
+	checkOnGround(): void {
 		// apparently this generate a ray segment and only check intersection within that segment
 		const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
 		const result = TheWorld.castRay(checkerRay, {
@@ -131,8 +128,7 @@ export class HeroEntity extends PlayerEntity {
 		}
 	}
 
-    override onCollide(otherEntity: Entity): void {}
-
+	override onCollide(otherEntity: Entity): void {}
 
 	serialize(): SerializedEntity {
 		return {

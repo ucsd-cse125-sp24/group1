@@ -1,7 +1,7 @@
-import GraphicsEngine from "./GraphicsEngine";
-import { ShaderProgram } from "./ShaderProgram";
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
+import GraphicsEngine from "./GraphicsEngine";
+import { ShaderProgram } from "./ShaderProgram";
 
 export class RenderPipeline {
 	#engine: GraphicsEngine;

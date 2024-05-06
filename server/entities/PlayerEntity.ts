@@ -3,7 +3,6 @@ import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
-import { TheWorld } from "../physics";
 import { Entity } from "./Entity";
 
 export abstract class PlayerEntity extends Entity {
@@ -26,19 +25,15 @@ export abstract class PlayerEntity extends Entity {
 		// Magic numbers!!! WOOHOO
 		this.speed = speed;
 
-
 		this.body = new phys.Body({
 			mass: 1.0, //fuckable
 			position: new phys.Vec3(...pos),
 			fixedRotation: true,
 			material: PlayerMaterial,
 		});
-
 	}
 
 	abstract move(movement: MovementInfo): void;
 
 	abstract serialize(): SerializedEntity;
-
-
 }
