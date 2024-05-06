@@ -69,8 +69,8 @@ export class HeroEntity extends PlayerEntity {
 		//this is bugged!
 		this.checkOnGround();
 
-		//this is bugged!
-		forwardVector.normali;
+		let forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
+		forwardVector.normalize();
 
 		let rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0));
 
@@ -102,7 +102,7 @@ export class HeroEntity extends PlayerEntity {
 		if (movement.jump && this.onGround) {
 			// chatGPT for debug string
 
-			if (this.itemInHands instanceof Item) {
+			if (this.itemInHands) {
 				//this is a little janky ngl
 				this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 0, -0.5));
 			}

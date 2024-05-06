@@ -4,8 +4,6 @@ import type { ModelId } from "../../../common/models";
 import { SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { InteractableEntity } from "./InteractableEntity";
-import { PlayerEntity } from "../PlayerEntity";
-import { HeroEntity } from "../HeroEntity";
 import { Item } from "./Item";
 import { Entity } from "../Entity";
 import { TheWorld } from "../../physics";

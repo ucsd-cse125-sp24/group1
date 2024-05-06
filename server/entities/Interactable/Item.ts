@@ -4,7 +4,6 @@ import type { ModelId } from "../../../common/models";
 import { SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { InteractableEntity } from "./InteractableEntity";
-import { PlayerEntity } from "../PlayerEntity";
 import { HeroEntity } from "../HeroEntity";
 import { BossEntity } from "../BossEntity";
 
@@ -13,8 +12,6 @@ export class Item extends InteractableEntity {
 	name: string;
 	body: phys.Body;
 	model: ModelId[];
-	radius: number;
-
 	radius: number;
 
 	// shape
