@@ -5,14 +5,9 @@ import { WebSocket, WebSocketServer } from "ws";
 import express from "express";
 import { Connection, Server, ServerHandlers } from "./Server";
 import { Game } from "../Game";
-import { ClientMessage, ServerMessage } from "../../common/messages";
+import { ClientMessage, ServerMessage, WSManagementMessage } from "../../common/messages";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-type WSManagementMessage = {
-	type: "rejoin";
-	id: string;
-};
 
 const RECONNECT_TIMEOUT = 60 * 60 * 1000;
 

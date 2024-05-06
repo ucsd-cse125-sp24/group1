@@ -5,6 +5,11 @@ export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameStat
 
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage;
 
+export type WSManagementMessage = {
+	type: "rejoin";
+	id: string;
+};
+
 export type EntireGameState = {
 	type: "entire-game-state";
 	entities: SerializedEntity[];
