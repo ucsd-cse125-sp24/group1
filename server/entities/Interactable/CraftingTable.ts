@@ -3,10 +3,10 @@ import { Vector3 } from "../../../common/commontypes";
 import type { ModelId } from "../../../common/models";
 import { SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
-import { InteractableEntity } from "./InteractableEntity";
-import { Item } from "./Item";
 import { Entity } from "../Entity";
 import { TheWorld } from "../../physics";
+import { InteractableEntity } from "./InteractableEntity";
+import { Item } from "./Item";
 
 export class CraftingTable extends InteractableEntity {
 	type: string;

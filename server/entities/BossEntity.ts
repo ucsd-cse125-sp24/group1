@@ -3,9 +3,9 @@ import { MovementInfo, Vector3 } from "../../common/commontypes";
 import type { ModelId } from "../../common/models";
 import { SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
+import { TheWorld } from "../physics";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
-import { TheWorld } from "../physics";
 
 //LITERALLY A COPY OF THE HERO ENTITY RIGHT NOW
 //TODO FIX THIS!

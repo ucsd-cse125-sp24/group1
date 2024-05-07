@@ -1,4 +1,3 @@
-import { ClientMessage, ServerMessage } from "../common/messages";
 import { delay } from "../common/lib/delay";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { Game } from "./Game";

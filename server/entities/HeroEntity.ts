@@ -59,13 +59,11 @@ export class HeroEntity extends PlayerEntity {
 		this.body.addShape(this.sphereTop, new phys.Vec3(0, 0.25, 0));
 
 		// Add player capsule bottom
-		
-		
+
 		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.25, 0));
 	}
 
-	
-    move(movement: MovementInfo) {
+	move(movement: MovementInfo) {
 		//this is bugged!
 		this.checkOnGround();
 

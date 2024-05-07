@@ -55,7 +55,7 @@ export class Connection<ReceiveType, SendType> {
 			this.#lastTime = performance.now();
 		}
 
-		this.#ws?.send(JSON.stringify({type: "rejoin", id: localStorage.getItem("connectionId")}));
+		this.#ws?.send(JSON.stringify({ type: "rejoin", id: localStorage.getItem("connectionId") }));
 
 		const queue = this.#sendQueue;
 		this.#sendQueue = [];

@@ -3,9 +3,9 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { WebSocket, WebSocketServer } from "ws";
 import express from "express";
-import { Connection, Server, ServerHandlers } from "./Server";
 import { Game } from "../Game";
 import { ClientMessage, ServerMessage, WSManagementMessage } from "../../common/messages";
+import { Connection } from "./Server";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -71,10 +71,10 @@ export class WsServer {
 
 		ws.on("open", () => {
 			this.#activeConnections.set(
-				[...crypto.getRandomValues(new Uint8Array(64))].map(x=>x.toString(16)).join(""),
-				ws
-			)
-		})
+				[...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join(""),
+				ws,
+			);
+		});
 
 		ws.on("message", (rawData) => {
 			this.handleMessage(ws, rawData, connection);

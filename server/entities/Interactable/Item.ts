@@ -3,9 +3,9 @@ import { Vector3 } from "../../../common/commontypes";
 import type { ModelId } from "../../../common/models";
 import { SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
-import { InteractableEntity } from "./InteractableEntity";
 import { HeroEntity } from "../HeroEntity";
 import { BossEntity } from "../BossEntity";
+import { InteractableEntity } from "./InteractableEntity";
 
 export class Item extends InteractableEntity {
 	type: string;
