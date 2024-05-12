@@ -50,6 +50,7 @@ export class Item extends InteractableEntity {
 		//turns collider off, possibly
 
 		if (player instanceof HeroEntity) {
+			player.itemInHands = this;
 		} else if (player instanceof BossEntity) {
 		}
 

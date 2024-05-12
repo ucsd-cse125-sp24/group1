@@ -6,6 +6,7 @@ import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
+import { Item } from "./Interactable/Item";
 
 export class HeroEntity extends PlayerEntity {
 	type: string;
@@ -97,18 +98,19 @@ export class HeroEntity extends PlayerEntity {
 		// if (movement.jump) console.log("jump");
 		// if (this.onGround) console.log("based");
 
+		if (this.itemInHands instanceof Item) {
+			//this is a little janky ngl
+			this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 1, -0.5));
+		}
+
 		if (movement.jump && this.onGround) {
 			// chatGPT for debug string
-
-			if (this.itemInHands) {
-				//this is a little janky ngl
-				this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 0, -0.5));
-			}
 
 			const stringsArray = ["weeeee", "yahooooo", "mario", "yap", "hawaii"];
 			const randomIndex = Math.floor(Math.random() * stringsArray.length);
 			const randomString = stringsArray[randomIndex];
 			console.log(randomString);
+			
 		}
 
 		if (this.body.force.length() < 1) {
