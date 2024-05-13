@@ -1,7 +1,6 @@
 import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import type { ModelId } from "../../common/models";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
@@ -10,13 +9,13 @@ export abstract class PlayerEntity extends Entity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 
 	// Game properties
 	speed: number;
 	itemInHands: null | Item;
 
-	constructor(name: string, pos: Vector3, model: ModelId[] = [], speed: number) {
+	constructor(name: string, pos: Vector3, model: EntityModel[] = [], speed: number) {
 		super(name, model);
 
 		this.type = "player";
