@@ -1,7 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import type { ModelId } from "../../../common/models";
-import { SerializedEntity } from "../../../common/messages";
+import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Entity } from "../Entity";
 import { HeroEntity } from "../HeroEntity";
@@ -12,14 +11,14 @@ export class Item extends InteractableEntity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 	radius: number;
 	heldBy: PlayerEntity | null;
 
 	// shape
 	sphere: phys.Sphere;
 
-	constructor(name: string, radius: number, pos: Vector3, model: ModelId[] = [], tag: string) {
+	constructor(name: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: string) {
 		super(name, model);
 
 		//TODO: ADD A MATERIAL FOR COLLISION

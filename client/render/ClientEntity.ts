@@ -1,7 +1,12 @@
-import { mat4 } from "gl-matrix";
-import { SerializedCollider, SerializedEntity } from "../../common/messages";
+import { mat4, quat, quat2 } from "gl-matrix";
+import { EntityModelObject, SerializedCollider, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./engine/GraphicsEngine";
 import { Model } from "./model/Model";
+
+export type ModelWithTransform = {
+	model: Model;
+	transform: mat4;
+};
 
 /**
  * An entity on the client. These entities are deserialized from the server and
@@ -12,7 +17,7 @@ import { Model } from "./model/Model";
 export class ClientEntity {
 	engine: GraphicsEngine;
 	name: string;
-	models: Model[];
+	models: ModelWithTransform[];
 	/**
 	 * A transformation to apply to all the models in the entity. You can think of
 	 * it like the anchor position and rotation of the entity.
@@ -29,13 +34,13 @@ export class ClientEntity {
 	constructor(
 		engine: GraphicsEngine,
 		name: string,
-		model: Model[],
+		models: ModelWithTransform[],
 		transform = mat4.create(),
 		colliders: SerializedCollider[] = [],
 	) {
 		this.engine = engine;
 		this.name = name;
-		this.models = model;
+		this.models = models;
 		this.transform = transform;
 		this.colliders = colliders;
 	}
@@ -51,10 +56,14 @@ export class ClientEntity {
 		if (!this.visible) {
 			return false;
 		}
-		for (const model of this.models) {
+		for (const { model, transform } of this.models) {
 			model.shader.use();
 			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_view"), false, view);
-			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_model"), false, this.transform);
+			this.engine.gl.uniformMatrix4fv(
+				model.shader.uniform("u_model"),
+				false,
+				mat4.mul(mat4.create(), transform, this.transform),
+			);
 			model.draw();
 		}
 	}
@@ -86,7 +95,17 @@ export class ClientEntity {
 		return new ClientEntity(
 			engine,
 			entity.name,
-			entity.model.map((model) => engine.models[model]),
+			entity.model.map((model) => {
+				const {
+					modelId,
+					offset = [0, 0, 0],
+					rotation = [0, 0, 0, 1],
+				}: EntityModelObject = typeof model === "string" ? { modelId: model } : model;
+				return {
+					model: engine.models[modelId],
+					transform: mat4.fromRotationTranslation(mat4.create(), rotation, offset),
+				};
+			}),
 			transform,
 			entity.colliders,
 		);

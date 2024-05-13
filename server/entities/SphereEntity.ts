@@ -1,8 +1,7 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import type { ModelId } from "../../common/models";
 import { v3 } from "../physics";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 import { SlipperyMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
 
@@ -10,9 +9,9 @@ export class SphereEntity extends Entity {
 	// name: string;
 	// type: string;
 	// body: phys.Body;
-	// model: ModelId[];
+	// model: EntityModel[];
 
-	constructor(name: string, pos: Vector3, radius: number, model: ModelId[] = []) {
+	constructor(name: string, pos: Vector3, radius: number, model: EntityModel[] = []) {
 		super(name, model);
 		this.type = "sphere";
 		this.name = name;

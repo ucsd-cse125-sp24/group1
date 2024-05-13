@@ -1,7 +1,6 @@
 import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import type { ModelId } from "../../common/models";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
@@ -10,10 +9,10 @@ import { Item } from "./Interactable/Item";
 const PLAYER_INTERACTION_RANGE = 2.0;
 
 export class HeroEntity extends PlayerEntity {
-	// type: string;
-	// name: string;
-	// body: phys.Body;
-	// model: ModelId[];
+	type: string;
+	name: string;
+	body: phys.Body;
+	model: EntityModel[];
 
 	// Game properties
 	// speed: number;
@@ -24,7 +23,7 @@ export class HeroEntity extends PlayerEntity {
 	sphereTop: phys.Sphere;
 	sphereBot: phys.Sphere;
 
-	constructor(name: string, pos: Vector3, model: ModelId[] = []) {
+	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
 		super(name, pos, model, 100);
 
 		this.type = "player-hero";
@@ -111,7 +110,6 @@ export class HeroEntity extends PlayerEntity {
 			const randomIndex = Math.floor(Math.random() * stringsArray.length);
 			const randomString = stringsArray[randomIndex];
 			console.log(randomString);
-			
 		}
 
 		if (this.body.force.length() < 1) {

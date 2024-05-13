@@ -1,7 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import type { ModelId } from "../../../common/models";
-import { SerializedEntity } from "../../../common/messages";
+import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Entity } from "../Entity";
 import { TheWorld } from "../../physics";
@@ -10,8 +9,8 @@ import { Item } from "./Item";
 
 export class CraftingTable extends InteractableEntity {
 	body: phys.Body;
-	model: ModelId[];
 	halfExtent: number;
+	model: EntityModel[];
 
 	itemList: Item[];
 	recipes: string[][];
@@ -19,9 +18,7 @@ export class CraftingTable extends InteractableEntity {
 	// shape
 	box: phys.Box;
 
-
-    
-	constructor(name: string, pos: Vector3, model: ModelId[] = [], recipes: string[][]) {
+	constructor(name: string, pos: Vector3, model: EntityModel[] = [], recipes: string[][]) {
 		super(name, model);
 
 		this.type = "crafting-table";
@@ -89,9 +86,7 @@ export class CraftingTable extends InteractableEntity {
 			}
 			
 		}
-		
 	}
-
 
 	serialize(): SerializedEntity {
 		return {

@@ -1,18 +1,17 @@
 import * as phys from "cannon-es";
-import type { ModelId } from "../../common/models";
 import { PhysicsWorld } from "../physics";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 
 export abstract class Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 	// tags system is very helpful for scalablilities and is also used in Unity
 	// example: a crafting table entity that players can also jump on
 	tags: Set<string>;
 
-	constructor(name: string, model: ModelId[] = []) {
+	constructor(name: string, model: EntityModel[] = []) {
 		this.name = name;
 		this.type = "entity";
 		this.body = new phys.Body();

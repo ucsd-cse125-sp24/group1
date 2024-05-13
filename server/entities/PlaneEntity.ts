@@ -1,8 +1,7 @@
 import * as phys from "cannon-es";
 import { Quaternion, Vector3 } from "../../common/commontypes";
-import type { ModelId } from "../../common/models";
 import { q4, v3 } from "../physics";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 import { GroundMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
 
@@ -10,9 +9,9 @@ export class PlaneEntity extends Entity {
 	// name: string;
 	// type: string;
 	// body: phys.Body;
-	// model: ModelId[];
+	// model: EntityModel[];
 
-	constructor(name: string, pos: Vector3, rotation: Quaternion, model: ModelId[] = []) {
+	constructor(name: string, pos: Vector3, rotation: Quaternion, model: EntityModel[] = []) {
 		super(name, model);
 		this.type = "plane";
 		this.name = name;
