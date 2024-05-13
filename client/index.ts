@@ -149,7 +149,7 @@ const fish2 = new ClientEntity(engine, "", [{ model: engine.models.fish2, transf
 const tempEntities: ClientEntity[] = [
 	// box1,
 	// box2,
-	// box3,
+	box3,
 	// new ClientEntity(engine, "", [engine.models.donut], mat4.fromTranslation(mat4.create(), [7, -5, 7])),
 	// new ClientEntity(engine, "", [engine.models.cavecube], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
 	// new ClientEntity(engine, "", [engine.models.defaultCubeColor], mat4.fromTranslation(mat4.create(), [5, -10, 5])),

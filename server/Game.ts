@@ -84,7 +84,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					modelId: "sampleMap",
 					// TODO: the sample map's floor isn't at an integer value, so its
 					// floor either a bit above or a bit below the plane
-					// offset: [0, -4.5, 0],
+					offset: [0, -4.5, 0],
 					// https://quaternions.online/ Rotation around x-axis by 90°
 					rotation: [Math.SQRT1_2, 0, 0, Math.SQRT1_2],
 				},
