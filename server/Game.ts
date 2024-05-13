@@ -22,6 +22,7 @@ import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
 import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
+import { InteractableEntity } from "./entities/Interactable/InteractableEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 
@@ -79,7 +80,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], ["sampleMap"]);
 		this.registerEntity(plane);
 
-		let iron = new Item("Iron Ore", .1, [10, 10, 10], ["donut"], "resource");
+		let iron = new Item("Iron Ore", .5, [10, 10, 10], ["donut"], "resource");
 		this.registerEntity(iron);
 
 		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], ["samplePlayer"], [["Iron Ore"]]);
@@ -119,28 +120,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 			player.move(movement);
 
-
-
-			let checkerRay = new phys.Ray(player.getPos(), player.getPos().vadd(new phys.Vec3(...movement.lookDir)));
-			
-
-			/*
-			const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
-			const result = TheWorld.castRay(checkerRay, {
-			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
-			checkCollisionResponse: false,
-			});
-			// console.log(checkerRay);
-			// console.log(result);
-
-			this.onGround = false;
-			if (result.hasHit) {
-				if (result.distance <= 0.5 + Entity.EPSILON) {
-					this.onGround = true;
+			const body = player.lookForInteractables();
+			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
+			if (posedge.use && body != null) {
+				const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
+				if (lookedAtEntity) {
+					if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player);
 				}
 			}
-
-			*/
 
 		}
 

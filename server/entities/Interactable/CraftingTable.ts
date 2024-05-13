@@ -9,17 +9,15 @@ import { InteractableEntity } from "./InteractableEntity";
 import { Item } from "./Item";
 
 export class CraftingTable extends InteractableEntity {
-	type: string;
-	name: string;
 	body: phys.Body;
 	model: ModelId[];
-	radius: number;
+	halfExtent: number;
 
-	//TODO: remake to a stack
 	itemList: Item[];
+	recipes: string[][];
 
 	// shape
-	sphere: phys.Sphere;
+	box: phys.Box;
 
 
     
@@ -30,24 +28,25 @@ export class CraftingTable extends InteractableEntity {
 		this.name = name;
 		this.model = model;
 		this.itemList = [];
-
-		//TODO: change this to a cube collider
-		this.radius = 1.0;
+		this.recipes = recipes;
+		this.halfExtent = 0.75;
 
 		this.body = new phys.Body({
-			mass: 1.0,
+			mass: 10.0,
 			position: new phys.Vec3(...pos),
 			//material: depends on the item,
+			collisionFilterGroup: Entity.INTERACTABLE_COLLISION_GROUP,
 		});
 
-		this.sphere = new phys.Sphere(this.radius);
+		this.box = new phys.Box(new phys.Vec3(this.halfExtent, this.halfExtent, this.halfExtent));
 
-		this.body.addShape(this.sphere);
+		this.body.addShape(this.box);
 	}
 
 	interact(player: PlayerEntity) {
 		//should spawn the top item in the array!
-
+		console.log("ouch");
+		
 		let item = this.itemList.pop();
 
 		if (item instanceof Item) {
@@ -58,24 +57,37 @@ export class CraftingTable extends InteractableEntity {
 	onCollide(otherEntity: Entity): void {
 
 		
-		
 		if (otherEntity instanceof Item) {
 
-			otherEntity.removeFromWorld(TheWorld);
+			otherEntity.body.position = new phys.Vec3(99, 0, 99); //sent to the shadow realm
+			otherEntity.body.mass = 0 //making it static
+			
 
-			/*
+			
 			if (otherEntity.tags.has("resource")) {
 				//check if it's a possible recipe
+				let EntityName = otherEntity.name;
+
+
+				//TODO: tyler work
+				for(let i = 0; i < this.recipes.length; i++) {
+
+					
+
+				}
+
+				
 
 				//if it is,
-				otherEntity.removeFromWorld(TheWorld);
-				this.itemList.push(otherEntity);
+				//otherEntity.removeFromWorld(TheWorld);
+				//this.itemList.push(otherEntity);
+
 			} else if (otherEntity.tags.has("tool")) {
 				//check if the crafting table has all the ingredients for a recipe
 				//check if this is the right tool
 				//if it is? LAUNCH BOTH THE TOOL AND THE CRAFTED INGREDIENT
 			}
-			*/
+			
 		}
 		
 	}
@@ -89,8 +101,8 @@ export class CraftingTable extends InteractableEntity {
 			quaternion: this.body.quaternion.toArray(),
 			colliders: [
 				{
-					type: "sphere", //capsule Bot
-					radius: this.sphere.radius,
+					type: "box", //capsule Bot
+					size: [this.halfExtent, this.halfExtent, this.halfExtent],
 					offset: [0, 0, 0],
 				},
 			],

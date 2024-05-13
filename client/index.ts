@@ -111,6 +111,7 @@ const inputListener = new InputListener({
 			case 0: // Left mouse button
 				return "attack";
 			case 1: // Right mouse button
+			case "KeyR":
 				return "use";
 			default:
 				return null;

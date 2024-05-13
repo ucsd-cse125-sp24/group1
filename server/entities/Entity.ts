@@ -40,6 +40,7 @@ export abstract class Entity {
 	abstract serialize(): SerializedEntity;
 
 	static readonly ENVIRONMENT_COLLISION_GROUP = 2;
+	static readonly INTERACTABLE_COLLISION_GROUP = 4;
 	static readonly EPSILON = 0.01;
 }
 
