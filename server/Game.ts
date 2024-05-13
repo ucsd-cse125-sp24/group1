@@ -15,7 +15,6 @@ import { sampleMap } from "../assets/models/sample_map/server-mesh";
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
-import { CubeEntity } from "./entities/CubeEntity";
 import { Entity } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
@@ -75,28 +74,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	async setup() {
 		const mapMesh = createTrimesh(await sampleMap);
-		const mapEntity = new StaticEntity("the map", [0, 0, 0], mapMesh, ["sampleMap"]);
+		const mapEntity = new StaticEntity("the map", [0, -5, 0], mapMesh, [
+			{ modelId: "sampleMap", rotation: [0, 0, 0, 1] },
+		]);
 		this.registerEntity(mapEntity);
 
 		let p1 = new HeroEntity("Player One", [20, 20, 20], ["samplePlayer"]);
 		this.#players.push(p1);
 		this.registerEntity(p1);
 
-		let plane = new PlaneEntity(
-			"normal plane",
-			[0, -5, 0],
-			[-1, 0, 0, 1],
-			[
-				{
-					modelId: "sampleMap",
-					// TODO: the sample map's floor isn't at an integer value, so its
-					// floor either a bit above or a bit below the plane
-					// offset: [0, -4.5, 0],
-					// https://quaternions.online/ Rotation around x-axis by 90°
-					rotation: [Math.SQRT1_2, 0, 0, Math.SQRT1_2],
-				},
-			],
-		);
+		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
 		this.registerEntity(plane);
 
 		let iron = new Item("Iron Ore", 0.1, [10, 10, 10], ["donut"], "resource");

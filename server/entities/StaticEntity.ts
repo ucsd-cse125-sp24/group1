@@ -1,12 +1,11 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { Entity } from "./Entity";
-import { ModelId } from "../../common/models";
 import { v3 } from "../physics";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
+import { Entity } from "./Entity";
 
 export class StaticEntity extends Entity {
-	constructor(name: string, position: Vector3, shape: phys.Shape, model: ModelId[] = []) {
+	constructor(name: string, position: Vector3, shape: phys.Shape, model: EntityModel[] = []) {
 		super(name, model);
 		this.type = "static";
 		this.body = new phys.Body({

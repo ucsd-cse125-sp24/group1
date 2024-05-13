@@ -1,4 +1,5 @@
 import { Trimesh } from "cannon-es";
+import { vec3 } from "gl-matrix";
 import { GltfParser } from "../common/gltf/gltf-parser";
 
 /**
@@ -51,9 +52,23 @@ export function createTrimesh(model: GltfParser) {
 		if (mesh.attributes.POSITION === undefined || mesh.indices === undefined) {
 			continue;
 		}
-		const startIndex = positions.length;
-		positions.push(...dataBuffers[mesh.attributes.POSITION]);
-		indices.push(...dataBuffers[mesh.indices].map((i) => startIndex + i));
+
+		// Apply mesh transform to each vertex position
+		const meshPositions = dataBuffers[mesh.attributes.POSITION].slice();
+		for (let i = 0; i < meshPositions.length; i += 3) {
+			const v = vec3.fromValues(meshPositions[i], meshPositions[i + 1], meshPositions[i + 2]);
+			vec3.transformMat4(v, v, mesh.transform);
+			meshPositions[i] = v[0];
+			meshPositions[i + 1] = v[1];
+			meshPositions[i + 2] = v[2];
+		}
+
+		// Adjust indices so we are indexing into the aggregate position array
+		const startIndex = positions.length / 3;
+		const meshIndices = dataBuffers[mesh.indices].map((i) => startIndex + i);
+
+		positions.push(...meshPositions);
+		indices.push(...meshIndices);
 	}
 	// console.log(`positions.length = ${positions.length}`);
 	// console.log(`indices.length = ${indices.length}`);
