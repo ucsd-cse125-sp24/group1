@@ -36,7 +36,7 @@ export class Item extends InteractableEntity {
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
 			//material: depends on the item,
-			collisionFilterGroup: this.getBitFlag(),
+			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
 
 		this.sphere = new phys.Sphere(this.radius);
