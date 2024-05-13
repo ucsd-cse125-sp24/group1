@@ -38,9 +38,9 @@ export class WsServer {
 	 * Called every time there's a new connection, but the function won't do
 	 * anything if there are already connections to the server.
 	 */
-	#handleInitialConnection = () => {};
+	#unhangServer = () => {};
 	hasConnection = new Promise<void>((resolve) => {
-		this.#handleInitialConnection = resolve;
+		this.#unhangServer = resolve;
 	});
 
 	constructor(game: Game) {
@@ -56,7 +56,7 @@ export class WsServer {
 	}
 
 	#handleNewConnection(ws: WebSocket) {
-		this.#handleInitialConnection();
+		this.#unhangServer();
 
 		/**
 		 * A wrapper around the WebSocket object that stringifies the object before sending it.
@@ -69,12 +69,12 @@ export class WsServer {
 			},
 		};
 
-		ws.on("open", () => {
-			this.#activeConnections.set(
-				[...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join(""),
-				ws,
-			);
-		});
+		this.#activeConnections.set(
+			[...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join(""),
+			ws,
+		);
+
+		this.#game.handleOpen(connection);
 
 		ws.on("message", (rawData) => {
 			this.handleMessage(ws, rawData, connection);
@@ -99,7 +99,7 @@ export class WsServer {
 
 			if (this.#wss.clients.size === 0) {
 				this.hasConnection = new Promise<void>((resolve) => {
-					this.#handleInitialConnection = resolve;
+					this.#unhangServer = resolve;
 				});
 			}
 		});

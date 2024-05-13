@@ -1,17 +1,17 @@
 import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import type { ModelId } from "../../common/models";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
+import { Item } from "./Interactable/Item";
 
 export class HeroEntity extends PlayerEntity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 
 	// Game properties
 	speed: number;
@@ -23,7 +23,7 @@ export class HeroEntity extends PlayerEntity {
 	sphereBot: phys.Sphere;
 	onGround: boolean;
 
-	constructor(name: string, pos: Vector3, model: ModelId[] = []) {
+	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
 		super(name, pos, model, 100);
 
 		this.type = "player-hero";
@@ -97,13 +97,13 @@ export class HeroEntity extends PlayerEntity {
 		// if (movement.jump) console.log("jump");
 		// if (this.onGround) console.log("based");
 
+		if (this.itemInHands instanceof Item) {
+			//this is a little janky ngl
+			this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 1, -0.5));
+		}
+
 		if (movement.jump && this.onGround) {
 			// chatGPT for debug string
-
-			if (this.itemInHands) {
-				//this is a little janky ngl
-				this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 0, -0.5));
-			}
 
 			const stringsArray = ["weeeee", "yahooooo", "mario", "yap", "hawaii"];
 			const randomIndex = Math.floor(Math.random() * stringsArray.length);

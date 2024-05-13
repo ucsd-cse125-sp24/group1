@@ -7,6 +7,7 @@
  * This class serves as the ground source of truth for anything concerning the game
  */
 
+import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
@@ -23,6 +24,8 @@ import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
 import { StaticEntity } from "./entities/StaticEntity";
 import { createTrimesh } from "./mesh";
+import { Item } from "./entities/Interactable/Item";
+import { CraftingTable } from "./entities/Interactable/CraftingTable";
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	// Store all of the player inputs, there is just one for now
@@ -79,11 +82,28 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#players.push(p1);
 		this.registerEntity(p1);
 
-		let rock = new CubeEntity("rock", [0, 100, 0], ["fish1"]);
-		this.registerEntity(rock);
-
-		let plane = new PlaneEntity("normal plane", [0, 0, 0], [-1, 0, 0, 1], ["sampleMap"]);
+		let plane = new PlaneEntity(
+			"normal plane",
+			[0, -5, 0],
+			[-1, 0, 0, 1],
+			[
+				{
+					modelId: "sampleMap",
+					// TODO: the sample map's floor isn't at an integer value, so its
+					// floor either a bit above or a bit below the plane
+					// offset: [0, -4.5, 0],
+					// https://quaternions.online/ Rotation around x-axis by 90°
+					rotation: [Math.SQRT1_2, 0, 0, Math.SQRT1_2],
+				},
+			],
+		);
 		this.registerEntity(plane);
+
+		let iron = new Item("Iron Ore", 0.1, [10, 10, 10], ["donut"], "resource");
+		this.registerEntity(iron);
+
+		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], ["samplePlayer"], [["Iron Ore"]]);
+		this.registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
 		this.registerEntity(tempSphere);
@@ -116,6 +136,26 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			};
 
 			player.move(movement);
+
+			let checkerRay = new phys.Ray(player.getPos(), player.getPos().vadd(new phys.Vec3(...movement.lookDir)));
+
+			/*
+			const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
+			const result = TheWorld.castRay(checkerRay, {
+			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
+			checkCollisionResponse: false,
+			});
+			// console.log(checkerRay);
+			// console.log(result);
+
+			this.onGround = false;
+			if (result.hasHit) {
+				if (result.distance <= 0.5 + Entity.EPSILON) {
+					this.onGround = true;
+				}
+			}
+
+			*/
 		}
 
 		this.#nextTick();

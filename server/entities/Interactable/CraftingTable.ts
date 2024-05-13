@@ -1,7 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import type { ModelId } from "../../../common/models";
-import { SerializedEntity } from "../../../common/messages";
+import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Entity } from "../Entity";
 import { TheWorld } from "../../physics";
@@ -12,7 +11,7 @@ export class CraftingTable extends InteractableEntity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 	radius: number;
 
 	//TODO: remake to a stack
@@ -21,7 +20,7 @@ export class CraftingTable extends InteractableEntity {
 	// shape
 	sphere: phys.Sphere;
 
-	constructor(name: string, pos: Vector3, model: ModelId[] = []) {
+	constructor(name: string, pos: Vector3, model: EntityModel[] = [], recipes: string[][]) {
 		super(name, model);
 
 		this.type = "crafting-table";
@@ -29,8 +28,8 @@ export class CraftingTable extends InteractableEntity {
 		this.model = model;
 		this.itemList = [];
 
-		//this can be workable
-		this.radius = 0.5;
+		//TODO: change this to a cube collider
+		this.radius = 1.0;
 
 		this.body = new phys.Body({
 			mass: 1.0,
@@ -55,6 +54,9 @@ export class CraftingTable extends InteractableEntity {
 
 	onCollide(otherEntity: Entity): void {
 		if (otherEntity instanceof Item) {
+			otherEntity.removeFromWorld(TheWorld);
+
+			/*
 			if (otherEntity.tags.has("resource")) {
 				//check if it's a possible recipe
 
@@ -66,11 +68,9 @@ export class CraftingTable extends InteractableEntity {
 				//check if this is the right tool
 				//if it is? LAUNCH BOTH THE TOOL AND THE CRAFTED INGREDIENT
 			}
+			*/
 		}
 	}
-
-	//collision listener I presume
-	//TODO
 
 	serialize(): SerializedEntity {
 		return {
