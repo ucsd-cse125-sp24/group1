@@ -183,29 +183,29 @@ const paint = () => {
 	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 20, 0, Math.sin(Date.now() / 300) * 20);
 
 	// Set camera position
-	if (!freecam) {
-		if (isFirstPerson) {
-			for (const entity of entities) {
-				entity.visible = entity.name !== cameraLockTarget;
-			}
+	if (!freecam && isFirstPerson) {
+		for (const entity of entities) {
+			entity.visible = entity.name !== cameraLockTarget;
 		}
+	}
 
-		const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
-		if (cameraTarget) {
+	const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
+	if (cameraTarget) {
+		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
+		// TEMP
+		tempLights[2].position = position;
+		if (!freecam) {
 			if (isFirstPerson) {
-				const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 				camera.setPosition(position);
-				// TEMP
-				tempLights[2].position = position;
 			} else {
 				const offset = vec3.fromValues(-2, 10, 0);
-				const position: vec3 = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 				vec3.add(position, position, offset);
 				camera.setPosition(position);
 				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
 			}
 		}
-	} else {
+	}
+	if (freecam) {
 		camera.update();
 	}
 
