@@ -10,6 +10,7 @@
 import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
+import { sampleMap } from "../assets/models/sample_map/server-mesh";
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
@@ -22,7 +23,6 @@ import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
 import { StaticEntity } from "./entities/StaticEntity";
 import { createTrimesh } from "./mesh";
-import { sampleMap } from "../assets/models/sample_map";
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	// Store all of the player inputs, there is just one for now
@@ -71,7 +71,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	async setup() {
-		const mapMesh = await createTrimesh(sampleMap);
+		const mapMesh = createTrimesh(await sampleMap);
 		const mapEntity = new StaticEntity("the map", [0, 0, 0], mapMesh, ["sampleMap"]);
 		this.registerEntity(mapEntity);
 
@@ -82,7 +82,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let rock = new CubeEntity("rock", [0, 100, 0], ["fish1"]);
 		this.registerEntity(rock);
 
-		let plane = new PlaneEntity("normal plane", [0, 0, 0], [1, 0, 0, 0], ["sampleMap"]);
+		let plane = new PlaneEntity("normal plane", [0, 0, 0], [-1, 0, 0, 1], ["sampleMap"]);
 		this.registerEntity(plane);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);

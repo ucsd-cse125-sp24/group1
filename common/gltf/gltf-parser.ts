@@ -36,10 +36,15 @@ export type GltfParser = {
 	meshes: (GltfPrimitive & { transform: mat4 })[];
 };
 
-export async function parseGltf(root: Gltf, uriMap: Record<string, string>): Promise<GltfParser> {
+export async function parseGltf(
+	root: Gltf,
+	uriMap: Record<string, string>,
+	fetchBuffer = fetch,
+	fetchImage = fetch,
+): Promise<GltfParser> {
 	const buffers = await Promise.all(
 		root.buffers.map(({ uri }) =>
-			fetch(uriMap[uri]).then((r) =>
+			fetchBuffer(uriMap[uri]).then((r) =>
 				r.ok ? r.arrayBuffer() : Promise.reject(new Error(`HTTP ${r.status}: ${uri} (${r.url})`)),
 			),
 		),
@@ -50,7 +55,7 @@ export async function parseGltf(root: Gltf, uriMap: Record<string, string>): Pro
 			if ("uri" in image) {
 				// gl.texImage2D is much faster with ImageBitmap than
 				// HTMLImageElement (380 ms to 60 ms)
-				return fetch(uriMap[image.uri])
+				return fetchImage(uriMap[image.uri])
 					.then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}: ${image.uri} (${r.url})`))))
 					.then(createImageBitmap);
 			} else {
