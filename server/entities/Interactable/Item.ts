@@ -36,7 +36,7 @@ export class Item extends InteractableEntity {
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
 			//material: depends on the item,
-			collisionFilterGroup: Entity.INTERACTABLE_COLLISION_GROUP,
+			collisionFilterGroup: this.getBitFlag(),
 		});
 
 		this.sphere = new phys.Sphere(this.radius);
@@ -52,15 +52,12 @@ export class Item extends InteractableEntity {
 
 		//if a hero, then makes the item's position locked into the player's hands
 		//turns collider off, possibly
-		
 
 		if (player instanceof HeroEntity) {
 			console.log("touched an item, scandalous");
 			player.itemInHands = this;
 			this.body.mass = 0;
-
 		} else if (player instanceof BossEntity) {
-
 		}
 
 		//if a boss, do some sabotage!

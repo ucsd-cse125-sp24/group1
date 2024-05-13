@@ -7,6 +7,7 @@ import { Item } from "./Item";
 export abstract class InteractableEntity extends Entity {
 	constructor(name: string, model: EntityModel[] = []) {
 		super(name, model);
+		this.tags.add("interactable");
 	}
 
 	abstract interact(Player: PlayerEntity): void | Item;
