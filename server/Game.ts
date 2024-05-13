@@ -74,9 +74,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	async setup() {
 		const mapMesh = createTrimesh(await sampleMap);
-		const mapEntity = new StaticEntity("the map", [0, -5, 0], mapMesh, [
-			{ modelId: "sampleMap", rotation: [0, 0, 0, 1] },
-		]);
+		const mapEntity = new StaticEntity("the map", [0, -5, 0], mapMesh, [{ modelId: "sampleMap", offset: [0, 0.5, 0] }]);
 		this.registerEntity(mapEntity);
 
 		let p1 = new HeroEntity("Player One", [20, 20, 20], ["samplePlayer"]);

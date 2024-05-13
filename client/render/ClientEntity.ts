@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { mat4, quat, quat2 } from "gl-matrix";
 import { EntityModelObject, SerializedCollider, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./engine/GraphicsEngine";
 import { Model } from "./model/Model";
@@ -34,13 +34,13 @@ export class ClientEntity {
 	constructor(
 		engine: GraphicsEngine,
 		name: string,
-		model: ModelWithTransform[],
+		models: ModelWithTransform[],
 		transform = mat4.create(),
 		colliders: SerializedCollider[] = [],
 	) {
 		this.engine = engine;
 		this.name = name;
-		this.models = model;
+		this.models = models;
 		this.transform = transform;
 		this.colliders = colliders;
 	}
@@ -62,7 +62,7 @@ export class ClientEntity {
 			this.engine.gl.uniformMatrix4fv(
 				model.shader.uniform("u_model"),
 				false,
-				mat4.mul(mat4.create(), this.transform, transform),
+				mat4.mul(mat4.create(), transform, this.transform),
 			);
 			model.draw();
 		}
@@ -99,7 +99,7 @@ export class ClientEntity {
 				const {
 					modelId,
 					offset = [0, 0, 0],
-					rotation = [1, 0, 0, 0],
+					rotation = [0, 0, 0, 1],
 				}: EntityModelObject = typeof model === "string" ? { modelId: model } : model;
 				return {
 					model: engine.models[modelId],
