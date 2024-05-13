@@ -1,4 +1,4 @@
-import { parseGltf } from "../../../client/render/model/gltf-parser";
+import { parseGltf } from "../../../common/gltf/gltf-parser";
 import color from "./bruh.png";
 import roughness from "./ruffness2.png";
 import bin from "./shiny-eyes-monkey.bin";

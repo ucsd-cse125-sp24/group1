@@ -16,7 +16,7 @@ const server = new WsServer(game);
 
 //what actually runs the game loop
 (async () => {
-	game.setup();
+	await game.setup();
 	while (true) {
 		// If there is no one connected, wait until someone connects
 		await server.hasConnection;

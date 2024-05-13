@@ -11,16 +11,18 @@ import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
+import { sampleMap } from "../assets/models/sample_map/server-mesh";
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
-import { CubeEntity } from "./entities/CubeEntity";
 import { Entity } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
 import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
+import { StaticEntity } from "./entities/StaticEntity";
+import { createTrimesh } from "./mesh";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 
@@ -70,26 +72,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * A function that sets up the base state for the game
 	 */
-	setup() {
+	async setup() {
+		const mapMesh = createTrimesh(await sampleMap);
+		const mapEntity = new StaticEntity("the map", [0, -5, 0], mapMesh, [{ modelId: "sampleMap", offset: [0, 0.5, 0] }]);
+		this.registerEntity(mapEntity);
+
 		let p1 = new HeroEntity("Player One", [20, 20, 20], ["samplePlayer"]);
 		this.#players.push(p1);
 		this.registerEntity(p1);
 
-		let plane = new PlaneEntity(
-			"normal plane",
-			[0, -5, 0],
-			[-1, 0, 0, 1],
-			[
-				{
-					modelId: "sampleMap",
-					// TODO: the sample map's floor isn't at an integer value, so its
-					// floor either a bit above or a bit below the plane
-					offset: [0, -4.5, 0],
-					// https://quaternions.online/ Rotation around x-axis by 90°
-					rotation: [Math.SQRT1_2, 0, 0, Math.SQRT1_2],
-				},
-			],
-		);
+		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
 		this.registerEntity(plane);
 
 		let iron = new Item("Iron Ore", 0.1, [10, 10, 10], ["donut"], "resource");
