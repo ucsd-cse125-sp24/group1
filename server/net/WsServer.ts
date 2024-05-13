@@ -82,9 +82,7 @@ export class WsServer {
 
 		ws.on("close", () => {
 			const wsId = this.getIdFromWebSocket(ws);
-			if (wsId == undefined) {
-				throw "wsId should never be undefined :( " + wsId;
-			}
+			if (!wsId) throw "wsId should never be undefined :(";
 
 			// Give players a while to reconnect
 			this.#disconnectTimeouts.set(
