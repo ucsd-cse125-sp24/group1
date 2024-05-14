@@ -1,8 +1,12 @@
-export class Connection<ReceiveType, SendType> {
-	static MAX_RECONNECT_ATTEMPTS = 3;
+import { ServerControlMessage, ClientControlMessage, ServerMessage, ClientMessage } from "../../common/messages";
+
+const CONNECTION_ID = "connection-id";
+
+export class Connection {
+	static MAX_RECONNECT_ATTEMPTS = 0;
 
 	url: string;
-	handleMessage: (data: ReceiveType) => SendType | undefined;
+	handleMessage: (data: ServerMessage) => ClientMessage | undefined;
 
 	#ws: WebSocket | null = null;
 	#worker: Worker | null = null;
@@ -10,20 +14,29 @@ export class Connection<ReceiveType, SendType> {
 	#lastTime = performance.now();
 	#wsError = false;
 
-	#sendQueue: SendType[] = [];
+	#sendQueue: ClientMessage[] = [];
 	#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 
 	#indicator?: HTMLElement | null;
 	#workerBtn = Object.assign(document.createElement("button"), { textContent: "Use worker" });
 	#retryBtn = Object.assign(document.createElement("button"), { textContent: "Reconnect" });
 
-	constructor(url: string, handleMessage: (data: ReceiveType) => SendType | undefined, indicator?: HTMLElement | null) {
+	constructor(
+		url: string,
+		handleMessage: (data: ServerMessage) => ClientMessage | undefined,
+		indicator?: HTMLElement | null,
+	) {
 		this.url = url;
 		this.#indicator = indicator;
 		this.handleMessage = handleMessage;
 
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
 		this.#retryBtn.addEventListener("click", () => this.connect(true));
+		document.addEventListener("keydown", ((e:any) => {
+			if (e.key === "h") {
+				this.#ws?.close();
+			}
+		}).bind(this));
 	}
 
 	connect(reconnecting = false) {
@@ -55,8 +68,6 @@ export class Connection<ReceiveType, SendType> {
 			this.#lastTime = performance.now();
 		}
 
-		this.#ws?.send(JSON.stringify({ type: "rejoin", id: localStorage.getItem("connectionId") }));
-
 		const queue = this.#sendQueue;
 		this.#sendQueue = [];
 		for (const message of queue) {
@@ -64,8 +75,8 @@ export class Connection<ReceiveType, SendType> {
 		}
 	};
 
-	#handleRawMessage = (e: MessageEvent<unknown>) => {
-		let data: ReceiveType;
+	#handleRawMessage = async (e: MessageEvent<unknown>) => {
+		let data: ServerMessage | ServerControlMessage;
 		try {
 			if (typeof e.data !== "string") {
 				throw new TypeError("Data is not string");
@@ -75,6 +86,20 @@ export class Connection<ReceiveType, SendType> {
 			console.warn("Parsing JSON message failed!");
 			console.log(`Received Data: \n${e.data}`);
 			throw error;
+		}
+
+		switch (data.type) {
+			case "assign-client-id":
+				console.log(data);
+				let old_connection = localStorage.getItem(CONNECTION_ID);
+				if (old_connection) {
+					this.#ws?.send(JSON.stringify({ type: "rejoin", id: old_connection}));
+				}				
+				return;
+			case "rejoin-response":
+				console.log(data);
+				localStorage.setItem(CONNECTION_ID, data.id);
+				return;
 		}
 
 		const response = this.handleMessage(data);
@@ -128,7 +153,7 @@ export class Connection<ReceiveType, SendType> {
 		}
 	};
 
-	send(message: SendType): void {
+	send(message: ClientMessage): void {
 		if (this.#ws?.readyState === WebSocket.OPEN) {
 			this.#ws.send(JSON.stringify(message));
 		} else if (this.#worker) {

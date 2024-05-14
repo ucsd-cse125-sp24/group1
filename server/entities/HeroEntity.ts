@@ -110,7 +110,6 @@ export class HeroEntity extends PlayerEntity {
 			const randomIndex = Math.floor(Math.random() * stringsArray.length);
 			const randomString = stringsArray[randomIndex];
 			console.log(randomString);
-			
 		}
 
 		if (this.body.force.length() < 1) {

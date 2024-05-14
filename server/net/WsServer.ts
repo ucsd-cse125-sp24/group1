@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { WebSocket, WebSocketServer } from "ws";
 import express from "express";
 import { Game } from "../Game";
-import { ClientMessage, ServerMessage, WSManagementMessage } from "../../common/messages";
+import { ClientControlMessage, ClientMessage, ServerControlMessage, ServerMessage } from "../../common/messages";
 import { Connection } from "./Server";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -25,7 +25,7 @@ export class WsServer {
 	#server = http.createServer(this.#app);
 	#wss = new WebSocketServer({ server: this.#server });
 
-	#activeConnections = new Map<string, WebSocket>();
+	#activeConnections = new BiMap<string, WebSocket>();
 	#disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 
 	#game: Game;
@@ -63,16 +63,20 @@ export class WsServer {
 		 *
 		 * If we want to buffer messages before sending them all together, this is the place to do it.
 		 */
-		const connection: Connection<ServerMessage> = {
+		const connection: Connection<ServerMessage | ServerControlMessage> = {
 			send(message) {
 				ws.send(JSON.stringify(message));
 			},
 		};
 
-		this.#activeConnections.set(
-			[...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join(""),
-			ws,
-		);
+		const connectionId = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
+
+		connection.send({
+			type: "assign-client-id",
+			id: connectionId,
+		});
+
+		this.#activeConnections.set(connectionId, ws);
 
 		this.#game.handleOpen(connection);
 
@@ -81,7 +85,7 @@ export class WsServer {
 		});
 
 		ws.on("close", () => {
-			const wsId = this.getIdFromWebSocket(ws);
+			const wsId = this.#activeConnections.rev_get(ws);
 			if (!wsId) throw "wsId should never be undefined :(";
 
 			// Give players a while to reconnect
@@ -107,18 +111,10 @@ export class WsServer {
 		this.#activeConnections.delete(id);
 	}
 
-	getIdFromWebSocket(ws: WebSocket): string | undefined {
-		for (let [str, websocket] of this.#activeConnections.entries()) {
-			if (ws == websocket) {
-				return str;
-			}
-		}
-	}
-
 	handleMessage(ws: WebSocket, rawData: unknown, conn: Connection<ServerMessage>): void {
 		const stringData = Array.isArray(rawData) ? rawData.join("") : String(rawData);
 
-		let data: ClientMessage | WSManagementMessage;
+		let data: ClientMessage | ClientControlMessage;
 		try {
 			data = JSON.parse(stringData);
 		} catch {
@@ -129,9 +125,16 @@ export class WsServer {
 		switch (data.type) {
 			case "rejoin":
 				if (typeof data.id !== "string") return;
-				if (!this.#activeConnections.has(data.id)) return;
+				if (!this.#activeConnections.has(data.id)) {
+					ws.send(JSON.stringify({
+						type: "rejoin-response",
+						id: this.#activeConnections.rev_get(ws),
+						successful: false
+					} as ServerControlMessage));
+					return;
+				}
 
-				let oldId = this.getIdFromWebSocket(ws);
+				let oldId = this.#activeConnections.rev_get(ws);
 				if (oldId) {
 					this.#activeConnections.delete(oldId);
 				}
@@ -141,6 +144,11 @@ export class WsServer {
 				this.#activeConnections.set(data.id, ws);
 
 				clearTimeout(this.#disconnectTimeouts.get(data.id));
+				ws.send(JSON.stringify({
+					type: "rejoin-response",
+					id: data.id,
+					successful: true
+				} as ServerControlMessage));
 				return;
 		}
 
@@ -156,5 +164,46 @@ export class WsServer {
 	listen(port: number): void {
 		this.#server.listen(port);
 		console.log(`Listening on http://localhost:${port}/`);
+	}
+}
+
+class BiMap<K,V> extends Map<K,V> {
+	#map = new Map<K,V>();
+	#pam = new Map<V,K>();
+
+	constructor(){
+		super();
+	}
+
+	get(v: K): V | undefined {
+		return this.#map.get(v);
+	}
+	rev_get(v: V): K | undefined {
+		return this.#pam.get(v);
+	}
+
+	set(k: K, v: V): this {
+		this.#map.set(k, v);
+		this.#pam.set(v, k);
+		return this;
+	}
+
+	delete(k: K): boolean {
+		let v = this.#map.get(k);
+		if (v) {
+			this.#map.delete(k);
+			this.#pam.delete(v);
+			return true;
+		}
+		return false;
+	}
+	rev_delete(v: V) {
+		let k = this.#pam.get(v);
+		if (k) {
+			this.#map.delete(k);
+			this.#pam.delete(v);
+			return true;
+		}
+		return false;
 	}
 }

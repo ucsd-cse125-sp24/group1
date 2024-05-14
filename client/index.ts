@@ -53,11 +53,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			throw new Error(`Unsupported message type '${data["type"]}'`);
 	}
 };
-const connection = new Connection<ServerMessage, ClientMessage>(
-	wsUrl,
-	handleMessage,
-	document.getElementById("network-status"),
-);
+const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
 const engine = new GraphicsEngine(getGl());
 const pipeline = new RenderPipeline(engine);

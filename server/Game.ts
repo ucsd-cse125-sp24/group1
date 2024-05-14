@@ -7,7 +7,6 @@
  * This class serves as the ground source of truth for anything concerning the game
  */
 
-
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
@@ -79,13 +78,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], ["sampleMap"]);
 		this.registerEntity(plane);
 
-		let iron = new Item("Iron Ore", .1, [10, 10, 10], ["donut"], "resource");
+		let iron = new Item("Iron Ore", 0.1, [10, 10, 10], ["donut"], "resource");
 		this.registerEntity(iron);
 
 		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], ["samplePlayer"], [["Iron Ore"]]);
 		this.registerEntity(tempCrafter);
-		
-
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
 		this.registerEntity(tempSphere);
@@ -119,10 +116,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 			player.move(movement);
 
-
-
 			let checkerRay = new phys.Ray(player.getPos(), player.getPos().vadd(new phys.Vec3(...movement.lookDir)));
-			
 
 			/*
 			const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
@@ -141,7 +135,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 
 			*/
-
 		}
 
 		this.#nextTick();

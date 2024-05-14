@@ -21,8 +21,6 @@ export class CraftingTable extends InteractableEntity {
 	// shape
 	sphere: phys.Sphere;
 
-
-    
 	constructor(name: string, pos: Vector3, model: ModelId[] = [], recipes: string[][]) {
 		super(name, model);
 
@@ -56,11 +54,7 @@ export class CraftingTable extends InteractableEntity {
 	}
 
 	onCollide(otherEntity: Entity): void {
-
-		
-		
 		if (otherEntity instanceof Item) {
-
 			otherEntity.removeFromWorld(TheWorld);
 
 			/*
@@ -77,9 +71,7 @@ export class CraftingTable extends InteractableEntity {
 			}
 			*/
 		}
-		
 	}
-
 
 	serialize(): SerializedEntity {
 		return {
