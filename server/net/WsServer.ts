@@ -159,7 +159,7 @@ export class WsServer {
 		}
 
 		switch (data.type) {
-			case "rejoin":
+			case "join":
 				if (typeof data.id !== "string" && data.id !== null) return;
 
 				// If this player is a reconnecting player
@@ -167,11 +167,12 @@ export class WsServer {
 					// Tell the game that they joined
 					this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
 						
-					ws.send(JSON.stringify({
-							type: "rejoin-response",
-						id: this.#activeConnections.rev_get(ws),
-						successful: false
-					} as ServerControlMessage));
+					const message:ServerControlMessage = {
+						type: "join-response",
+					id: this.#activeConnections.rev_get(ws),
+					successful: false
+				};
+					ws.send(JSON.stringify(message));
 						return;
 				} else {
 					let id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
@@ -198,11 +199,12 @@ export class WsServer {
 				this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
 				
 				// Send the client the message telling them their id
-				ws.send(JSON.stringify({
-					type: "rejoin-response",
+				const message:ServerControlMessage={
+					type: "join-response",
 					id: data.id,
 					successful: true
-				} as ServerControlMessage));
+				}
+				ws.send(JSON.stringify(message));
 				return;
 			}
 			

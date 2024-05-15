@@ -92,9 +92,9 @@ export class Connection {
 			case "who-the-h*ck-are-you":
 				console.log(data);
 				let old_connection = localStorage.getItem(CONNECTION_ID);
-				this.send({ type: "rejoin", id: old_connection});
+				this.send({ type: "join", id: old_connection});
 				return;
-			case "rejoin-response":
+			case "join-response":
 				console.log(data);
 				localStorage.setItem(CONNECTION_ID, data.id);
 				return;

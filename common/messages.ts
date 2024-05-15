@@ -14,7 +14,7 @@ export type ClientControlMessage = {
 	 * the client a new player ID. This can happen if it has been too long since
 	 * the client last connected, so its corresponding player has been discarded.
 	 */
-	type: "rejoin";
+	type: "join";
 	/** `null` if player is new. */
 	id: string | null;
 };
@@ -22,7 +22,7 @@ export type ClientControlMessage = {
 export type ServerControlMessage = {
 	type: "who-the-h*ck-are-you";
 } | {
-	type: "rejoin-response";
+	type: "join-response";
 	successful: boolean;
 	id: string;
 };
