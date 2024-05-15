@@ -73,24 +73,17 @@ export class WsServer {
 	#handleNewConnection(ws: WebSocket) {
 		this.#unhangServer();
 
-		const connectionId = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
-
-		let connection = this.#getConnection(ws);
-		connection.send({
+		ws.send(JSON.stringify({
 			type: "who-the-h*ck-are-you"
-		});
-
-		this.#activeConnections.set(connectionId, ws);
-
-		this.#game.handleOpen(connection);
+		}));
 
 		ws.on("message", (rawData) => {
-			this.handleMessage(ws, rawData, connection);
+			this.handleMessage(ws, rawData, this.#getConnection(ws));
 		});
 
 		ws.on("close", () => {
 			const wsId = this.#activeConnections.rev_get(ws);
-			if (!wsId) throw "wsId should never be undefined :(";
+			if (!wsId) return;
 
 			// Give players a while to reconnect
 			this.#disconnectTimeouts.set(
@@ -125,33 +118,47 @@ export class WsServer {
 			console.warn("Non-JSON message: ", stringData);
 			return;
 		}
-		console.log("OMG A MESSAGE 🤩", this.#activeConnections);
 
 		switch (data.type) {
 			case "rejoin":
-				console.log("Client sent rejoin", data);
 				if (typeof data.id !== "string") return;
+
+				// If this player is a reconnecting player
 				if (!this.#activeConnections.has(data.id)) {
+					// Tell the game that they joined
 					this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
+					
 					ws.send(JSON.stringify({
 						type: "rejoin-response",
 						id: this.#activeConnections.rev_get(ws),
 						successful: false
 					} as ServerControlMessage));
 					return;
+				} else {
+					let id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
+					this.#activeConnections.set(id, ws);
+					this.#game.handleOpen(this.#getConnection(ws));
 				}
-				
-				let oldId = this.#activeConnections.rev_get(ws);
-				if (oldId) {
-					this.#activeConnections.delete(oldId);
+
+				// If there's an old ID that corresponds to this WS, delete it
+				if (this.#activeConnections.rev_has(ws)) {
+					this.#activeConnections.rev_delete(ws);
 				}
-				
+
+				// Close the old websocket by the provided join id if it already exists
 				this.#activeConnections.get(data.id)?.close();
 				this.#activeConnections.delete(data.id);
+
+				// Link the new id to the new websocket
 				this.#activeConnections.set(data.id, ws);
 				
+				// Don't remove id from list because player reconnected
 				clearTimeout(this.#disconnectTimeouts.get(data.id));
+
+				// Tell the player that a new player joined
 				this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
+				
+				// Send the client the message telling them their id
 				ws.send(JSON.stringify({
 					type: "rejoin-response",
 					id: data.id,
@@ -190,7 +197,7 @@ class BiMap<K,V> {
 	has(k: K): boolean {
 		return this.#map.has(k);
 	}
-	has_rev(v: V) {
+	rev_has(v: V) {
 		return this.#pam.has(v);
 	}
 	rev_get(v: V): K | undefined {
