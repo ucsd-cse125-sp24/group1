@@ -6,6 +6,14 @@ export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameStat
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage;
 
 export type ClientControlMessage = {
+	/**
+	 * Used to tell the server whether it is a new player or a reconnecting
+	 * player. If the client is reconnecting, it must supply its `id`.
+	 *
+	 * Note that the server is free to disregard reconnection requests and assign
+	 * the client a new player ID. This can happen if it has been too long since
+	 * the client last connected, so its corresponding player has been discarded.
+	 */
 	type: "rejoin";
 	/** `null` if player is new. */
 	id: string | null;

@@ -25,7 +25,28 @@ export class WsServer {
 	#server = http.createServer(this.#app);
 	#wss = new WebSocketServer({ server: this.#server });
 
-	#activeConnections = new BiMap<string, WebSocket>();
+	/**
+	 * Contrary to what the name suggests, this doesn't keep track of open
+	 * WebSocket connections. Rather, it keeps track of authenticated players in
+	 * the game.
+	 *
+	 * An entry in `#activeConnections` represents a client or user, and means:
+	 *
+	 * - It has a corresponding player in the game.
+	 * - It has an ID.
+	 * - If there is a WebSocket, it is open. If it's `null`, the player is
+	 *   temporarily disconnected (e.g. RESNET-PROTECTED being bad).
+	 *
+	 * However, it doesn't guarantee that it actually has an open connection. It's
+	 * possible its client has disconnected. When it reconnects, it will tell the
+	 * server that it is reconnecting with its existing ID, and the entry will be
+	 * updated to have the new WebSocket object.
+	 *
+	 * New connections also have to talk to the server before getting an entry
+	 * here. They have to say that they are new, and the server will generate and
+	 * give the client its ID.
+	 */
+	#activeConnections = new BiMap<string, WebSocket | null>();
 	#disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 
 	#game: Game;
