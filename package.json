@@ -17,7 +17,7 @@
 		"start": "node dist/index.js",
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"watch": "npm-run-all --parallel watch:*",
-		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --define:BROWSER=false --outdir=dist --format=esm",
+		"watch:server": "esbuild server/index.ts --bundle --watch=forever --platform=node --packages=external --define:BROWSER=false --loader:.gltf=json --loader:.bin=file --outdir=dist --format=esm",
 		"watch:server-run": "nodemon --watch dist --exec npm start",
 		"watch:client": "esbuild client/index.ts --bundle --watch=forever --loader:.vert=text --loader:.frag=text --loader:.gltf=json --loader:.bin=file --loader:.png=file --outdir=public --sourcemap"
 	},
