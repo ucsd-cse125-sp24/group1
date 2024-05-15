@@ -60,7 +60,8 @@ export abstract class PlayerEntity extends Entity {
 
 		this.onGround = false;
 		if (result.hasHit) {
-			if (result.distance <= 0.5 + Entity.EPSILON) {
+			// TEMP(Sean): I increased the threshold from 0.5 just so i can jump
+			if (result.distance <= 1 + Entity.EPSILON) {
 				this.onGround = true;
 			}
 		}

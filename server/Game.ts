@@ -148,7 +148,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				input: input,
 				entity: player,
 			});
-			console.log(this.#players);
 		}
 		conn.send({ type: "camera-lock", entityName: conn.id, pov: "first-person" });
 	}

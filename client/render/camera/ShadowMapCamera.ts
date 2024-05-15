@@ -117,7 +117,11 @@ export class ShadowMapCamera extends Camera {
 			this._upDir = CUBE_UP_DIR[side];
 			const view = this.getViewProjectionMatrix();
 			for (const entity of entities) {
+				// Allow player to see their own shadow
+				const wasVisible = entity.visible;
+				entity.visible = true;
 				entity.draw(view);
+				entity.visible = wasVisible;
 			}
 		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);

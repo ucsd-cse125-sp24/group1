@@ -110,6 +110,8 @@ export class HeroEntity extends PlayerEntity {
 			const randomIndex = Math.floor(Math.random() * stringsArray.length);
 			const randomString = stringsArray[randomIndex];
 			console.log(randomString);
+
+			this.body.applyImpulse(new phys.Vec3(0, 40, 0));
 		}
 
 		if (this.body.force.length() < 1) {
