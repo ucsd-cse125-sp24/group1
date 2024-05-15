@@ -89,14 +89,10 @@ export class Connection {
 		}
 
 		switch (data.type) {
-			case "assign-client-id":
+			case "who-the-h*ck-are-you":
 				console.log(data);
 				let old_connection = localStorage.getItem(CONNECTION_ID);
-				if (old_connection) {
-					this.#ws?.send(JSON.stringify({ type: "rejoin", id: old_connection}));
-				} else {
-					localStorage.setItem(CONNECTION_ID, data.id);
-				}			
+				this.#ws?.send(JSON.stringify({ type: "rejoin", id: old_connection}));
 				return;
 			case "rejoin-response":
 				console.log(data);
