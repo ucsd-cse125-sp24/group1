@@ -11,7 +11,7 @@ import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
-import { sampleMap } from "../assets/models/sample_map/server-mesh";
+import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
@@ -80,7 +80,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	async setup() {
-		const mapColliders = getColliders(await sampleMap);
+		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [
 			{ modelId: "sampleMap", offset: [0, 0.5, 0] },
 		]);
