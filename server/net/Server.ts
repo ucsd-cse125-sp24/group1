@@ -1,4 +1,5 @@
 export interface Connection<SendType> {
+	id: string;
 	send(data: SendType): void;
 }
 

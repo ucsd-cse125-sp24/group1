@@ -5,8 +5,16 @@ export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameStat
 
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage;
 
-export type WSManagementMessage = {
+export type ClientControlMessage = {
 	type: "rejoin";
+	id: string;
+};
+
+export type ServerControlMessage = {
+	type: "who-the-h*ck-are-you";
+} | {
+	type: "rejoin-response";
+	successful: boolean;
 	id: string;
 };
 

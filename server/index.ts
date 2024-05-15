@@ -9,8 +9,7 @@ import { WsServer } from "./net/WsServer";
  */
 declare var BROWSER: boolean;
 
-// Create a new game with 1 player
-const game = new Game(1);
+const game = new Game();
 
 const server = new WsServer(game);
 
