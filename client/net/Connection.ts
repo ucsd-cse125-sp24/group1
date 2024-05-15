@@ -71,6 +71,9 @@ export class Connection {
 			this.#lastTime = performance.now();
 		}
 
+		let old_connection = localStorage.getItem(CONNECTION_ID);
+		this.send({ type: "join", id: old_connection ?? "" });
+
 		const queue = this.#sendQueue;
 		this.#sendQueue = [];
 		for (const message of queue) {
@@ -92,11 +95,6 @@ export class Connection {
 		}
 
 		switch (data.type) {
-			case "who-the-h*ck-are-you":
-				console.log(data);
-				let old_connection = localStorage.getItem(CONNECTION_ID);
-				this.send({ type: "join", id: old_connection });
-				return;
 			case "join-response":
 				console.log(data);
 				localStorage.setItem(CONNECTION_ID, data.id);

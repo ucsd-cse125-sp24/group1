@@ -130,40 +130,27 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#nextTick();
 	}
 
-	/**
-	 * Welcomes a new connection by bombarding it with a bunch of emails as part
-	 * of its onboarding process
-	 * @returns Messages to send to the new client
-	 */
-	handleOpen(conn: Connection<ServerMessage>): void {
-		// TODO: Create a player corresponding to this connection and lock the
-		// client's camera to it. This may involve reworking Server.ts to give
-		// access to WebSocket connection objects that you can store in each player
-		// object; if so, you can switch the server to always use WsServer.ts (and
-		// ignore the web worker stuff) until you get it working
-	}
-
-	handlePlayerJoin(id: string, conn: Connection<ServerMessage>) {
+	handlePlayerJoin(conn: Connection<ServerMessage>) {
 		console.log("Player joining!", this.#players);
-		let player = this.#players.get(id);
+		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
 		} else {
-			let player = new HeroEntity(id, [20, 20, 20], ["samplePlayer"]);
+			let player = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
 			this.registerEntity(player);
 
 			let input = new PlayerInput();
 			this.#createdInputs.push(input);
 
-			this.#players.set(id, {
-				id: id,
+			this.#players.set(conn.id, {
+				id: conn.id,
 				conn: conn,
 				input: input,
 				entity: player,
 			});
 			console.log(this.#players);
 		}
-		conn.send({ type: "camera-lock", entityName: id, pov: "first-person" });
+		conn.send({ type: "camera-lock", entityName: conn.id, pov: "first-person" });
 	}
 
 	/**

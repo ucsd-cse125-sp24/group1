@@ -15,19 +15,17 @@ export type ClientControlMessage = {
 	 * the client last connected, so its corresponding player has been discarded.
 	 */
 	type: "join";
-	/** `null` if player is new. */
-	id: string | null;
+	/**
+	 * If the player is new, you can just give an obviously invalid ID, like an
+	 * empty string. The server will generate a new one for you.
+	 */
+	id: string;
 };
 
-export type ServerControlMessage =
-	| {
-			type: "who-the-h*ck-are-you";
-	  }
-	| {
-			type: "join-response";
-			successful: boolean;
-			id: string;
-	  };
+export type ServerControlMessage = {
+	type: "join-response";
+	id: string;
+};
 
 export type EntireGameState = {
 	type: "entire-game-state";

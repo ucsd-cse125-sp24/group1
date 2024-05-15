@@ -34,8 +34,6 @@ export class WsServer {
 	 *
 	 * - It has a corresponding player in the game.
 	 * - It has an ID.
-	 * - If there is a WebSocket, it is open. If it's `null`, the player is
-	 *   temporarily disconnected (e.g. RESNET-PROTECTED being bad).
 	 *
 	 * However, it doesn't guarantee that it actually has an open connection. It's
 	 * possible its client has disconnected. When it reconnects, it will tell the
@@ -46,7 +44,7 @@ export class WsServer {
 	 * here. They have to say that they are new, and the server will generate and
 	 * give the client its ID.
 	 */
-	#activeConnections = new BiMap<string, WebSocket | null>();
+	#playerConnections = new BiMap<string, WebSocket>();
 	#disconnectTimeouts = new Map<string, NodeJS.Timeout>();
 
 	#game: Game;
@@ -76,21 +74,21 @@ export class WsServer {
 		this.#wss.on("connection", this.#handleNewConnection.bind(this));
 	}
 
-	#createConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
-		const id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
+	// #createConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
+	// 	const id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 
-		this.#activeConnections.set(id, ws);
+	// 	this.#playerConnections.set(id, ws);
 
-		return {
-			id,
-			send(message) {
-				ws.send(JSON.stringify(message));
-			},
-		};
-	}
+	// 	return {
+	// 		id,
+	// 		send(message) {
+	// 			ws.send(JSON.stringify(message));
+	// 		},
+	// 	};
+	// }
 
 	#getConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> | null {
-		const id = this.#activeConnections.rev_get(ws);
+		const id = this.#playerConnections.rev_get(ws);
 		if (!id) {
 			return null;
 		}
@@ -110,21 +108,12 @@ export class WsServer {
 	#handleNewConnection(ws: WebSocket) {
 		this.#unhangServer();
 
-		ws.send(
-			JSON.stringify({
-				type: "who-the-h*ck-are-you",
-			}),
-		);
-
 		ws.on("message", (rawData) => {
-			const connection = this.#getConnection(ws);
-			if (connection) {
-				this.handleMessage(ws, rawData, connection);
-			}
+			this.handleMessage(ws, rawData);
 		});
 
 		ws.on("close", () => {
-			const wsId = this.#activeConnections.rev_get(ws);
+			const wsId = this.#playerConnections.rev_get(ws);
 			if (!wsId) return;
 
 			// Give players a while to reconnect
@@ -147,10 +136,10 @@ export class WsServer {
 	}
 
 	deleteConnection(id: string) {
-		this.#activeConnections.delete(id);
+		this.#playerConnections.delete(id);
 	}
 
-	handleMessage(ws: WebSocket, rawData: unknown, conn: Connection<ServerMessage>): void {
+	handleMessage(ws: WebSocket, rawData: unknown): void {
 		const stringData = Array.isArray(rawData) ? rawData.join("") : String(rawData);
 
 		let data: ClientMessage | ClientControlMessage;
@@ -163,58 +152,56 @@ export class WsServer {
 
 		switch (data.type) {
 			case "join":
-				if (typeof data.id !== "string" && data.id !== null) return;
+				if (typeof data.id !== "string") return;
 
-				// If this player is a reconnecting player
-				if (!this.#activeConnections.has(data.id)) {
-					// Tell the game that they joined
-					this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
+				// True if this player is a reconnecting player (so they have an old ws)
+				const oldWs = this.#playerConnections.get(data.id);
+				let id = data.id;
+				if (oldWs) {
+					// They already sent `join` before. what a bad boy😈. lets do nothing about it
+					if (oldWs === ws) return;
 
-					const message: ServerControlMessage = {
-						type: "join-response",
-						id: this.#activeConnections.rev_get(ws),
-						successful: false,
-					};
-					ws.send(JSON.stringify(message));
-					return;
+					// Reconnecting while the old connection is still live should kill the old connection
+					// closing a closed ws is a no-op
+					oldWs.close();
 				} else {
-					let id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
-					this.#activeConnections.set(id, ws);
-					this.#game.handleOpen(this.#getConnection(ws));
+					// New player (or they reconnected with an invalid ID; we treat them like a new player)
+					// Generate a new ID
+					id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 				}
 
-				// If there's an old ID that corresponds to this WS, delete it
-				if (this.#activeConnections.rev_has(ws)) {
-					this.#activeConnections.rev_delete(ws);
+				// Create mapping from the new ID to the WebSocket that is currently alive that belongs to that ID
+				this.#playerConnections.set(id, ws);
+
+				const connection = this.#getConnection(ws);
+				if (!connection) {
+					throw new ReferenceError(
+						"For some reason, the new WebSocket connection was not successfully registered into playerConnections",
+					);
 				}
 
-				// Close the old websocket by the provided join id if it already exists
-				this.#activeConnections.get(data.id)?.close();
-				this.#activeConnections.delete(data.id);
+				// Tell the game that they joined
+				this.#game.handlePlayerJoin(connection);
 
-				// Link the new id to the new websocket
-				this.#activeConnections.set(data.id, ws);
+				// Ok we believe u 🥰 you are the client you say you are
+				connection.send({
+					type: "join-response",
+					id,
+				});
 
 				// Don't remove id from list because player reconnected
+				// (does nothing if player is new)
 				clearTimeout(this.#disconnectTimeouts.get(data.id));
-
-				// Tell the player that a new player joined
-				this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
-
-				// Send the client the message telling them their id
-				const message: ServerControlMessage = {
-					type: "join-response",
-					id: data.id,
-					successful: true,
-				};
-				ws.send(JSON.stringify(message));
 				return;
 		}
 
-		this.#game.handleMessage(data, conn);
-	}
+		// If the client hasn't been assigned an id, they are rude. do not respond 🧐
+		const connection = this.#getConnection(ws);
+		if (!connection) return;
 
-	broadcast(message: ServerMessage): void {
+		this.#game.handleMessage(data, connection);
+
+}	broadcast(message: ServerMessage): void {
 		for (const ws of this.#wss.clients) {
 			ws.send(JSON.stringify(message));
 		}
