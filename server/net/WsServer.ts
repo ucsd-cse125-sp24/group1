@@ -6,6 +6,7 @@ import express from "express";
 import { Game } from "../Game";
 import { ClientControlMessage, ClientMessage, ServerControlMessage, ServerMessage } from "../../common/messages";
 import { Connection } from "./Server";
+import { log } from "./_tempDebugLog";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -60,7 +61,7 @@ export class WsServer {
 	#unhangServer = () => {};
 	hasConnection = new Promise<void>((resolve) => {
 		this.#unhangServer = resolve;
-	});
+	}).then(() => log("First connection. Simulation begins"));
 
 	constructor(game: Game) {
 		this.#app.use(express.static(path.join(__dirname, "..", "public")));
@@ -116,21 +117,25 @@ export class WsServer {
 			const wsId = this.#playerConnections.rev_get(ws);
 			if (!wsId) return;
 
+			log(`Player ${wsId.slice(0, 6)} disconnected`);
+
 			// Give players a while to reconnect
 			this.#disconnectTimeouts.set(
 				wsId,
 				setTimeout(
 					(() => {
 						this.deleteConnection(wsId);
+						log(`Player ${wsId.slice(0, 6)} discarded`);
 					}).bind(this),
 					RECONNECT_TIMEOUT,
 				),
 			);
 
 			if (this.#wss.clients.size === 0) {
+				log("Server idle, simulation paused");
 				this.hasConnection = new Promise<void>((resolve) => {
 					this.#unhangServer = resolve;
-				});
+				}).then(() => log("Simulation resumes"));
 			}
 		});
 	}
@@ -158,6 +163,8 @@ export class WsServer {
 				const oldWs = this.#playerConnections.get(data.id);
 				let id = data.id;
 				if (oldWs) {
+					log(`Player ${id.slice(0, 6)} reconnected`);
+
 					// They already sent `join` before. what a bad boy😈. lets do nothing about it
 					if (oldWs === ws) return;
 
@@ -168,6 +175,7 @@ export class WsServer {
 					// New player (or they reconnected with an invalid ID; we treat them like a new player)
 					// Generate a new ID
 					id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
+					log(`New player ${id.slice(0, 6)}.`);
 				}
 
 				// Create mapping from the new ID to the WebSocket that is currently alive that belongs to that ID
@@ -205,6 +213,16 @@ export class WsServer {
 		for (const ws of this.#wss.clients) {
 			ws.send(JSON.stringify(message));
 		}
+	}
+
+	_debugGetConnectionCount(): number {
+		return this.#wss.clients.size;
+	}
+	_debugGetPlayerCount(): number {
+		return this.#playerConnections.size;
+	}
+	_debugGetActivePlayerCount(): number {
+		return Array.from(this.#playerConnections.entries()).filter(([, ws]) => ws.readyState === WebSocket.OPEN).length;
 	}
 
 	listen(port: number): void {

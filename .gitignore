@@ -8,4 +8,5 @@ public/*.map
 public/*.png
 public/*.bin
 public/worker/
+public/log.txt
 dist/
