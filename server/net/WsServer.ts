@@ -76,11 +76,10 @@ export class WsServer {
 		this.#wss.on("connection", this.#handleNewConnection.bind(this));
 	}
 
-	#createConnection (ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
+	#createConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
 		const id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 
 		this.#activeConnections.set(id, ws);
-
 
 		return {
 			id,
@@ -91,7 +90,7 @@ export class WsServer {
 	}
 
 	#getConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> | null {
-		const id = this.#activeConnections.rev_get(ws)
+		const id = this.#activeConnections.rev_get(ws);
 		if (!id) {
 			return null;
 		}
@@ -111,13 +110,17 @@ export class WsServer {
 	#handleNewConnection(ws: WebSocket) {
 		this.#unhangServer();
 
-		ws.send(JSON.stringify({
-			type: "who-the-h*ck-are-you"
-		}));
+		ws.send(
+			JSON.stringify({
+				type: "who-the-h*ck-are-you",
+			}),
+		);
 
 		ws.on("message", (rawData) => {
 			const connection = this.#getConnection(ws);
-			if (connection) {this.handleMessage(ws, rawData, connection);}
+			if (connection) {
+				this.handleMessage(ws, rawData, connection);
+			}
 		});
 
 		ws.on("close", () => {
@@ -166,14 +169,14 @@ export class WsServer {
 				if (!this.#activeConnections.has(data.id)) {
 					// Tell the game that they joined
 					this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
-						
-					const message:ServerControlMessage = {
+
+					const message: ServerControlMessage = {
 						type: "join-response",
-					id: this.#activeConnections.rev_get(ws),
-					successful: false
-				};
+						id: this.#activeConnections.rev_get(ws),
+						successful: false,
+					};
 					ws.send(JSON.stringify(message));
-						return;
+					return;
 				} else {
 					let id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 					this.#activeConnections.set(id, ws);
@@ -191,44 +194,44 @@ export class WsServer {
 
 				// Link the new id to the new websocket
 				this.#activeConnections.set(data.id, ws);
-				
+
 				// Don't remove id from list because player reconnected
 				clearTimeout(this.#disconnectTimeouts.get(data.id));
 
 				// Tell the player that a new player joined
 				this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
-				
+
 				// Send the client the message telling them their id
-				const message:ServerControlMessage={
+				const message: ServerControlMessage = {
 					type: "join-response",
 					id: data.id,
-					successful: true
-				}
+					successful: true,
+				};
 				ws.send(JSON.stringify(message));
 				return;
-			}
-			
-			this.#game.handleMessage(data, conn);
 		}
-		
-		broadcast(message: ServerMessage): void {
-			for (const ws of this.#wss.clients) {
+
+		this.#game.handleMessage(data, conn);
+	}
+
+	broadcast(message: ServerMessage): void {
+		for (const ws of this.#wss.clients) {
 			ws.send(JSON.stringify(message));
 		}
 	}
-	
+
 	listen(port: number): void {
 		this.#server.listen(port);
 		console.log(`Listening on http://localhost:${port}/`);
 	}
 }
 
-class BiMap<K,V> {
-	#map = new Map<K,V>();
-	#pam = new Map<V,K>();
+class BiMap<K, V> {
+	#map = new Map<K, V>();
+	#pam = new Map<V, K>();
 	size: number;
-	
-	constructor(){
+
+	constructor() {
 		this.size = 0;
 	}
 

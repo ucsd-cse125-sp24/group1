@@ -1,16 +1,10 @@
 import { vec3 } from "gl-matrix";
 import GraphicsEngine from "../../client/render/engine/GraphicsEngine";
-import { BoxGeometry } from "../../client/render/geometries/BoxGeometry";
 import { particleGeometry } from "../../client/render/geometries/ParticleGeometry";
 import { Model } from "../../client/render/model/Model";
 import { GltfModelWrapper } from "../../client/render/model/GltfModel";
-import { cavecube } from "./cavecube";
-import { defaultCube } from "./default-cube";
-import { defaultCubeColor } from "./default-cube-color";
 import { donut } from "./donut";
 import { fish1 } from "./fish1";
-import { fish2 } from "./fish2";
-import { twoTextureTest } from "./two-texture-test";
 import { sampleMap } from "./sample_map";
 import { samplePlayer } from "./sample_player";
 

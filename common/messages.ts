@@ -19,13 +19,15 @@ export type ClientControlMessage = {
 	id: string | null;
 };
 
-export type ServerControlMessage = {
-	type: "who-the-h*ck-are-you";
-} | {
-	type: "join-response";
-	successful: boolean;
-	id: string;
-};
+export type ServerControlMessage =
+	| {
+			type: "who-the-h*ck-are-you";
+	  }
+	| {
+			type: "join-response";
+			successful: boolean;
+			id: string;
+	  };
 
 export type EntireGameState = {
 	type: "entire-game-state";

@@ -28,10 +28,10 @@ import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 
 interface NetworkedPlayer {
-	input: PlayerInput,
-	entity: PlayerEntity,
-	id: string,
-	conn: Connection<ServerMessage>
+	input: PlayerInput;
+	entity: PlayerEntity;
+	id: string;
+	conn: Connection<ServerMessage>;
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
@@ -40,7 +40,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#entities: Map<string, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
-	
+
 	// player array
 	// mapping from socket to player
 	constructor() {
@@ -98,7 +98,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let tempCylinder = new CylinderEntity("temp cylinder 1", [1, 20, 5], 1.5, 5);
 		this.registerEntity(tempCylinder);
-
 	}
 
 	updateGameState() {
@@ -142,12 +141,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		// access to WebSocket connection objects that you can store in each player
 		// object; if so, you can switch the server to always use WsServer.ts (and
 		// ignore the web worker stuff) until you get it working
-		
 	}
 
 	handlePlayerJoin(id: string, conn: Connection<ServerMessage>) {
 		console.log("Player joining!", this.#players);
-		let player = this.#players.get(id) ;
+		let player = this.#players.get(id);
 		if (player) {
 			player.conn = conn;
 		} else {
@@ -160,14 +158,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.#players.set(id, {
 				id: id,
 				conn: conn,
-				input: input, 
-				entity: player
+				input: input,
+				entity: player,
 			});
 			console.log(this.#players);
 		}
 		conn.send({ type: "camera-lock", entityName: id, pov: "first-person" });
 	}
-	
+
 	/**
 	 * Parses a raw websocket message, and then generates a response to the
 	 * message if that is needed

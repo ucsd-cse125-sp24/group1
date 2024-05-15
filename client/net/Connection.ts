@@ -32,11 +32,14 @@ export class Connection {
 
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
 		this.#retryBtn.addEventListener("click", () => this.connect(true));
-		document.addEventListener("keydown", ((e:any) => {
+		document.addEventListener(
+			"keydown",
+			((e: any) => {
 				if (e.key === "h") {
 					this.#ws?.close();
 				}
-		}).bind(this));
+			}).bind(this),
+		);
 	}
 
 	connect(reconnecting = false) {
@@ -92,7 +95,7 @@ export class Connection {
 			case "who-the-h*ck-are-you":
 				console.log(data);
 				let old_connection = localStorage.getItem(CONNECTION_ID);
-				this.send({ type: "join", id: old_connection});
+				this.send({ type: "join", id: old_connection });
 				return;
 			case "join-response":
 				console.log(data);
