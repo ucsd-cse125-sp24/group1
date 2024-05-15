@@ -22,8 +22,8 @@ import { CylinderEntity } from "./entities/CylinderEntity";
 import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
 import { InteractableEntity } from "./entities/Interactable/InteractableEntity";
-import { StaticEntity } from "./entities/StaticEntity";
-import { createTrimesh } from "./mesh";
+import { getColliders } from "./entities/map/colliders";
+import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 
@@ -80,8 +80,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	async setup() {
-		const mapMesh = createTrimesh(await sampleMap);
-		const mapEntity = new StaticEntity("the map", [0, -5, 0], mapMesh, [{ modelId: "sampleMap", offset: [0, 0.5, 0] }]);
+		const mapColliders = getColliders(await sampleMap);
+		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [
+			{ modelId: "sampleMap", offset: [0, 0.5, 0] },
+		]);
 		this.registerEntity(mapEntity);
 
 		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);

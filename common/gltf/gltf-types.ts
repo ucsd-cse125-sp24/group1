@@ -55,6 +55,7 @@ export type GltfPrimitive = {
 		Record<`COLOR_${number}`, number>)[];
 };
 export type GltfMesh = {
+	name?: string;
 	primitives: GltfPrimitive[];
 	/** For morph targets */
 	weights?: number[];

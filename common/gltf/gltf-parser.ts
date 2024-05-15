@@ -33,7 +33,7 @@ export type GltfParser = {
 	root: Gltf;
 	buffers: ArrayBuffer[];
 	images: ImageBitmap[];
-	meshes: (GltfPrimitive & { transform: mat4 })[];
+	meshes: (GltfPrimitive & { name?: string; transform: mat4 })[];
 };
 
 export async function parseGltf(
@@ -102,7 +102,9 @@ export async function parseGltf(
 		buffers,
 		images,
 		meshes: scene.flatMap((node) =>
-			node.mesh ? node.mesh.primitives.map((primitive) => ({ ...primitive, transform: node.transform })) : [],
+			node.mesh
+				? node.mesh.primitives.map((primitive) => ({ ...primitive, name: node.mesh?.name, transform: node.transform }))
+				: [],
 		),
 	};
 }

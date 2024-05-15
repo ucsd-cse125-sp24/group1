@@ -1,6 +1,7 @@
-import { Trimesh } from "cannon-es";
-import { vec3 } from "gl-matrix";
-import { GltfParser } from "../common/gltf/gltf-parser";
+import * as phys from "cannon-es";
+import { mat4, quat, vec3 } from "gl-matrix";
+import { GltfParser } from "../../../common/gltf/gltf-parser";
+import { exists } from "../../../common/lib/exists";
 
 /**
  * Copied from gltf-types and filled in because WebGL isn't available in the
@@ -24,7 +25,51 @@ const componentSizes = {
 	MAT4: 16,
 };
 
-export function createTrimesh(model: GltfParser) {
+export type MapCollider = {
+	shape: phys.Shape;
+	offset: phys.Vec3;
+	rotation: phys.Quaternion;
+};
+
+export function getColliders(model: GltfParser): MapCollider[] {
+	return model.meshes
+		.map((mesh): MapCollider | null => {
+			if (!mesh.name) {
+				return null;
+			}
+			const rotation = mat4.getRotation(quat.create(), mesh.transform);
+			const scaling = mat4.getScaling(vec3.create(), mesh.transform);
+			const translation = mat4.getTranslation(vec3.create(), mesh.transform);
+			let box: phys.Box;
+			if (mesh.name.includes("Cube")) {
+				// Default Blender cube is 2x2x2
+				box = new phys.Box(new phys.Vec3(...scaling));
+			} else if (mesh.name.includes("Plane")) {
+				// Default Blender plane is 2x2
+				// Turn into thin box with volume below the original plane (like
+				// extruding in direction opposite to normal)
+				const halfThickness = 0.1;
+				box = new phys.Box(new phys.Vec3(scaling[0], halfThickness, scaling[2]));
+				// Adjust translation to compensate for new center
+				const normal = vec3.transformQuat(vec3.create(), vec3.fromValues(0, 1, 0), rotation);
+				vec3.scale(normal, normal, halfThickness);
+				vec3.subtract(translation, translation, normal);
+			} else {
+				return null;
+			}
+			return {
+				shape: box,
+				offset: new phys.Vec3(...translation),
+				rotation: new phys.Quaternion(...rotation),
+			};
+		})
+		.filter(exists);
+}
+
+/**
+ * Currently unused
+ */
+export function createTrimesh(model: GltfParser): phys.Trimesh {
 	const { root, buffers, meshes } = model;
 
 	// Convert model buffers into TypedArrays
@@ -72,5 +117,5 @@ export function createTrimesh(model: GltfParser) {
 	}
 	// console.log(`positions.length = ${positions.length}`);
 	// console.log(`indices.length = ${indices.length}`);
-	return new Trimesh(positions, indices);
+	return new phys.Trimesh(positions, indices);
 }
