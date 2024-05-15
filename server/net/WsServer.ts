@@ -55,32 +55,47 @@ export class WsServer {
 		this.#wss.on("connection", this.#handleNewConnection.bind(this));
 	}
 
-	#getConnection(ws: WebSocket) {
+	#createConnection (ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
+		const id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
+
+		this.#activeConnections.set(id, ws);
+
+
+		return {
+			id,
+			send(message) {
+				ws.send(JSON.stringify(message));
+			},
+		};
+	}
+
+	#getConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
+		const id = this.#activeConnections.rev_get(ws)
+		if (!id) {
+			throw new ReferenceError(`WebSocket is not in #activeConnections`)
+		}
 		/**
 		 * A wrapper around the WebSocket object that stringifies the object before sending it.
 		 *
 		 * If we want to buffer messages before sending them all together, this is the place to do it.
 		 */
-		const connection: Connection<ServerMessage | ServerControlMessage> = {
-			id: this.#activeConnections.rev_get(ws) as string,
+		return {
+			id,
 			send(message) {
 				ws.send(JSON.stringify(message));
 			},
 		};
-		return connection;
 	}
 
 	#handleNewConnection(ws: WebSocket) {
 		this.#unhangServer();
 
-		const connectionId = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 
-		let connection = this.#getConnection(ws);
+		let connection = this.#createConnection(ws);
 		connection.send({
 			type: "who-the-h*ck-are-you"
 		});
 
-		this.#activeConnections.set(connectionId, ws);
 
 		this.#game.handleOpen(connection);
 

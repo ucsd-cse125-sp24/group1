@@ -3,7 +3,7 @@ import { ServerControlMessage, ClientControlMessage, ServerMessage, ClientMessag
 const CONNECTION_ID = "connection-id";
 
 export class Connection {
-	static MAX_RECONNECT_ATTEMPTS = 0;
+	static MAX_RECONNECT_ATTEMPTS = 3;
 
 	url: string;
 	handleMessage: (data: ServerMessage) => ClientMessage | undefined;
@@ -33,9 +33,9 @@ export class Connection {
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
 		this.#retryBtn.addEventListener("click", () => this.connect(true));
 		document.addEventListener("keydown", ((e:any) => {
-			if (e.key === "h") {
-				this.#ws?.close();
-			}
+				if (e.key === "h") {
+					this.#ws?.close();
+				}
 		}).bind(this));
 	}
 
