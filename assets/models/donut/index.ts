@@ -1,4 +1,4 @@
-import { parseGltf } from "../../../client/render/model/gltf-parser";
+import { parseGltf } from "../../../common/gltf/gltf-parser";
 import bin from "./donut.bin";
 import root from "./donut.gltf";
 import texture from "./donut base.png";

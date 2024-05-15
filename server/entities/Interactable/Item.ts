@@ -1,8 +1,8 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import type { ModelId } from "../../../common/models";
-import { SerializedEntity } from "../../../common/messages";
+import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
+import { Entity } from "../Entity";
 import { HeroEntity } from "../HeroEntity";
 import { BossEntity } from "../BossEntity";
 import { InteractableEntity } from "./InteractableEntity";
@@ -11,13 +11,14 @@ export class Item extends InteractableEntity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 	radius: number;
+	heldBy: PlayerEntity | null;
 
 	// shape
 	sphere: phys.Sphere;
 
-	constructor(name: string, radius: number, pos: Vector3, model: ModelId[] = [], tag: string) {
+	constructor(name: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: string) {
 		super(name, model);
 
 		//TODO: ADD A MATERIAL FOR COLLISION
@@ -27,6 +28,7 @@ export class Item extends InteractableEntity {
 		this.model = model;
 		this.radius = radius;
 		this.radius = radius;
+		this.heldBy = null;
 
 		this.tags.add(tag);
 
@@ -34,6 +36,7 @@ export class Item extends InteractableEntity {
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
 			//material: depends on the item,
+			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
 
 		this.sphere = new phys.Sphere(this.radius);
@@ -44,13 +47,16 @@ export class Item extends InteractableEntity {
 	}
 
 	interact(player: PlayerEntity) {
+		if (this.heldBy) this.heldBy.itemInHands = null; // You prob need some COFFEE
 		//checks the type of the player entity
 
 		//if a hero, then makes the item's position locked into the player's hands
 		//turns collider off, possibly
 
 		if (player instanceof HeroEntity) {
+			console.log("touched an item, scandalous");
 			player.itemInHands = this;
+			this.body.mass = 0;
 		} else if (player instanceof BossEntity) {
 		}
 

@@ -11,16 +11,19 @@ import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
+import { sampleMap } from "../assets/models/sample_map/server-mesh";
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
-import { CubeEntity } from "./entities/CubeEntity";
 import { Entity } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
 import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
+import { InteractableEntity } from "./entities/Interactable/InteractableEntity";
+import { StaticEntity } from "./entities/StaticEntity";
+import { createTrimesh } from "./mesh";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 
@@ -76,14 +79,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * A function that sets up the base state for the game
 	 */
-	setup() {
-		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], ["sampleMap"]);
+	async setup() {
+		const mapMesh = createTrimesh(await sampleMap);
+		const mapEntity = new StaticEntity("the map", [0, -5, 0], mapMesh, [{ modelId: "sampleMap", offset: [0, 0.5, 0] }]);
+		this.registerEntity(mapEntity);
+
+		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
 		this.registerEntity(plane);
 
-		let iron = new Item("Iron Ore", 0.1, [10, 10, 10], ["donut"], "resource");
+		let iron = new Item("Iron Ore", 0.5, [10, 10, 10], ["donut"], "resource");
 		this.registerEntity(iron);
 
-		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], ["samplePlayer"], [["Iron Ore"]]);
+		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], [{ modelId: "fish1", scale: 10 }], [["Iron Ore"]]);
 		this.registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
@@ -112,27 +119,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 			player.entity.move(movement);
 
-			let checkerRay = new phys.Ray(player.entity.getPos(), player.entity.getPos().vadd(new phys.Vec3(...movement.lookDir)));
-
-			/*
-			const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
-			const result = TheWorld.castRay(checkerRay, {
-			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
-			checkCollisionResponse: false,
-			});
-			// console.log(checkerRay);
-			// console.log(result);
-
-			this.onGround = false;
-			if (result.hasHit) {
-				if (result.distance <= 0.5 + Entity.EPSILON) {
-					this.onGround = true;
+			const body = player.entity.lookForInteractables();
+			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
+			if (posedge.use && body != null) {
+				const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
+				if (lookedAtEntity) {
+					if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player.entity);
 				}
 			}
-
-			*/
 		}
-
 		this.#nextTick();
 	}
 

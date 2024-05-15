@@ -1,13 +1,13 @@
 import { Entity } from "../Entity";
-import type { ModelId } from "../../../common/models";
-import { SerializedEntity } from "../../../common/messages";
+import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 
 import { Item } from "./Item";
 
 export abstract class InteractableEntity extends Entity {
-	constructor(name: string, model: ModelId[] = []) {
+	constructor(name: string, model: EntityModel[] = []) {
 		super(name, model);
+		this.tags.add("interactable");
 	}
 
 	abstract interact(Player: PlayerEntity): void | Item;

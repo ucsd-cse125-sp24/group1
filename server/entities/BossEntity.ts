@@ -1,7 +1,6 @@
 import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import type { ModelId } from "../../common/models";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
 import { PlayerEntity } from "./PlayerEntity";
@@ -14,7 +13,7 @@ export class BossEntity extends PlayerEntity {
 	type: string;
 	name: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 
 	// Game properties
 	speed: number;
@@ -26,7 +25,7 @@ export class BossEntity extends PlayerEntity {
 	sphereBot: phys.Sphere;
 	onGround: boolean;
 
-	constructor(name: string, pos: Vector3, model: ModelId[] = []) {
+	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
 		super(name, pos, model, 100);
 
 		this.type = "player-hero";

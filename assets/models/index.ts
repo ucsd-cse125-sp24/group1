@@ -3,7 +3,7 @@ import GraphicsEngine from "../../client/render/engine/GraphicsEngine";
 import { BoxGeometry } from "../../client/render/geometries/BoxGeometry";
 import { particleGeometry } from "../../client/render/geometries/ParticleGeometry";
 import { Model } from "../../client/render/model/Model";
-import { GltfModelWrapper } from "../../client/render/model/gltf-parser";
+import { GltfModelWrapper } from "../../client/render/model/GltfModel";
 import { cavecube } from "./cavecube";
 import { defaultCube } from "./default-cube";
 import { defaultCubeColor } from "./default-cube-color";

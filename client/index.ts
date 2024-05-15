@@ -107,6 +107,7 @@ const inputListener = new InputListener({
 			case 0: // Left mouse button
 				return "attack";
 			case 1: // Right mouse button
+			case "KeyR":
 				return "use";
 			default:
 				return null;
@@ -137,26 +138,27 @@ const handleFreecam = (e: KeyboardEvent) => {
 window.addEventListener("keydown", handleFreecam);
 
 // Define client-side only entities (to debug rendering)
-const box1 = new ClientEntity(engine, "", [engine.models.box1]);
-const box2 = new ClientEntity(engine, "", [engine.models.box2]);
-const box3 = new ClientEntity(engine, "", [engine.models.box3]);
-const fish1 = new ClientEntity(engine, "", [engine.models.fish1]);
-const fish2 = new ClientEntity(engine, "", [engine.models.fish2]);
-const tempEntities = [
-	box1,
-	box2,
+const box1 = new ClientEntity(engine, "", [{ model: engine.models.box1, transform: mat4.create() }]);
+const box2 = new ClientEntity(engine, "", [{ model: engine.models.box2, transform: mat4.create() }]);
+const box3 = new ClientEntity(engine, "", [{ model: engine.models.box3, transform: mat4.create() }]);
+const fish1 = new ClientEntity(engine, "", [{ model: engine.models.fish1, transform: mat4.create() }]);
+const fish2 = new ClientEntity(engine, "", [{ model: engine.models.fish2, transform: mat4.create() }]);
+const tempEntities: ClientEntity[] = [
+	// box1,
+	// box2,
 	box3,
-	new ClientEntity(engine, "", [engine.models.donut], mat4.fromTranslation(mat4.create(), [7, -5, 7])),
-	new ClientEntity(engine, "", [engine.models.cavecube], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
-	new ClientEntity(engine, "", [engine.models.defaultCubeColor], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
+	// new ClientEntity(engine, "", [engine.models.donut], mat4.fromTranslation(mat4.create(), [7, -5, 7])),
+	// new ClientEntity(engine, "", [engine.models.cavecube], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
+	// new ClientEntity(engine, "", [engine.models.defaultCubeColor], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
 ];
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, 5, 0), vec3.fromValues(0.3, 0.3, 0.3)),
-	new PointLight(engine, vec3.fromValues(-3, 3, 0), vec3.fromValues(1, 1, 1)),
+	new PointLight(engine, vec3.fromValues(0, 1, 0), vec3.fromValues(0.3, 0.3, 0.3)),
+	new PointLight(engine, vec3.fromValues(-3, 0, 0), vec3.fromValues(2, 2, 2)),
+	new PointLight(engine, vec3.fromValues(0, 0, 0), vec3.fromValues(0.4, 0.5, 0.5)),
 ];
 
 const paint = () => {
@@ -174,29 +176,33 @@ const paint = () => {
 		((Math.sin(Date.now() / 500) + 1) / 2) * 0.5,
 		((Math.sin(Date.now() / 500) + 1) / 2) * 0.1,
 	);
-	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 10, 3, Math.sin(Date.now() / 300) * 10);
+	tempLights[0].position[1] = Math.sin(Date.now() / 200) * 5 + 1;
+	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 20, 0, Math.sin(Date.now() / 3000) * 20);
 
 	// Set camera position
-	if (!freecam) {
-		if (isFirstPerson) {
-			for (const entity of entities) {
-				entity.visible = entity.name !== cameraLockTarget;
-			}
+	if (!freecam && isFirstPerson) {
+		for (const entity of entities) {
+			entity.visible = entity.name !== cameraLockTarget;
 		}
+	}
 
-		const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
-		if (cameraTarget) {
+	const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
+	if (cameraTarget) {
+		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
+		// TEMP
+		tempLights[2].position = position;
+		if (!freecam) {
 			if (isFirstPerson) {
-				camera.setPosition(mat4.getTranslation(vec3.create(), cameraTarget.transform));
+				camera.setPosition(position);
 			} else {
 				const offset = vec3.fromValues(-2, 10, 0);
-				const position: vec3 = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 				vec3.add(position, position, offset);
 				camera.setPosition(position);
 				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
 			}
 		}
-	} else {
+	}
+	if (freecam) {
 		camera.update();
 	}
 
@@ -222,6 +228,7 @@ const paint = () => {
 		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
 		engine.gl.bindTexture(engine.gl.TEXTURE_CUBE_MAP, shadowMap);
 	}
+	engine.gltfMaterial.use();
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_eye_pos"), camera.getPosition());
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_num_lights"), tempLights.length);
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);

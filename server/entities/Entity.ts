@@ -1,18 +1,17 @@
 import * as phys from "cannon-es";
-import type { ModelId } from "../../common/models";
 import { PhysicsWorld } from "../physics";
-import { SerializedEntity } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 
 export abstract class Entity {
 	name: string;
 	type: string;
 	body: phys.Body;
-	model: ModelId[];
+	model: EntityModel[];
 	// tags system is very helpful for scalablilities and is also used in Unity
 	// example: a crafting table entity that players can also jump on
 	tags: Set<string>;
 
-	constructor(name: string, model: ModelId[] = []) {
+	constructor(name: string, model: EntityModel[] = []) {
 		this.name = name;
 		this.type = "entity";
 		this.body = new phys.Body();
@@ -40,7 +39,17 @@ export abstract class Entity {
 	abstract serialize(): SerializedEntity;
 
 	static readonly ENVIRONMENT_COLLISION_GROUP = 2;
+	static readonly INTERACTABLE_COLLISION_GROUP = 4;
 	static readonly EPSILON = 0.01;
+
+	getBitFlag(): number {
+		if (this.tags.size == 0) return -1;
+
+		let flag = 0;
+		if (this.tags.has("environment")) flag |= Entity.ENVIRONMENT_COLLISION_GROUP;
+		if (this.tags.has("interactable")) flag |= Entity.INTERACTABLE_COLLISION_GROUP;
+		return flag;
+	}
 }
 
 /**
