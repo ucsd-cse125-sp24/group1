@@ -91,6 +91,7 @@ export type SerializedEntity = {
 
 export type SerializedCollider = (BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider) & {
 	offset?: Vector3;
+	orientation?: Quaternion;
 };
 
 /**

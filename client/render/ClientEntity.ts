@@ -77,10 +77,15 @@ export class ClientEntity {
 	 */
 	drawWireframe() {
 		for (const collider of this.colliders) {
+			const localTransform = mat4.fromRotationTranslation(
+				mat4.create(),
+				collider.orientation ?? [0, 0, 0, 1],
+				collider.offset ?? [0, 0, 0],
+			);
 			this.engine.gl.uniformMatrix4fv(
 				this.engine.wireframeMaterial.uniform("u_model"),
 				false,
-				mat4.translate(mat4.create(), this.transform, collider.offset ?? [0, 0, 0]),
+				mat4.multiply(mat4.create(), this.transform, localTransform),
 			);
 			this.engine.drawWireframe(collider);
 		}

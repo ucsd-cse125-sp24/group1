@@ -1,5 +1,6 @@
+import { Box } from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel } from "../../../common/messages";
+import { EntityModel, SerializedCollider, SerializedEntity } from "../../../common/messages";
 import { StaticEntity } from "../StaticEntity";
 import { MapCollider } from "./colliders";
 
@@ -9,5 +10,22 @@ export class MapEntity extends StaticEntity {
 		for (const { shape, offset, rotation } of colliders) {
 			this.body.addShape(shape, offset, rotation);
 		}
+	}
+
+	serialize(): SerializedEntity {
+		return {
+			name: this.name,
+			model: this.model,
+			position: this.body.position.toArray(),
+			quaternion: this.body.quaternion.toArray(),
+			colliders: this.body.shapes.map(
+				(shape, i): SerializedCollider => ({
+					type: "box",
+					size: (shape as Box).halfExtents.toArray(),
+					offset: this.body.shapeOffsets[i].toArray(),
+					orientation: this.body.shapeOrientations[i].toArray(),
+				}),
+			),
+		};
 	}
 }

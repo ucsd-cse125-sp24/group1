@@ -37,8 +37,13 @@ export function getColliders(model: GltfParser): MapCollider[] {
 			if (!mesh.name) {
 				return null;
 			}
-			const rotation = mat4.getRotation(quat.create(), mesh.transform);
 			const scaling = mat4.getScaling(vec3.create(), mesh.transform);
+			// In order to get a correct unit-length quaternion, need to remove the
+			// scaling from the transform matrix
+			const rotation = mat4.getRotation(
+				quat.create(),
+				mat4.scale(mat4.create(), mesh.transform, vec3.inverse(vec3.create(), scaling)),
+			);
 			const translation = mat4.getTranslation(vec3.create(), mesh.transform);
 			let box: phys.Box;
 			if (mesh.name.includes("Cube")) {
