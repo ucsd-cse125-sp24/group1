@@ -85,10 +85,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
 		this.registerEntity(plane);
 
-		let iron = new Item("Iron Ore", .5, [10, 10, 10], ["donut"], "resource");
+		let iron = new Item("Iron Ore", 0.5, [10, 10, 10], ["donut"], "resource");
 		this.registerEntity(iron);
 
-		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], ["samplePlayer"], [["Iron Ore"]]);
+		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], [{ modelId: "fish1", scale: 10 }], [["Iron Ore"]]);
 		this.registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
@@ -131,7 +131,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player);
 				}
 			}
-
 		}
 
 		this.#nextTick();

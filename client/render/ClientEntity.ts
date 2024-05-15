@@ -62,7 +62,7 @@ export class ClientEntity {
 			this.engine.gl.uniformMatrix4fv(
 				model.shader.uniform("u_model"),
 				false,
-				mat4.mul(mat4.create(), transform, this.transform),
+				mat4.mul(mat4.create(), this.transform, transform),
 			);
 			model.draw();
 		}
@@ -100,10 +100,11 @@ export class ClientEntity {
 					modelId,
 					offset = [0, 0, 0],
 					rotation = [0, 0, 0, 1],
+					scale = 1,
 				}: EntityModelObject = typeof model === "string" ? { modelId: model } : model;
 				return {
 					model: engine.models[modelId],
-					transform: mat4.fromRotationTranslation(mat4.create(), rotation, offset),
+					transform: mat4.fromRotationTranslationScale(mat4.create(), rotation, offset, [scale, scale, scale]),
 				};
 			}),
 			transform,

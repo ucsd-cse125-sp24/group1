@@ -58,6 +58,8 @@ export type EntityModelObject = {
 	modelId: ModelId;
 	offset?: Vector3;
 	rotation?: Quaternion;
+	/** Scales evenly in all directions */
+	scale?: number;
 };
 export type EntityModel = ModelId | EntityModelObject;
 
