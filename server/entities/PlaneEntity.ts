@@ -25,7 +25,7 @@ export class PlaneEntity extends Entity {
 			fixedRotation: true,
 			shape: new phys.Plane(),
 			material: GroundMaterial,
-			collisionFilterGroup: Entity.ENVIRONMENT_COLLISION_GROUP,
+			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
 	}
 
