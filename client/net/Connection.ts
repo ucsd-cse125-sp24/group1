@@ -94,7 +94,9 @@ export class Connection {
 				let old_connection = localStorage.getItem(CONNECTION_ID);
 				if (old_connection) {
 					this.#ws?.send(JSON.stringify({ type: "rejoin", id: old_connection}));
-				}				
+				} else {
+					localStorage.setItem(CONNECTION_ID, data.id);
+				}			
 				return;
 			case "rejoin-response":
 				console.log(data);

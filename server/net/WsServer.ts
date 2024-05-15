@@ -77,8 +77,7 @@ export class WsServer {
 
 		let connection = this.#getConnection(ws);
 		connection.send({
-			type: "assign-client-id",
-			id: connectionId,
+			type: "who-the-h*ck-are-you"
 		});
 
 		this.#activeConnections.set(connectionId, ws);
@@ -126,65 +125,73 @@ export class WsServer {
 			console.warn("Non-JSON message: ", stringData);
 			return;
 		}
+		console.log("OMG A MESSAGE 🤩", this.#activeConnections);
 
-		let connection = this.#getConnection(ws);
 		switch (data.type) {
 			case "rejoin":
+				console.log("Client sent rejoin", data);
 				if (typeof data.id !== "string") return;
 				if (!this.#activeConnections.has(data.id)) {
+					this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
 					ws.send(JSON.stringify({
 						type: "rejoin-response",
 						id: this.#activeConnections.rev_get(ws),
 						successful: false
 					} as ServerControlMessage));
-					this.#game.handlePlayerJoin(data.id, connection);
 					return;
 				}
-
+				
 				let oldId = this.#activeConnections.rev_get(ws);
 				if (oldId) {
 					this.#activeConnections.delete(oldId);
 				}
-
+				
 				this.#activeConnections.get(data.id)?.close();
 				this.#activeConnections.delete(data.id);
 				this.#activeConnections.set(data.id, ws);
-
+				
 				clearTimeout(this.#disconnectTimeouts.get(data.id));
+				this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
 				ws.send(JSON.stringify({
 					type: "rejoin-response",
 					id: data.id,
 					successful: true
 				} as ServerControlMessage));
-				this.#game.handlePlayerJoin(data.id, connection);
 				return;
+			}
+			
+			this.#game.handleMessage(data, conn);
 		}
-
-		this.#game.handleMessage(data, conn);
-	}
-
-	broadcast(message: ServerMessage): void {
-		for (const ws of this.#wss.clients) {
+		
+		broadcast(message: ServerMessage): void {
+			for (const ws of this.#wss.clients) {
 			ws.send(JSON.stringify(message));
 		}
 	}
-
+	
 	listen(port: number): void {
 		this.#server.listen(port);
 		console.log(`Listening on http://localhost:${port}/`);
 	}
 }
 
-class BiMap<K,V> extends Map<K,V> {
+class BiMap<K,V> {
 	#map = new Map<K,V>();
 	#pam = new Map<V,K>();
-
+	size: number;
+	
 	constructor(){
-		super();
+		this.size = 0;
 	}
 
 	get(v: K): V | undefined {
 		return this.#map.get(v);
+	}
+	has(k: K): boolean {
+		return this.#map.has(k);
+	}
+	has_rev(v: V) {
+		return this.#pam.has(v);
 	}
 	rev_get(v: V): K | undefined {
 		return this.#pam.get(v);
@@ -193,6 +200,7 @@ class BiMap<K,V> extends Map<K,V> {
 	set(k: K, v: V): this {
 		this.#map.set(k, v);
 		this.#pam.set(v, k);
+		this.size++;
 		return this;
 	}
 
@@ -201,6 +209,7 @@ class BiMap<K,V> extends Map<K,V> {
 		if (v) {
 			this.#map.delete(k);
 			this.#pam.delete(v);
+			this.size--;
 			return true;
 		}
 		return false;
@@ -210,8 +219,16 @@ class BiMap<K,V> extends Map<K,V> {
 		if (k) {
 			this.#map.delete(k);
 			this.#pam.delete(v);
+			this.size--;
 			return true;
 		}
 		return false;
+	}
+	entries(): IterableIterator<[K, V]> {
+		return this.#map.entries();
+	}
+
+	toString() {
+		return this.#map.toString();
 	}
 }

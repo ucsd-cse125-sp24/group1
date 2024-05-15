@@ -11,8 +11,7 @@ export type ClientControlMessage = {
 };
 
 export type ServerControlMessage = {
-	type: "assign-client-id";
-	id: string;
+	type: "who-the-h*ck-are-you";
 } | {
 	type: "rejoin-response";
 	successful: boolean;

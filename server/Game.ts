@@ -151,6 +151,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	handlePlayerJoin(id: string, conn: Connection<ServerMessage>) {
+		console.log("Player joining!", this.#players);
 		if (this.#players.has(id)) {
 			let player = this.#players.get(id) as NetworkedPlayer;
 			player.conn = conn;
@@ -167,6 +168,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				input: input, 
 				entity: player
 			});
+			console.log(this.#players);
 		}
 		conn.send({ type: "camera-lock", entityName: id, pov: "first-person" });
 	}
