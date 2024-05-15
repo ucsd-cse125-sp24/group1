@@ -3,7 +3,6 @@ import { Vector3 } from "../../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Entity } from "../Entity";
-import { TheWorld } from "../../physics";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item } from "./Item";
 
@@ -43,7 +42,7 @@ export class CraftingTable extends InteractableEntity {
 	interact(player: PlayerEntity) {
 		//should spawn the top item in the array!
 		console.log("ouch");
-		
+
 		let item = this.itemList.pop();
 
 		if (item instanceof Item) {
@@ -52,39 +51,25 @@ export class CraftingTable extends InteractableEntity {
 	}
 
 	onCollide(otherEntity: Entity): void {
-
-		
 		if (otherEntity instanceof Item) {
-
 			otherEntity.body.position = new phys.Vec3(99, 0, 99); //sent to the shadow realm
-			otherEntity.body.mass = 0 //making it static
-			
+			otherEntity.body.mass = 0; //making it static
 
-			
 			if (otherEntity.tags.has("resource")) {
 				//check if it's a possible recipe
 				let EntityName = otherEntity.name;
 
-
 				//TODO: tyler work
-				for(let i = 0; i < this.recipes.length; i++) {
-
-					
-
-				}
-
-				
+				for (let i = 0; i < this.recipes.length; i++) {}
 
 				//if it is,
 				//otherEntity.removeFromWorld(TheWorld);
 				//this.itemList.push(otherEntity);
-
 			} else if (otherEntity.tags.has("tool")) {
 				//check if the crafting table has all the ingredients for a recipe
 				//check if this is the right tool
 				//if it is? LAUNCH BOTH THE TOOL AND THE CRAFTED INGREDIENT
 			}
-			
 		}
 	}
 

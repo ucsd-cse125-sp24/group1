@@ -3,8 +3,8 @@ import { exists } from "../../../common/lib/exists";
 import { expect } from "../../../common/lib/expect";
 import { ShaderProgram } from "../engine/ShaderProgram";
 import { ComponentType, GltfMaterial, GltfMode, componentSizes, componentTypes } from "../../../common/gltf/gltf-types";
-import { Model } from "./Model";
 import { GltfParser } from "../../../common/gltf/gltf-parser";
+import { Model } from "./Model";
 
 type Accessor = {
 	buffer: WebGLBuffer;
