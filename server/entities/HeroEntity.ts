@@ -53,10 +53,10 @@ export class HeroEntity extends PlayerEntity {
 		this.sphereTop = new phys.Sphere(0.25);
 		this.sphereBot = new phys.Sphere(0.25);
 
-		this.body.addShape(this.cylinder, new phys.Vec3(0, -.25, 0));
+		this.body.addShape(this.cylinder, new phys.Vec3(0, -0.25, 0));
 
 		// Add player capsule top
-		this.body.addShape(this.sphereTop,);
+		this.body.addShape(this.sphereTop);
 
 		// Add player capsule bottom
 

@@ -1,4 +1,4 @@
-import { mat4, quat, quat2 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 import { EntityModelObject, SerializedCollider, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./engine/GraphicsEngine";
 import { Model } from "./model/Model";

@@ -2,8 +2,8 @@ import * as phys from "cannon-es";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
-import { Entity } from "./Entity";
 import { TheWorld } from "../physics";
+import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 
 export abstract class PlayerEntity extends Entity {
@@ -12,7 +12,7 @@ export abstract class PlayerEntity extends Entity {
 	body: phys.Body;
 	onGround: boolean;
 	lookDir: phys.Vec3;
-	
+
 	model: EntityModel[];
 
 	// Game properties
@@ -48,7 +48,6 @@ export abstract class PlayerEntity extends Entity {
 
 	abstract serialize(): SerializedEntity;
 
-
 	checkOnGround(): void {
 		// apparently this generate a ray segment and only check intersection within that segment
 		const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
@@ -68,14 +67,16 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	lookForInteractables(): phys.Body | null {
-		const checkerRay = new phys.Ray(this.body.position, 
-			this.body.position.vadd(this.lookDir.scale(this.interactionRange)));
+		const checkerRay = new phys.Ray(
+			this.body.position,
+			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+		);
 
 		const result = TheWorld.castRay(checkerRay, {
 			collisionFilterMask: Entity.INTERACTABLE_COLLISION_GROUP,
 			checkCollisionResponse: false,
 		});
-		
+
 		return result.body;
 	}
 
