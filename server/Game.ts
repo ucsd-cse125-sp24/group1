@@ -24,20 +24,26 @@ import { HeroEntity } from "./entities/HeroEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 
-export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
-	// Store all of the player inputs, there is just one for now
-	#playerInputs: PlayerInput[];
-	#players: PlayerEntity[];
+interface NetworkedPlayer {
+	input: PlayerInput,
+	entity: PlayerEntity,
+	id: string,
+	conn: Connection<ServerMessage>
+}
 
-	#entities: { [key: string]: Entity };
+export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
+	#players: Map<string, NetworkedPlayer>;
+	#createdInputs: PlayerInput[];
+
+	#entities: Map<string, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
+	
 	// player array
 	// mapping from socket to player
-
-	constructor(numPlayers: number) {
-		this.#playerInputs = [];
-		this.#players = [];
-		this.#entities = {};
+	constructor() {
+		this.#createdInputs = [];
+		this.#players = new Map();
+		this.#entities = new Map();
 		this.#bodyToEntityMap = new Map();
 	}
 
@@ -48,7 +54,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * @param entity the constructed entity to register
 	 */
 	registerEntity(entity: Entity) {
-		this.#entities[entity.name] = entity;
+		this.#entities.set(entity.name, entity);
 		this.#bodyToEntityMap.set(entity.body, entity);
 
 		// this is one way to implement collision that uses bodyToEntityMap without passing Game reference to entities
@@ -62,7 +68,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	unregisterEntity(entity: Entity) {
-		delete this.#entities[entity.name];
+		this.#entities.delete(entity.name);
 		this.#bodyToEntityMap.delete(entity.body);
 		entity.removeFromWorld(TheWorld);
 	}
@@ -71,10 +77,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	setup() {
-		let p1 = new HeroEntity("Player One", [20, 20, 20], ["samplePlayer"]);
-		this.#players.push(p1);
-		this.registerEntity(p1);
-
 		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], ["sampleMap"]);
 		this.registerEntity(plane);
 
@@ -90,18 +92,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let tempCylinder = new CylinderEntity("temp cylinder 1", [1, 20, 5], 1.5, 5);
 		this.registerEntity(tempCylinder);
 
-		let input1 = new PlayerInput();
-		this.#playerInputs.push(input1);
 	}
 
 	updateGameState() {
-		for (let [idx, playerInput] of this.#playerInputs.entries()) {
-			let inputs = playerInput.getInputs();
-			let posedge = playerInput.getPosedge();
-			let player = this.#players[idx];
-
-			//console.clear();
-			//console.log(inputs);
+		for (let [id, player] of this.#players.entries()) {
+			let inputs = player.input.getInputs();
+			let posedge = player.input.getPosedge();
 
 			// Make dedicated movement information object to avoid letting the
 			// player entity
@@ -114,9 +110,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				lookDir: inputs.lookDir,
 			};
 
-			player.move(movement);
+			player.entity.move(movement);
 
-			let checkerRay = new phys.Ray(player.getPos(), player.getPos().vadd(new phys.Vec3(...movement.lookDir)));
+			let checkerRay = new phys.Ray(player.entity.getPos(), player.entity.getPos().vadd(new phys.Vec3(...movement.lookDir)));
 
 			/*
 			const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
@@ -151,9 +147,30 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		// access to WebSocket connection objects that you can store in each player
 		// object; if so, you can switch the server to always use WsServer.ts (and
 		// ignore the web worker stuff) until you get it working
-		conn.send({ type: "camera-lock", entityName: "Player One", pov: "first-person" });
+		
 	}
 
+	handlePlayerJoin(id: string, conn: Connection<ServerMessage>) {
+		if (this.#players.has(id)) {
+			let player = this.#players.get(id) as NetworkedPlayer;
+			player.conn = conn;
+		} else {
+			let player = new HeroEntity(id, [20, 20, 20], ["samplePlayer"]);
+			this.registerEntity(player);
+
+			let input = new PlayerInput();
+			this.#createdInputs.push(input);
+
+			this.#players.set(id, {
+				id: id,
+				conn: conn,
+				input: input, 
+				entity: player
+			});
+		}
+		conn.send({ type: "camera-lock", entityName: id, pov: "first-person" });
+	}
+	
 	/**
 	 * Parses a raw websocket message, and then generates a response to the
 	 * message if that is needed
@@ -174,15 +191,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					type: "ping",
 				});
 				break;
-			case "client-input": //THIS ONLY CHECKS PLAYER 1
-				this.#playerInputs[0].updateInputs(data);
+			case "client-input":
+				this.#players.get(conn.id)?.input?.updateInputs?.(data);
 				break;
 		}
 	}
 
 	#nextTick() {
 		TheWorld.nextTick();
-		for (let input of this.#playerInputs) {
+		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
 	}

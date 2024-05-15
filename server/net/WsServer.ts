@@ -55,22 +55,27 @@ export class WsServer {
 		this.#wss.on("connection", this.#handleNewConnection.bind(this));
 	}
 
-	#handleNewConnection(ws: WebSocket) {
-		this.#unhangServer();
-
+	#getConnection(ws: WebSocket) {
 		/**
 		 * A wrapper around the WebSocket object that stringifies the object before sending it.
 		 *
 		 * If we want to buffer messages before sending them all together, this is the place to do it.
 		 */
 		const connection: Connection<ServerMessage | ServerControlMessage> = {
+			id: this.#activeConnections.rev_get(ws) as string,
 			send(message) {
 				ws.send(JSON.stringify(message));
 			},
 		};
+		return connection;
+	}
+
+	#handleNewConnection(ws: WebSocket) {
+		this.#unhangServer();
 
 		const connectionId = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 
+		let connection = this.#getConnection(ws);
 		connection.send({
 			type: "assign-client-id",
 			id: connectionId,
@@ -122,6 +127,7 @@ export class WsServer {
 			return;
 		}
 
+		let connection = this.#getConnection(ws);
 		switch (data.type) {
 			case "rejoin":
 				if (typeof data.id !== "string") return;
@@ -131,6 +137,7 @@ export class WsServer {
 						id: this.#activeConnections.rev_get(ws),
 						successful: false
 					} as ServerControlMessage));
+					this.#game.handlePlayerJoin(data.id, connection);
 					return;
 				}
 
@@ -149,6 +156,7 @@ export class WsServer {
 					id: data.id,
 					successful: true
 				} as ServerControlMessage));
+				this.#game.handlePlayerJoin(data.id, connection);
 				return;
 		}
 
