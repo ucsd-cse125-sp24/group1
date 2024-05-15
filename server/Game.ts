@@ -204,7 +204,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	serialize(): SerializedEntity[] {
 		let serial = [];
 
-		for (let entity of Object.values(this.#entities)) {
+		for (let [id, entity] of this.#entities.entries()) {
 			serial.push(entity.serialize());
 		}
 		return serial;
