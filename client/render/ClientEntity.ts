@@ -102,6 +102,9 @@ export class ClientEntity {
 					rotation = [0, 0, 0, 1],
 					scale = 1,
 				}: EntityModelObject = typeof model === "string" ? { modelId: model } : model;
+				if (!engine.models[modelId]) {
+					throw new ReferenceError(`Model '${modelId}' doesn't exist.`);
+				}
 				return {
 					model: engine.models[modelId],
 					transform: mat4.fromRotationTranslationScale(mat4.create(), rotation, offset, [scale, scale, scale]),

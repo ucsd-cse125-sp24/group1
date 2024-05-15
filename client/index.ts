@@ -142,19 +142,8 @@ const handleFreecam = (e: KeyboardEvent) => {
 window.addEventListener("keydown", handleFreecam);
 
 // Define client-side only entities (to debug rendering)
-const box1 = new ClientEntity(engine, "", [{ model: engine.models.box1, transform: mat4.create() }]);
-const box2 = new ClientEntity(engine, "", [{ model: engine.models.box2, transform: mat4.create() }]);
-const box3 = new ClientEntity(engine, "", [{ model: engine.models.box3, transform: mat4.create() }]);
-const fish1 = new ClientEntity(engine, "", [{ model: engine.models.fish1, transform: mat4.create() }]);
-const fish2 = new ClientEntity(engine, "", [{ model: engine.models.fish2, transform: mat4.create() }]);
-const tempEntities: ClientEntity[] = [
-	// box1,
-	// box2,
-	box3,
-	// new ClientEntity(engine, "", [engine.models.donut], mat4.fromTranslation(mat4.create(), [7, -5, 7])),
-	// new ClientEntity(engine, "", [engine.models.cavecube], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
-	// new ClientEntity(engine, "", [engine.models.defaultCubeColor], mat4.fromTranslation(mat4.create(), [5, -10, 5])),
-];
+const particles = new ClientEntity(engine, "", [{ model: engine.models.particles, transform: mat4.create() }]);
+const tempEntities: ClientEntity[] = [particles];
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
@@ -167,14 +156,6 @@ const tempLights = [
 
 const paint = () => {
 	camera.setAspectRatio(window.innerWidth / window.innerHeight);
-	box1.transform = mat4.fromTranslation(mat4.create(), [position.x, position.y, position.z]);
-	box2.transform = mat4.fromYRotation(mat4.create(), position.x + position.y + position.z);
-	box2.transform = mat4.translate(box2.transform, box2.transform, [0, -5, 0]);
-	fish1.transform = mat4.fromYRotation(mat4.create(), Date.now() / 1000);
-	mat4.scale(fish1.transform, fish1.transform, [10, 10, 10]);
-	mat4.multiply(fish1.transform, mat4.fromTranslation(mat4.create(), [0, -3, 0]), fish1.transform);
-	fish2.transform = mat4.fromTranslation(mat4.create(), [10, 0, 0]);
-	mat4.rotateY(fish2.transform, fish2.transform, -Date.now() / 10000);
 	tempLights[0].color = vec3.fromValues(
 		((Math.sin(Date.now() / 500) + 1) / 2) * 1,
 		((Math.sin(Date.now() / 500) + 1) / 2) * 0.5,
