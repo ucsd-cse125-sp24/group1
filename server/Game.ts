@@ -147,8 +147,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	handlePlayerJoin(id: string, conn: Connection<ServerMessage>) {
 		console.log("Player joining!", this.#players);
-		if (this.#players.has(id)) {
-			let player = this.#players.get(id) as NetworkedPlayer;
+		let player = this.#players.get(id) ;
+		if (player) {
 			player.conn = conn;
 		} else {
 			let player = new HeroEntity(id, [20, 20, 20], ["samplePlayer"]);

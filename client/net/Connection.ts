@@ -14,7 +14,7 @@ export class Connection {
 	#lastTime = performance.now();
 	#wsError = false;
 
-	#sendQueue: ClientMessage[] = [];
+	#sendQueue: (ClientMessage | ClientControlMessage)[] = [];
 	#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 
 	#indicator?: HTMLElement | null;
@@ -92,7 +92,7 @@ export class Connection {
 			case "who-the-h*ck-are-you":
 				console.log(data);
 				let old_connection = localStorage.getItem(CONNECTION_ID);
-				this.#ws?.send(JSON.stringify({ type: "rejoin", id: old_connection}));
+				this.send({ type: "rejoin", id: old_connection});
 				return;
 			case "rejoin-response":
 				console.log(data);
@@ -151,7 +151,7 @@ export class Connection {
 		}
 	};
 
-	send(message: ClientMessage): void {
+	send(message: ClientMessage | ClientControlMessage): void {
 		if (this.#ws?.readyState === WebSocket.OPEN) {
 			this.#ws.send(JSON.stringify(message));
 		} else if (this.#worker) {

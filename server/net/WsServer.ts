@@ -69,10 +69,10 @@ export class WsServer {
 		};
 	}
 
-	#getConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
+	#getConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> | null {
 		const id = this.#activeConnections.rev_get(ws)
 		if (!id) {
-			throw new ReferenceError(`WebSocket is not in #activeConnections`)
+			return null;
 		}
 		/**
 		 * A wrapper around the WebSocket object that stringifies the object before sending it.
@@ -95,7 +95,8 @@ export class WsServer {
 		}));
 
 		ws.on("message", (rawData) => {
-			this.handleMessage(ws, rawData, this.#getConnection(ws));
+			const connection = this.#getConnection(ws);
+			if (connection) {this.handleMessage(ws, rawData, connection);}
 		});
 
 		ws.on("close", () => {
@@ -138,19 +139,19 @@ export class WsServer {
 
 		switch (data.type) {
 			case "rejoin":
-				if (typeof data.id !== "string") return;
+				if (typeof data.id !== "string" && data.id !== null) return;
 
 				// If this player is a reconnecting player
 				if (!this.#activeConnections.has(data.id)) {
 					// Tell the game that they joined
 					this.#game.handlePlayerJoin(data.id, this.#getConnection(ws));
-					
+						
 					ws.send(JSON.stringify({
-						type: "rejoin-response",
+							type: "rejoin-response",
 						id: this.#activeConnections.rev_get(ws),
 						successful: false
 					} as ServerControlMessage));
-					return;
+						return;
 				} else {
 					let id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 					this.#activeConnections.set(id, ws);

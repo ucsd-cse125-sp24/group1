@@ -7,7 +7,8 @@ export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMes
 
 export type ClientControlMessage = {
 	type: "rejoin";
-	id: string;
+	/** `null` if player is new. */
+	id: string | null;
 };
 
 export type ServerControlMessage = {
