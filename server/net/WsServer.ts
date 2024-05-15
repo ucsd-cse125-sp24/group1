@@ -200,8 +200,8 @@ export class WsServer {
 		if (!connection) return;
 
 		this.#game.handleMessage(data, connection);
-
-}	broadcast(message: ServerMessage): void {
+	}
+	broadcast(message: ServerMessage): void {
 		for (const ws of this.#wss.clients) {
 			ws.send(JSON.stringify(message));
 		}
