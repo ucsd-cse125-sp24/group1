@@ -181,7 +181,7 @@ const paint = () => {
 		((Math.sin(Date.now() / 500) + 1) / 2) * 0.1,
 	);
 	tempLights[0].position[1] = Math.sin(Date.now() / 200) * 5 + 1;
-	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 300) * 20, 0, Math.sin(Date.now() / 300) * 20);
+	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 20, 0, Math.sin(Date.now() / 3000) * 20);
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {

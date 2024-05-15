@@ -11,9 +11,12 @@
  */
 export class WebGlUtils {
 	gl: WebGL2RenderingContext;
+	// On Nick's computer on Firefox, it's 2048, but fish1 has a 4096x4096 texture
+	maxTextureSize: number;
 
 	constructor(gl: WebGL2RenderingContext) {
 		this.gl = gl;
+		this.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 	}
 
 	createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader, varNames: string[] = []): WebGLProgram {

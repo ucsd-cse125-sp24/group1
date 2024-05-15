@@ -68,19 +68,59 @@ export class GltfModel {
 				const image = images[source];
 				const sampler = (root.samplers ?? [])[samplerIndex];
 				const texture = gl.createTexture() ?? expect("Failed to create texture");
+
+				const applyTextureParams = (image: ImageBitmap) => {
+					// gl.texImage2D is much faster with ImageBitmap than
+					// HTMLImageElement (380 ms to 60 ms)
+					console.time(`uploading texture ${source} (${this.name})`);
+					gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+					console.timeEnd(`uploading texture ${source} (${this.name})`);
+
+					if (sampler.wrapS) {
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
+					}
+					if (sampler.wrapT) {
+						gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
+					}
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
+					gl.generateMipmap(gl.TEXTURE_2D);
+				};
+
 				gl.bindTexture(gl.TEXTURE_2D, texture);
-				console.time(`uploading texture ${source} (${this.name})`);
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-				console.timeEnd(`uploading texture ${source} (${this.name})`);
-				if (sampler.wrapS) {
-					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, sampler.wrapS);
+				if (image.width > material.engine.maxTextureSize || image.height > material.engine.maxTextureSize) {
+					// Temporarily use blue pixel while image loads
+					gl.texImage2D(
+						gl.TEXTURE_2D,
+						0,
+						gl.RGBA,
+						1,
+						1,
+						0,
+						gl.RGBA,
+						gl.UNSIGNED_BYTE,
+						new Uint8Array([0, 0, 255, 255]),
+					);
+
+					console.time(`resizing texture ${source} (${this.name})`);
+					createImageBitmap(image, {
+						resizeWidth: Math.min(
+							material.engine.maxTextureSize,
+							(material.engine.maxTextureSize / image.height) * image.width,
+						),
+						resizeHeight: Math.min(
+							material.engine.maxTextureSize,
+							(material.engine.maxTextureSize / image.width) * image.height,
+						),
+					}).then((resized) => {
+						console.timeEnd(`resizing texture ${source} (${this.name})`);
+						gl.bindTexture(gl.TEXTURE_2D, texture);
+						applyTextureParams(resized);
+					});
+				} else {
+					applyTextureParams(image);
 				}
-				if (sampler.wrapT) {
-					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, sampler.wrapT);
-				}
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, sampler.minFilter);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, sampler.magFilter);
-				gl.generateMipmap(gl.TEXTURE_2D);
+
 				return texture;
 			}) ?? [];
 
