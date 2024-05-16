@@ -137,7 +137,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (player) {
 			player.conn = conn;
 		} else {
-			if(Math.random() % 2 == 1) {
+			let playerORHero = Math.floor(Math.random() * 4);
+			if(playerORHero % 4 == 0 || playerORHero % 4 == 1) {
 				let player = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
 				this.registerEntity(player);
 
