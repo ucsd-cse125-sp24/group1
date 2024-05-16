@@ -5,13 +5,20 @@ import { EntityModel, SerializedEntity } from "../../common/messages";
 import { Entity } from "./Entity";
 
 export class StaticEntity extends Entity {
-	constructor(name: string, position: Vector3, shape: phys.Shape | undefined, model: EntityModel[] = []) {
+	constructor(
+		name: string,
+		position: Vector3,
+		shape: phys.Shape | undefined,
+		material: phys.Material,
+		model: EntityModel[] = [],
+	) {
 		super(name, model);
 		this.type = "static";
 		this.body = new phys.Body({
 			position: v3(...position),
 			type: phys.Body.STATIC,
 			shape: shape,
+			material: material,
 		});
 	}
 

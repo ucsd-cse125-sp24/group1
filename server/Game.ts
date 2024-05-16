@@ -81,9 +81,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	async setup() {
 		const mapColliders = getColliders(await sampleMapColliders);
-		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [
-			{ modelId: "sampleMap", offset: [0, 0.5, 0] },
-		]);
+		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.registerEntity(mapEntity);
 
 		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
