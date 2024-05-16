@@ -59,8 +59,38 @@ export class CraftingTable extends InteractableEntity {
 				//check if it's a possible recipe
 				let EntityName = otherEntity.name;
 
+<<<<<<< Updated upstream
 				//TODO: tyler work
 				for (let i = 0; i < this.recipes.length; i++) {}
+=======
+				let currentResourceCount = 0;
+				let resourceCount = 0;
+				for(let i = 0; i < this.itemList.length; i ++) {
+					if(this.itemList[i].name == EntityName) {
+						resourceCount ++;
+					}
+				}
+
+				//TODO: tyler work
+				for(let i = 0; i < this.recipes.length; i++) {
+					//for each recipe
+					for(let j = 0; j < this.recipes[i].length; j++) {
+						if(EntityName == this.recipes[i][j] ) {
+							currentResourceCount++;
+
+							if(currentResourceCount > resourceCount) {
+								//should be added
+								otherEntity.body.position = new phys.Vec3(99, 0, 99); // the bone zone
+								this.itemList.push(otherEntity);
+							}
+						}
+					}
+					
+					currentResourceCount = 0;
+				}
+
+				
+>>>>>>> Stashed changes
 
 				//if it is,
 				//otherEntity.removeFromWorld(TheWorld);
