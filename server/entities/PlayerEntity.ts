@@ -7,29 +7,29 @@ import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 
 export abstract class PlayerEntity extends Entity {
-	type: string;
-	name: string;
-	body: phys.Body;
 	onGround: boolean;
 	lookDir: phys.Vec3;
-
-	model: EntityModel[];
 
 	// Game properties
 	interactionRange: number;
 	speed: number;
 	itemInHands: null | Item;
 
-	constructor(name: string, pos: Vector3, model: EntityModel[] = [], speed: number) {
+	constructor(
+		name: string,
+		pos: Vector3,
+		model: EntityModel[] = [],
+		speed: number,
+		mass: number,
+		interactionRange: number,
+	) {
 		super(name, model);
 
 		this.type = "player";
-		this.name = name;
-		this.model = model;
 		this.tags.add("player");
 
 		this.itemInHands = null;
-		this.interactionRange = 1.0;
+		this.interactionRange = interactionRange;
 		this.lookDir = new phys.Vec3(0, -1, 0);
 
 		// Magic numbers!!! WOOHOO
@@ -37,7 +37,7 @@ export abstract class PlayerEntity extends Entity {
 		this.onGround = false;
 
 		this.body = new phys.Body({
-			mass: 1.0, //fuckable
+			mass: mass,
 			position: new phys.Vec3(...pos),
 			fixedRotation: true,
 			material: PlayerMaterial,
