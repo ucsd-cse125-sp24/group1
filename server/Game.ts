@@ -15,6 +15,7 @@ import { sampleMapColliders } from "../assets/models/sample-map-colliders/server
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
+import { BossEntity } from "./entities/BossEntity";
 import { Entity } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
@@ -136,20 +137,40 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (player) {
 			player.conn = conn;
 		} else {
-			let player = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
-			this.registerEntity(player);
+			if(Math.random() % 2 == 1) {
+				let player = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				this.registerEntity(player);
 
-			let input = new PlayerInput();
-			this.#createdInputs.push(input);
+				let input = new PlayerInput();
+				this.#createdInputs.push(input);
 
-			this.#players.set(conn.id, {
-				id: conn.id,
-				conn: conn,
-				input: input,
-				entity: player,
-			});
+				this.#players.set(conn.id, {
+					id: conn.id,
+					conn: conn,
+					input: input,
+					entity: player,
+				});
+				conn.send({ type: "camera-lock", entityName: conn.id, pov: "first-person" });
+
+			} else {
+				let player = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				this.registerEntity(player);
+
+				let input = new PlayerInput();
+				this.#createdInputs.push(input);
+
+				this.#players.set(conn.id, {
+					id: conn.id,
+					conn: conn,
+					input: input,
+					entity: player,
+				});
+
+				conn.send({ type: "camera-lock", entityName: conn.id, pov: "top-down" });
+			}
+			
 		}
-		conn.send({ type: "camera-lock", entityName: conn.id, pov: "first-person" });
+		
 	}
 
 	/**
