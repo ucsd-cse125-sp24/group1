@@ -53,11 +53,17 @@ export class CraftingTable extends InteractableEntity {
 
 	onCollide(otherEntity: Entity): void {
 
-		
+		let success = true;
+
+		console.log("ItemList, then entity name, then recipes")
+		console.log(this.itemList);
+		console.log(otherEntity.name);
+		console.log(this.recipes);
+
 		if (otherEntity instanceof Item) {
 
 			otherEntity.body.position = new phys.Vec3(99, 0, 99); //sent to the shadow realm
-			otherEntity.body.mass = 0 //making it static
+			otherEntity.body.mass = 0; //making it static
 			
 
 			
@@ -73,34 +79,60 @@ export class CraftingTable extends InteractableEntity {
 					}
 				}
 
-				//TODO: tyler work
+				console.log("itemList has " + resourceCount + " " + EntityName);
+
 				for(let i = 0; i < this.recipes.length; i++) {
 					//for each recipe
 					for(let j = 0; j < this.recipes[i].length; j++) {
 						if(EntityName == this.recipes[i][j] ) {
 							currentResourceCount++;
-
-							if(currentResourceCount > resourceCount) {
-								//should be added
-								otherEntity.body.position = new phys.Vec3(99, 0, 99); // the bone zone
-								this.itemList.push(otherEntity);
-							}
 						}
+					}
+
+					console.log("recipe" + i + "has " + currentResourceCount + " " + EntityName);
+
+					if(currentResourceCount > resourceCount) {
+						//should be added
+						console.log("Oh, nice! Item should be added to the list.");
+						otherEntity.body.position = new phys.Vec3(99, 0, 99); // the bone zone
+						this.itemList.push(otherEntity);
+						break;
 					}
 					
 					currentResourceCount = 0;
 				}
 
-				
-
-				//if it is,
-				//otherEntity.removeFromWorld(TheWorld);
-				//this.itemList.push(otherEntity);
-
 			} else if (otherEntity.tags.has("tool")) {
-				//check if the crafting table has all the ingredients for a recipe
-				//check if this is the right tool
-				//if it is? LAUNCH BOTH THE TOOL AND THE CRAFTED INGREDIENT
+				for(let i = 0; i < this.recipes.length; i++) {
+
+					if(this.itemList.length == this.recipes[i].length) {
+
+						
+
+						for(let j = 0; j < this.recipes[i].length; j++) {
+
+							if(this.itemList[j].name != this.recipes[i][j]) {
+
+								success = false;
+							}
+						}
+					}
+
+					
+				}
+
+
+				if(success) {
+					for(let i = 0; i < this.itemList.length; i++) {
+						//fully clear the item list
+						this.itemList.pop();
+					}
+
+					console.log("deleted all the items");
+					console.log("should now spit out an upgraded item TODO");
+					//SHOOT OUT THE UPGRADED ITEM
+				}
+
 			}
 			
 		}
