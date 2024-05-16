@@ -132,46 +132,36 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>) {
-		console.log("Player joining!", this.#players);
+		console.log("Player joining!", this.#players.size);
 		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
 		} else {
 			let playerORHero = Math.floor(Math.random() * 4);
+			let playerEntity
 			if(playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				let player = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
-				this.registerEntity(player);
-
-				let input = new PlayerInput();
-				this.#createdInputs.push(input);
-
-				this.#players.set(conn.id, {
-					id: conn.id,
-					conn: conn,
-					input: input,
-					entity: player,
-				});
-				conn.send({ type: "camera-lock", entityName: conn.id, pov: "first-person" });
+				 playerEntity = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
 
 			} else {
-				let player = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
-				this.registerEntity(player);
+				 playerEntity = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
 
-				let input = new PlayerInput();
-				this.#createdInputs.push(input);
-
-				this.#players.set(conn.id, {
-					id: conn.id,
-					conn: conn,
-					input: input,
-					entity: player,
-				});
-
-				conn.send({ type: "camera-lock", entityName: conn.id, pov: "top-down" });
 			}
+			this.registerEntity(playerEntity);
+
+			let input = new PlayerInput();
+			this.#createdInputs.push(input);
+
+			player = {
+				id: conn.id,
+				conn: conn,
+				input: input,
+				entity: playerEntity,
+			}
+			this.#players.set(conn.id, player);
 			
 		}
 		
+		conn.send({ type: "camera-lock", entityName: conn.id, pov: player.entity instanceof BossEntity ? "top-down" : 'first-person' });
 	}
 
 	/**
