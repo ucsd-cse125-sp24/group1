@@ -26,14 +26,16 @@ export class BossEntity extends PlayerEntity {
 	onGround: boolean;
 
 	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
-		super(name, pos, model, 100);
+		super(name, pos, model, 120, 3, 2.0);
+
+
 
 		this.type = "player-hero";
 		this.name = name;
 		this.model = model;
 
 		// Magic numbers!!! WOOHOO
-		this.speed = 100;
+		this.speed = 120;
 		this.jumping = false;
 		this.onGround = false;
 
@@ -46,23 +48,18 @@ export class BossEntity extends PlayerEntity {
 
 		// Add player cylinder
 		this.cylinder = new phys.Cylinder(
-			0.5, // Top radius
-			0.5, // Bottom radius
-			0.5, // Height
-			12, // Number of Cylinder segments
+			0.25, // Smaller top radius
+			0.25, // Smaller bottom radius
+			0.6,  // Shorter height
+			12,
 		);
 
-		this.sphereTop = new phys.Sphere(0.25);
-		this.sphereBot = new phys.Sphere(0.25);
+		this.sphereTop = new phys.Sphere(0.15); // Smaller sphere for the top
+		this.sphereBot = new phys.Sphere(0.15); // Smaller sphere for the bottom
 
 		this.body.addShape(this.cylinder);
-
-		// Add player capsule top
-		this.body.addShape(this.sphereTop, new phys.Vec3(0, 0.25, 0));
-
-		// Add player capsule bottom
-
-		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.25, 0));
+		this.body.addShape(this.sphereTop, new phys.Vec3(0, 0.3, 0));
+		this.body.addShape(this.sphereBot, new phys.Vec3(0, -0.3, 0));
 	}
 
 	move(movement: MovementInfo) {

@@ -15,6 +15,7 @@ import { sampleMapColliders } from "../assets/models/sample-map-colliders/server
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
+import { BossEntity } from "./entities/BossEntity";
 import { Entity } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
@@ -131,25 +132,36 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>) {
-		console.log("Player joining!", this.#players);
+		console.log("Player joining!", this.#players.size);
 		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
 		} else {
-			let player = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
-			this.registerEntity(player);
+			let playerORHero = Math.floor(Math.random() * 4);
+			let playerEntity
+			if(playerORHero % 4 == 0 || playerORHero % 4 == 1) {
+				 playerEntity = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+
+			} else {
+				 playerEntity = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+
+			}
+			this.registerEntity(playerEntity);
 
 			let input = new PlayerInput();
 			this.#createdInputs.push(input);
 
-			this.#players.set(conn.id, {
+			player = {
 				id: conn.id,
 				conn: conn,
 				input: input,
-				entity: player,
-			});
+				entity: playerEntity,
+			}
+			this.#players.set(conn.id, player);
+			
 		}
-		conn.send({ type: "camera-lock", entityName: conn.id, pov: "first-person" });
+		
+		conn.send({ type: "camera-lock", entityName: conn.id, pov: player.entity instanceof BossEntity ? "top-down" : 'first-person' });
 	}
 
 	/**

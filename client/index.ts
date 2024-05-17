@@ -176,7 +176,7 @@ const paint = () => {
 			if (isFirstPerson) {
 				camera.setPosition(position);
 			} else {
-				const offset = vec3.fromValues(-2, 10, 0);
+				const offset = vec3.fromValues(-20, 50, 20);
 				vec3.add(position, position, offset);
 				camera.setPosition(position);
 				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
