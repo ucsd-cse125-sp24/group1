@@ -8,6 +8,7 @@ import { Item } from "./Interactable/Item";
 
 export abstract class PlayerEntity extends Entity {
 	onGround: boolean;
+	eyeHeight: number;
 	lookDir: phys.Vec3;
 
 	// Game properties
@@ -22,6 +23,7 @@ export abstract class PlayerEntity extends Entity {
 		speed: number,
 		mass: number,
 		interactionRange: number,
+		eyeHeight: number,
 	) {
 		super(name, model);
 
@@ -32,9 +34,9 @@ export abstract class PlayerEntity extends Entity {
 		this.interactionRange = interactionRange;
 		this.lookDir = new phys.Vec3(0, -1, 0);
 
-		// Magic numbers!!! WOOHOO
 		this.speed = speed;
 		this.onGround = false;
+		this.eyeHeight = eyeHeight;
 
 		this.body = new phys.Body({
 			mass: mass,
@@ -50,18 +52,16 @@ export abstract class PlayerEntity extends Entity {
 
 	checkOnGround(): void {
 		// apparently this generate a ray segment and only check intersection within that segment
-		const checkerRay = new phys.Ray(this.body.position, this.body.position.vadd(new phys.Vec3(0, -1, 0)));
+		const bottomPoint = this.body.position.vsub(new phys.Vec3(0, this.eyeHeight - Entity.EPSILON * 0.1, 0));
+		const checkerRay = new phys.Ray(bottomPoint, bottomPoint.vadd(new phys.Vec3(0, -1, 0)));
 		const result = TheWorld.castRay(checkerRay, {
 			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
 			checkCollisionResponse: false,
 		});
-		// console.log(checkerRay);
-		// console.log(result);
 
 		this.onGround = false;
 		if (result.hasHit) {
-			// TEMP(Sean): I increased the threshold from 0.5 just so i can jump
-			if (result.distance <= 1 + Entity.EPSILON) {
+			if (result.distance <= Entity.EPSILON) {
 				this.onGround = true;
 			}
 		}
