@@ -11,13 +11,13 @@ const PLAYER_CAPSULE_RADIUS = 0.5;
 const cylinderHeight = PLAYER_CAPSULE_HEIGHT - 2 * PLAYER_CAPSULE_RADIUS;
 
 const MAX_WALK_SPEED = 20;
-/** Maximum change in velocity that can be caused by the player in one tick */
-const MAX_USER_VELOCITY_CHANGE = 4;
 /**
- * Maximum change in velocity that can occur due to damping (basically friction
- * when the player is not pressing any movement keys)
+ * Maximum change in horizontal velocity that can be caused by the player in one
+ * tick
  */
-const MAX_DAMPING_VELOCITY_CHANGE = 3;
+const MAX_USER_VELOCITY_CHANGE = 3;
+/** Maximum change in horizontal velocity that can occur while in the air */
+const MAX_VELOCITY_CHANGE_IN_AIR = 1;
 const JUMP_SPEED = 10;
 
 export class HeroEntity extends PlayerEntity {
@@ -63,10 +63,10 @@ export class HeroEntity extends PlayerEntity {
 		const forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
 		forwardVector.normalize();
 		const rightVector = forwardVector.cross(new phys.Vec3(0, 1, 0));
-		const currentVelocity = this.body.velocity.vmul(new phys.Vec3(1, 0, 1));
+		const currentVelocity = this.body.velocity;
+		const maxChange = this.onGround ? MAX_USER_VELOCITY_CHANGE : MAX_VELOCITY_CHANGE_IN_AIR;
 
 		let targetVelocity = new phys.Vec3(0, 0, 0);
-		let maxChange = MAX_USER_VELOCITY_CHANGE;
 		if (movement.forward) {
 			targetVelocity = targetVelocity.vadd(forwardVector);
 		}
@@ -81,16 +81,14 @@ export class HeroEntity extends PlayerEntity {
 		}
 		if (targetVelocity.length() > 0) {
 			targetVelocity.normalize();
-		} else {
-			maxChange = MAX_DAMPING_VELOCITY_CHANGE;
 		}
 		targetVelocity = targetVelocity.scale(this.speed);
 
-		let impulse = targetVelocity.vsub(currentVelocity);
-		if (impulse.length() > maxChange) {
-			impulse = impulse.scale(maxChange / impulse.length());
+		let deltaVelocity = targetVelocity.vsub(currentVelocity.vmul(new phys.Vec3(1, 0, 1)));
+		if (deltaVelocity.length() > maxChange) {
+			deltaVelocity = deltaVelocity.scale(maxChange / deltaVelocity.length());
 		}
-		this.body.applyImpulse(impulse.scale(this.body.mass));
+		this.body.applyImpulse(deltaVelocity.scale(this.body.mass));
 
 		if (this.itemInHands instanceof Item) {
 			//this is a little janky ngl
@@ -98,7 +96,8 @@ export class HeroEntity extends PlayerEntity {
 		}
 
 		if (movement.jump && this.onGround) {
-			this.body.applyImpulse(new phys.Vec3(0, JUMP_SPEED * this.body.mass, 0));
+			const deltaVy = new phys.Vec3(0, JUMP_SPEED, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
+			this.body.applyImpulse(deltaVy.scale(this.body.mass));
 		}
 	}
 

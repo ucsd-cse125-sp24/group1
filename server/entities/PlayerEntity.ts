@@ -52,8 +52,10 @@ export abstract class PlayerEntity extends Entity {
 
 	checkOnGround(): void {
 		// apparently this generate a ray segment and only check intersection within that segment
-		const bottomPoint = this.body.position.vsub(new phys.Vec3(0, this.eyeHeight - Entity.EPSILON * 0.1, 0));
-		const checkerRay = new phys.Ray(bottomPoint, bottomPoint.vadd(new phys.Vec3(0, -1, 0)));
+		const checkerRay = new phys.Ray(
+			this.body.position,
+			this.body.position.vsub(new phys.Vec3(0, this.eyeHeight + Entity.EPSILON, 0)),
+		);
 		const result = TheWorld.castRay(checkerRay, {
 			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
 			checkCollisionResponse: false,
@@ -61,9 +63,7 @@ export abstract class PlayerEntity extends Entity {
 
 		this.onGround = false;
 		if (result.hasHit) {
-			if (result.distance <= Entity.EPSILON) {
-				this.onGround = true;
-			}
+			this.onGround = true;
 		}
 	}
 
