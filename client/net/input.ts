@@ -2,11 +2,18 @@ export type InputListenerOptions<Inputs extends string> = {
 	reset: () => Record<Inputs, boolean>;
 	handleKey: (key: string | number) => Inputs | null;
 	handleInputs: (inputs: Record<Inputs, boolean>) => void;
+	/**
+	 * To make the listener fire at a set frequency in addition to after every
+	 * key press/release, set this number (in ms). If undefined or 0 then the
+	 * listener will only fire after key events.
+	 */
+	period?: number;
 };
 
 export class InputListener<Inputs extends string> {
 	options: InputListenerOptions<Inputs>;
 	#inputs: Record<Inputs, boolean>;
+	#intervalID: number = 0;
 
 	constructor(options: InputListenerOptions<Inputs>) {
 		this.options = options;
@@ -40,6 +47,11 @@ export class InputListener<Inputs extends string> {
 		window.addEventListener("mousedown", this.#handleMousedown);
 		window.addEventListener("mouseup", this.#handleMouseup);
 		window.addEventListener("blur", this.#handleBlur);
+
+		if (this.options.period) {
+			// setInterval returns a nonzero ID
+			this.#intervalID = window.setInterval(() => this.options.handleInputs(this.#inputs), this.options.period);
+		}
 	}
 
 	disconnect() {
@@ -48,5 +60,10 @@ export class InputListener<Inputs extends string> {
 		window.removeEventListener("mousedown", this.#handleMousedown);
 		window.removeEventListener("mouseup", this.#handleMouseup);
 		window.removeEventListener("blur", this.#handleBlur);
+
+		if (this.#intervalID !== 0) {
+			window.clearInterval(this.#intervalID);
+			this.#intervalID = 0;
+		}
 	}
 }
