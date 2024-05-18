@@ -2,8 +2,6 @@ import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
-import { HeroEntity } from "../HeroEntity";
-import { BossEntity } from "../BossEntity";
 import { InteractableEntity } from "./InteractableEntity";
 import { Tag } from "../Entity";
 
@@ -51,11 +49,11 @@ export class Item extends InteractableEntity {
 		//if a hero, then makes the item's position locked into the player's hands
 		//turns collider off, possibly
 
-		if (player instanceof HeroEntity) {
+		if (player.type === "player-hero") {
 			console.log("touched an item, scandalous");
 			player.itemInHands = this;
 			this.body.mass = 0;
-		} else if (player instanceof BossEntity) {
+		} else if (player.type === "player-boss") {
 		}
 
 		//if a boss, do some sabotage!

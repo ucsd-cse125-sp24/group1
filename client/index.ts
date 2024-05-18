@@ -1,5 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 import { Vector3 } from "../common/commontypes";
+import { SERVER_GAME_TICK } from "../common/constants";
 import { ClientInputMessage, ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
@@ -121,6 +122,7 @@ const inputListener = new InputListener({
 		};
 		connection.send(msg);
 	},
+	period: SERVER_GAME_TICK,
 });
 
 // for debug purposes

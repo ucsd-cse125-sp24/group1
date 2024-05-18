@@ -4,10 +4,9 @@ import { PlayerMaterial, GroundMaterial, SlipperyMaterial } from "./SourceMateri
 // whenever a new CM is added, a new line needed to be added to the world initialization in TheWorld to add the contact material
 export const PlayerGroundCM = new ContactMaterial(PlayerMaterial, GroundMaterial, {
 	friction: 0,
-	// restitution: 0,
-	contactEquationStiffness: 1e8,
-	contactEquationRelaxation: 3,
-	frictionEquationStiffness: 1e8,
+	restitution: 0,
+	contactEquationStiffness: 1e10,
+	contactEquationRelaxation: 4,
 });
 
 export const PlayerPlayerCM = new ContactMaterial(PlayerMaterial, PlayerMaterial, {

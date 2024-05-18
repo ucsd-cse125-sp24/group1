@@ -113,7 +113,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				backward: inputs.backward,
 				right: inputs.right,
 				left: inputs.left,
-				jump: posedge.jump,
+				jump: inputs.jump,
 				lookDir: inputs.lookDir,
 			};
 
@@ -138,13 +138,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.conn = conn;
 		} else {
 			let playerORHero = Math.floor(Math.random() * 4);
-			let playerEntity
-			if(playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				 playerEntity = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
-
+			let playerEntity;
+			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
+				playerEntity = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
 			} else {
-				 playerEntity = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
-
+				playerEntity = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
 			}
 			this.registerEntity(playerEntity);
 
@@ -156,12 +154,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				conn: conn,
 				input: input,
 				entity: playerEntity,
-			}
+			};
 			this.#players.set(conn.id, player);
-			
 		}
-		
-		conn.send({ type: "camera-lock", entityName: conn.id, pov: player.entity instanceof BossEntity ? "top-down" : 'first-person' });
+
+		conn.send({
+			type: "camera-lock",
+			entityName: conn.id,
+			pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
+		});
 	}
 
 	/**

@@ -42,7 +42,7 @@ export abstract class Entity {
 
 	static readonly ENVIRONMENT_COLLISION_GROUP = 2;
 	static readonly INTERACTABLE_COLLISION_GROUP = 4;
-	static readonly EPSILON = 0.01;
+	static readonly EPSILON = 0.1;
 
 	getBitFlag(): number {
 		if (this.tags.size == 0) return -1;

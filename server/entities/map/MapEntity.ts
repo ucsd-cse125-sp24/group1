@@ -11,6 +11,8 @@ export class MapEntity extends StaticEntity {
 		for (const { shape, offset, rotation } of colliders) {
 			this.body.addShape(shape, offset, rotation);
 		}
+		this.tags.add("environment");
+		this.body.collisionFilterGroup = this.getBitFlag();
 	}
 
 	serialize(): SerializedEntity {
