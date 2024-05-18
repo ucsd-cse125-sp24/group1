@@ -101,7 +101,9 @@ export class BossEntity extends PlayerEntity {
 			const stringsArray = ["weeeee", "yahooooo", "mario", "yap", "hawaii"];
 			const randomIndex = Math.floor(Math.random() * stringsArray.length);
 			const randomString = stringsArray[randomIndex];
-			console.log(randomString);
+			console.log("boss jump", randomString);
+
+			this.body.applyImpulse(new phys.Vec3(0, 10, 0));
 		}
 
 		if (this.body.force.length() < 1) {

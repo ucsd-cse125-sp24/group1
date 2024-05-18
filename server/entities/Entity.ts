@@ -2,6 +2,8 @@ import * as phys from "cannon-es";
 import { PhysicsWorld } from "../physics";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 
+export type Tag = "environment" | "interactable" | "player" | "resource" | "tool";
+
 export abstract class Entity {
 	name: string;
 	type: string;
@@ -9,14 +11,14 @@ export abstract class Entity {
 	model: EntityModel[];
 	// tags system is very helpful for scalablilities and is also used in Unity
 	// example: a crafting table entity that players can also jump on
-	tags: Set<string>;
+	tags: Set<Tag>;
 
-	constructor(name: string, model: EntityModel[] = []) {
+	constructor(name: string, model: EntityModel[] = [], tags: Tag[] = []) {
 		this.name = name;
 		this.type = "entity";
 		this.body = new phys.Body();
 		this.model = model;
-		this.tags = new Set();
+		this.tags = new Set(tags);
 	}
 
 	getPos(): phys.Vec3 {

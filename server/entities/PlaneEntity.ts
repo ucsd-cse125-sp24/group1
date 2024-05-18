@@ -12,11 +12,10 @@ export class PlaneEntity extends Entity {
 	// model: EntityModel[];
 
 	constructor(name: string, pos: Vector3, rotation: Quaternion, model: EntityModel[] = []) {
-		super(name, model);
+		super(name, model, ["environment"]);
 		this.type = "plane";
 		this.name = name;
 		this.model = model;
-		this.tags.add("environment");
 
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,

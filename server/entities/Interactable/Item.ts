@@ -5,6 +5,7 @@ import { PlayerEntity } from "../PlayerEntity";
 import { HeroEntity } from "../HeroEntity";
 import { BossEntity } from "../BossEntity";
 import { InteractableEntity } from "./InteractableEntity";
+import { Tag } from "../Entity";
 
 export class Item extends InteractableEntity {
 	type: string;
@@ -17,8 +18,8 @@ export class Item extends InteractableEntity {
 	// shape
 	sphere: phys.Sphere;
 
-	constructor(name: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: string) {
-		super(name, model);
+	constructor(name: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
+		super(name, model, [tag]);
 
 		//TODO: ADD A MATERIAL FOR COLLISION
 
@@ -28,8 +29,6 @@ export class Item extends InteractableEntity {
 		this.radius = radius;
 		this.radius = radius;
 		this.heldBy = null;
-
-		this.tags.add(tag);
 
 		this.body = new phys.Body({
 			mass: 1.0,

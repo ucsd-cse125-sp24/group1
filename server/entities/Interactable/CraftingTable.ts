@@ -55,10 +55,10 @@ export class CraftingTable extends InteractableEntity {
 
 		let success = true;
 
-		console.log("ItemList, then entity name, then recipes")
-		console.log(this.itemList);
-		console.log(otherEntity.name);
-		console.log(this.recipes);
+		console.log("ItemList, then entity name, then recipes:")
+		console.log('| itemList', this.itemList);
+		console.log('| entity name',otherEntity.name);
+		console.log('| recipes',this.recipes);
 
 		if (otherEntity instanceof Item) {
 

@@ -23,10 +23,9 @@ export abstract class PlayerEntity extends Entity {
 		mass: number,
 		interactionRange: number,
 	) {
-		super(name, model);
+		super(name, model, ["player"]);
 
 		this.type = "player";
-		this.tags.add("player");
 
 		this.itemInHands = null;
 		this.interactionRange = interactionRange;
