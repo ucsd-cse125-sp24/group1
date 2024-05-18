@@ -3,6 +3,8 @@ import { Box, Body, Plane, World } from "cannon-es";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { SerializedCollider, SerializedEntity } from "../common/messages";
 import { PlayerGroundCM, PlayerPlayerCM, PlayerSlipperyCM, SlipperyGroundCM } from "./materials/ContactMaterials";
+import { Entity } from "./entities/Entity";
+import { serializeShape } from "./lib/serializeShape";
 
 type WorldSetup = {
 	gravity: [number, number, number];
@@ -64,6 +66,13 @@ export class PhysicsWorld {
 	}
 
 	/**
+	 * Returns a list of bodies that are not present in the given map.
+	 */
+	getPhantomBodies(bodyToEntityMap: Map<Body, Entity>): Body[] {
+		return this.#world.bodies.filter((body) => !bodyToEntityMap.has(body));
+	}
+
+	/**
 	 * Serialize this TheWorld into a format that represents the state of this class
 	 * @deprecated
 	 */
@@ -80,35 +89,7 @@ export class PhysicsWorld {
 			};
 
 			for (let shape of body.shapes) {
-				let collider: SerializedCollider | undefined = undefined;
-				if (shape instanceof Box) {
-					collider = {
-						type: "box",
-						size: shape.halfExtents.toArray(),
-					};
-				} else if (shape instanceof Plane) {
-					collider = {
-						type: "plane",
-					};
-				} else if (shape instanceof phys.Sphere) {
-					collider = {
-						type: "sphere",
-						radius: shape.radius,
-					};
-				} else if (shape instanceof phys.Cylinder) {
-					collider = {
-						type: "cylinder",
-						radiusTop: shape.radiusTop,
-						radiusBottom: shape.radiusBottom,
-						height: shape.height,
-						numSegments: shape.numSegments,
-					};
-				}
-				if (collider) {
-					entity.colliders.push(collider);
-				} else {
-					console.error("Unknown Collider", shape.type);
-				}
+				entity.colliders.push(serializeShape(shape));
 			}
 			serial.push(entity);
 		}

@@ -78,6 +78,27 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	/**
+	 * TODO: call this function
+	 */
+	verifyState() {
+		let error = false;
+		for (const body of TheWorld.getPhantomBodies(this.#bodyToEntityMap)) {
+			console.warn(`Body ${body.id} is missing entity`);
+			error = true;
+		}
+		const entities = Array.from(this.#entities.values());
+		for (const entity of this.#bodyToEntityMap.values()) {
+			if (!entities.includes(entity)) {
+				console.warn(`#bodyToEntityMap maps to an entity '${entity.name}' not in #entities`);
+				error = true;
+			}
+		}
+		if (error) {
+			throw new Error("The game is not in sync with the physics engine. Errors have been reported in the conosle.");
+		}
+	}
+
+	/**
 	 * A function that sets up the base state for the game
 	 */
 	async setup() {
@@ -230,6 +251,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		for (let [id, entity] of this.#entities.entries()) {
 			serial.push(entity.serialize());
 		}
+
 		return serial;
 	}
 }
