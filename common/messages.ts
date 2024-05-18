@@ -3,7 +3,7 @@ import { Vector2, Vector3, Quaternion } from "./commontypes";
 
 export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameState | CameraLock;
 
-export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage;
+export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage | DebugSwitchRoleMessage;
 
 export type ClientControlMessage = {
 	/**
@@ -70,6 +70,11 @@ export type ClientInputs = {
 export type ClientInputMessage = {
 	type: "client-input";
 } & ClientInputs;
+
+export type DebugSwitchRoleMessage = {
+	type: "--debug-switch-role";
+	keepBody: boolean;
+};
 
 export type EntityModelObject = {
 	modelId: ModelId;

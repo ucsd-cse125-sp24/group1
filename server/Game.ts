@@ -188,6 +188,32 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			case "client-input":
 				this.#players.get(conn.id)?.input?.updateInputs?.(data);
 				break;
+			case "--debug-switch-role":
+				const player = this.#players.get(conn.id);
+				if (!player) {
+					return;
+				}
+				if (data.keepBody) {
+					// Ensure camera does not lock to it
+					player.entity.name = `formerly ${player.entity.name}`;
+				} else {
+					this.unregisterEntity(player.entity);
+				}
+				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
+					conn.id,
+					[20, 20, 20],
+					["samplePlayer"],
+				);
+				this.registerEntity(newEntity);
+				player.entity = newEntity;
+				conn.send({
+					type: "camera-lock",
+					entityName: conn.id,
+					pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
+				});
+				break;
+			default:
+				console.warn(`Unhandled message '${data["type"]}'`);
 		}
 	}
 
@@ -199,7 +225,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	serialize(): SerializedEntity[] {
-		let serial = [];
+		let serial: SerializedEntity[] = [];
 
 		for (let [id, entity] of this.#entities.entries()) {
 			serial.push(entity.serialize());

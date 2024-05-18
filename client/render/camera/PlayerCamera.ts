@@ -114,7 +114,7 @@ export class PlayerCamera extends Camera {
 	};
 
 	#handleMouseMove = ({ movementX, movementY }: { movementX: number; movementY: number }) => {
-		if (!this.canRotate) {
+		if (!this.canRotate && !this.#isFree) {
 			return;
 		}
 		this.setOrientation(

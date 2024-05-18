@@ -149,6 +149,10 @@ const handleDebugKey = (e: KeyboardEvent) => {
 			wireframe = (wireframe + 1) % 3;
 			break;
 		}
+		case "KeyB": {
+			connection.send({ type: "--debug-switch-role", keepBody: e.shiftKey });
+			break;
+		}
 	}
 };
 window.addEventListener("keydown", handleDebugKey);
