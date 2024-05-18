@@ -31,6 +31,13 @@ let entities: ClientEntity[] = [];
 let cameraLockTarget: string | null = null;
 let isFirstPerson: boolean = true;
 let freecam: boolean = false; // for debug purposes
+/**
+ * Wireframe mode, for debug purposes.
+ * - 0: hide wireframe
+ * - 1: show wireframe, use depth buffer
+ * - 2: show wireframe, ignore depth
+ */
+let wireframe = 0;
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -126,18 +133,25 @@ const inputListener = new InputListener({
 });
 
 // for debug purposes
-const handleFreecam = (e: KeyboardEvent) => {
-	if (e.code === "KeyP") {
-		freecam = !freecam;
-		camera.setFree(freecam);
-		if (freecam) {
-			inputListener.disconnect();
-		} else {
-			inputListener.listen();
+const handleDebugKey = (e: KeyboardEvent) => {
+	switch (e.code) {
+		case "KeyP": {
+			freecam = !freecam;
+			camera.setFree(freecam);
+			if (freecam) {
+				inputListener.disconnect();
+			} else {
+				inputListener.listen();
+			}
+			break;
+		}
+		case "KeyK": {
+			wireframe = (wireframe + 1) % 3;
+			break;
 		}
 	}
 };
-window.addEventListener("keydown", handleFreecam);
+window.addEventListener("keydown", handleDebugKey);
 
 // Define client-side only entities (to debug rendering)
 const particles = new ClientEntity(engine, "", [{ model: engine.models.particles, transform: mat4.create() }]);
@@ -226,13 +240,21 @@ const paint = () => {
 	}
 
 	// Draw wireframes
-	engine.wireframeMaterial.use();
-	engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_view"), false, view);
-	engine.gl.disable(engine.gl.CULL_FACE);
-	for (const entity of entities) {
-		entity.drawWireframe();
+	if (wireframe > 0) {
+		engine.wireframeMaterial.use();
+		engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_view"), false, view);
+		if (wireframe === 2) {
+			engine.gl.disable(engine.gl.DEPTH_TEST);
+		}
+		engine.gl.disable(engine.gl.CULL_FACE);
+		for (const entity of entities) {
+			entity.drawWireframe();
+		}
+		engine.gl.enable(engine.gl.CULL_FACE);
+		if (wireframe === 2) {
+			engine.gl.enable(engine.gl.DEPTH_TEST);
+		}
 	}
-	engine.gl.enable(engine.gl.CULL_FACE);
 
 	pipeline.stopRender();
 

@@ -2,6 +2,14 @@
 
 This is our group's 3D multiplayer video game for [CSE 125](https://cse125.ucsd.edu/). Our team opted to use WebGL to allow the game to run on more devices.
 
+## Usage
+
+Debug keybinds:
+
+- `P`: toggle freecam
+- `K`: cycle through wireframe modes
+- `B`: toggle boss or hero
+
 ## Development
 
 This project requires [Node](https://nodejs.org/). This should also install [npm](https://www.npmjs.com/). Then, install the dependencies.
