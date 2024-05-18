@@ -1,7 +1,7 @@
 import { mat4, vec3 } from "gl-matrix";
 import { Vector3 } from "../common/commontypes";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { ClientInputMessage, ClientInputs, ClientMessage, ServerMessage } from "../common/messages";
+import { ClientInputMessage, ClientInputs, ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
@@ -28,6 +28,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 
 let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
+let colliders: { collider: SerializedCollider; transform: mat4 }[] = [];
 let cameraLockTarget: string | null = null;
 let isFirstPerson: boolean = true;
 let freecam: boolean = false; // for debug purposes
@@ -51,6 +52,21 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			};
 		case "entire-game-state":
 			entities = data.entities.map((entity) => ClientEntity.from(engine, entity));
+			colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
+				const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
+				return colliders.map((collider) => ({
+					collider,
+					transform: mat4.multiply(
+						mat4.create(),
+						transform,
+						mat4.fromRotationTranslation(
+							mat4.create(),
+							collider.orientation ?? [0, 0, 0, 1],
+							collider.offset ?? [0, 0, 0],
+						),
+					),
+				}));
+			});
 			break;
 		case "camera-lock":
 			cameraLockTarget = data.entityName;
@@ -251,8 +267,9 @@ const paint = () => {
 			engine.gl.disable(engine.gl.DEPTH_TEST);
 		}
 		engine.gl.disable(engine.gl.CULL_FACE);
-		for (const entity of entities) {
-			entity.drawWireframe();
+		for (const { collider, transform } of colliders) {
+			engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_model"), false, transform);
+			engine.drawWireframe(collider);
 		}
 		engine.gl.enable(engine.gl.CULL_FACE);
 		if (wireframe === 2) {

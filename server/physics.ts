@@ -1,7 +1,7 @@
 import * as phys from "cannon-es";
 import { Box, Body, Plane, World } from "cannon-es";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { SerializedCollider, SerializedEntity } from "../common/messages";
+import { SerializedBody, SerializedCollider, SerializedEntity } from "../common/messages";
 import { PlayerGroundCM, PlayerPlayerCM, PlayerSlipperyCM, SlipperyGroundCM } from "./materials/ContactMaterials";
 import { Entity } from "./entities/Entity";
 import { serializeShape } from "./lib/serializeShape";
@@ -73,27 +73,20 @@ export class PhysicsWorld {
 	}
 
 	/**
-	 * Serialize this TheWorld into a format that represents the state of this class
-	 * @deprecated
+	 * Serialize every body and collider in the physics engine to draw as
+	 * wireframes for debug purposes.
+	 *
+	 * IMPORTANT: Do not use any instance variables like `this.#colliders`, which
+	 * are copies of physics state and may get out of sync. This function MUST
+	 * call directly to the physics engine, or this can hide desync issues that
+	 * will make debugging a nightmare.
 	 */
-	serialize(): SerializedEntity[] {
-		let serial = [];
-
-		for (let body of Object.values(this.#colliders)) {
-			let entity: SerializedEntity = {
-				name: body.id.toString(),
-				model: ["donut"],
-				position: body.position.toArray(),
-				quaternion: body.quaternion.toArray(),
-				colliders: [],
-			};
-
-			for (let shape of body.shapes) {
-				entity.colliders.push(serializeShape(shape));
-			}
-			serial.push(entity);
-		}
-		return serial;
+	serialize(): SerializedBody[] {
+		return this.#world.bodies.map((body) => ({
+			position: body.position.toArray(),
+			quaternion: body.quaternion.toArray(),
+			colliders: body.shapes.map(serializeShape),
+		}));
 	}
 }
 

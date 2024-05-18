@@ -23,26 +23,13 @@ export class ClientEntity {
 	 * it like the anchor position and rotation of the entity.
 	 */
 	transform: mat4;
-	/**
-	 * A list of physics engine colliders to draw for debugging purposes. They
-	 * aren't used by the client for anything else, so the server may choose to
-	 * keep this empty.
-	 */
-	colliders: SerializedCollider[];
 	visible = true;
 
-	constructor(
-		engine: GraphicsEngine,
-		name: string,
-		models: ModelWithTransform[],
-		transform = mat4.create(),
-		colliders: SerializedCollider[] = [],
-	) {
+	constructor(engine: GraphicsEngine, name: string, models: ModelWithTransform[], transform = mat4.create()) {
 		this.engine = engine;
 		this.name = name;
 		this.models = models;
 		this.transform = transform;
-		this.colliders = colliders;
 	}
 
 	/**
@@ -65,29 +52,6 @@ export class ClientEntity {
 				mat4.mul(mat4.create(), this.transform, transform),
 			);
 			model.draw();
-		}
-	}
-
-	/**
-	 * Draw the entity's colliders.
-	 *
-	 * Preconditions:
-	 * - The wireframe shader program is in use.
-	 * - `u_view` is set.
-	 */
-	drawWireframe() {
-		for (const collider of this.colliders) {
-			const localTransform = mat4.fromRotationTranslation(
-				mat4.create(),
-				collider.orientation ?? [0, 0, 0, 1],
-				collider.offset ?? [0, 0, 0],
-			);
-			this.engine.gl.uniformMatrix4fv(
-				this.engine.wireframeMaterial.uniform("u_model"),
-				false,
-				mat4.multiply(mat4.create(), this.transform, localTransform),
-			);
-			this.engine.drawWireframe(collider);
 		}
 	}
 
@@ -116,7 +80,6 @@ export class ClientEntity {
 				};
 			}),
 			transform,
-			entity.colliders,
 		);
 	}
 }

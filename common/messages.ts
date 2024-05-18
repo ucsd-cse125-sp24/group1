@@ -30,6 +30,12 @@ export type ServerControlMessage = {
 export type EntireGameState = {
 	type: "entire-game-state";
 	entities: SerializedEntity[];
+	/**
+	 * All physics engine colliders to draw wireframes around for debug purposes.
+	 * These should be drawn directly as given; do not try to interpolate or
+	 * predict positions on these bodies.
+	 */
+	physicsBodies: SerializedBody[];
 };
 
 /**
@@ -90,8 +96,13 @@ export type SerializedEntity = {
 	model: EntityModel[];
 	quaternion: Quaternion;
 	position: Vector3;
-	colliders: SerializedCollider[];
 	// for future reference we need to include velocity for movement prediction
+};
+
+export type SerializedBody = {
+	quaternion: Quaternion;
+	position: Vector3;
+	colliders: SerializedCollider[];
 };
 
 export type SerializedCollider = (BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider) & {
