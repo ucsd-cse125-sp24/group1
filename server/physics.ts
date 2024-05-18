@@ -85,7 +85,11 @@ export class PhysicsWorld {
 		return this.#world.bodies.map((body) => ({
 			position: body.position.toArray(),
 			quaternion: body.quaternion.toArray(),
-			colliders: body.shapes.map(serializeShape),
+			colliders: body.shapes.map((shape, i) => ({
+				...serializeShape(shape),
+				offset: body.shapeOffsets[i].toArray(),
+				orientation: body.shapeOrientations[i].toArray(),
+			})),
 		}));
 	}
 }

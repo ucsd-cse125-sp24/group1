@@ -21,14 +21,6 @@ export class MapEntity extends StaticEntity {
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),
-			colliders: this.body.shapes.map(
-				(shape, i): SerializedCollider => ({
-					type: "box",
-					size: (shape as Box).halfExtents.toArray(),
-					offset: this.body.shapeOffsets[i].toArray(),
-					orientation: this.body.shapeOrientations[i].toArray(),
-				}),
-			),
 		};
 	}
 }

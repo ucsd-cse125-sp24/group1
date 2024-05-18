@@ -28,7 +28,6 @@ export class StaticEntity extends Entity {
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),
-			colliders: [],
 		};
 	}
 }

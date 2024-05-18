@@ -127,13 +127,6 @@ export class CraftingTable extends InteractableEntity {
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),
-			colliders: [
-				{
-					type: "box", //capsule Bot
-					size: [this.halfExtent, this.halfExtent, this.halfExtent],
-					offset: [0, 0, 0],
-				},
-			],
 		};
 	}
 }

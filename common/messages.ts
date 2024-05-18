@@ -105,9 +105,10 @@ export type SerializedBody = {
 	colliders: SerializedCollider[];
 };
 
-export type SerializedCollider = (BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider) & {
-	offset?: Vector3;
-	orientation?: Quaternion;
+export type SerializedColliderBase = BoxCollider | PlaneCollider | SquareCollider | SphereCollider | CylinderCollider;
+export type SerializedCollider = SerializedColliderBase & {
+	offset: Vector3;
+	orientation: Quaternion;
 };
 
 /**

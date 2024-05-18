@@ -73,13 +73,6 @@ export class Item extends InteractableEntity {
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),
-			colliders: [
-				{
-					type: "sphere",
-					radius: this.sphere.radius,
-					offset: [0, 0, 0],
-				},
-			],
 		};
 	}
 }

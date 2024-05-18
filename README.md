@@ -8,7 +8,7 @@ Debug keybinds:
 
 - `P`: toggle freecam
 - `K`: cycle through wireframe modes
-- `B`: toggle boss or hero
+- `B`: toggle boss or hero (`+ shift` to keep old entity)
 
 ## Development
 

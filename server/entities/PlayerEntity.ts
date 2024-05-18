@@ -124,25 +124,6 @@ export abstract class PlayerEntity extends Entity {
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),
-			colliders: [
-				{
-					type: "cylinder",
-					radiusTop: this.#cylinder.radiusTop,
-					radiusBottom: this.#cylinder.radiusBottom,
-					height: this.#cylinder.height,
-					numSegments: this.#cylinder.numSegments,
-					offset: [0, -this.#cylinderHeight / 2, 0],
-				},
-				{
-					type: "sphere", //capsule Top
-					radius: this.#sphereTop.radius,
-				},
-				{
-					type: "sphere", //capsule Bot
-					radius: this.#sphereBot.radius,
-					offset: [0, -this.#cylinderHeight, 0],
-				},
-			],
 		};
 	}
 
