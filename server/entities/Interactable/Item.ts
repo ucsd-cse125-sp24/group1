@@ -16,18 +16,30 @@ export class Item extends InteractableEntity {
 	// shape
 	sphere: phys.Sphere;
 
+<<<<<<< Updated upstream
 	constructor(name: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
 		super(name, model, [tag]);
+=======
+	constructor(name: string, type: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: string) {
+		super(name, model);
+>>>>>>> Stashed changes
 
 		//TODO: ADD A MATERIAL FOR COLLISION
 
-		this.type = "item";
+		this.type = type;
 		this.name = name;
 		this.model = model;
 		this.radius = radius;
-		this.radius = radius;
 		this.heldBy = null;
 
+<<<<<<< Updated upstream
+=======
+		this.tags.add("item");
+
+		this.tags.add(tag);
+		
+
+>>>>>>> Stashed changes
 		this.body = new phys.Body({
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
