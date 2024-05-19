@@ -51,18 +51,6 @@ export class CraftingTable extends InteractableEntity {
 	}
 
 	onCollide(otherEntity: Entity): void {
-<<<<<<< Updated upstream
-		let success = true;
-
-		console.log("ItemList, then entity name, then recipes:");
-		console.log("| itemList", this.itemList);
-		console.log("| entity name", otherEntity.name);
-		console.log("| recipes", this.recipes);
-
-		if (otherEntity instanceof Item) {
-			otherEntity.body.position = new phys.Vec3(99, 0, 99); //sent to the shadow realm
-			otherEntity.body.mass = 0; //making it static
-=======
 
 		let success = false;
 
@@ -70,11 +58,10 @@ export class CraftingTable extends InteractableEntity {
 
 		if (otherEntity instanceof Item) {
 
-			console.log("ItemList, then entity name, then recipes")
-			console.log(this.itemList);
-			console.log(otherEntity.type);
-			console.log(this.recipes);
->>>>>>> Stashed changes
+			console.log("ItemList, then entity name, then recipes:");
+			console.log("| itemList", this.itemList);
+			console.log("| entity name", otherEntity.name);
+			console.log("| recipes", this.recipes);
 
 			if (otherEntity.tags.has("resource")) {
 				//check if it's a possible recipe
@@ -82,15 +69,10 @@ export class CraftingTable extends InteractableEntity {
 
 				let currentResourceCount = 0;
 				let resourceCount = 0;
-<<<<<<< Updated upstream
-				for (let i = 0; i < this.itemList.length; i++) {
-					if (this.itemList[i].name == EntityName) {
-						resourceCount++;
-=======
+
 				for(let i = 0; i < this.itemList.length; i ++) {
 					if(this.itemList[i].type == EntityType) {
 						resourceCount ++;
->>>>>>> Stashed changes
 					}
 				}
 
@@ -98,13 +80,9 @@ export class CraftingTable extends InteractableEntity {
 
 				for (let i = 0; i < this.recipes.length; i++) {
 					//for each recipe
-<<<<<<< Updated upstream
-					for (let j = 0; j < this.recipes[i].length; j++) {
-						if (EntityName == this.recipes[i][j]) {
-=======
+
 					for(let j = 0; j < this.recipes[i].length; j++) {
 						if(EntityType == this.recipes[i][j] ) {
->>>>>>> Stashed changes
 							currentResourceCount++;
 						}
 					}
@@ -122,24 +100,14 @@ export class CraftingTable extends InteractableEntity {
 					currentResourceCount = 0;
 				}
 			} else if (otherEntity.tags.has("tool")) {
-<<<<<<< Updated upstream
-				for (let i = 0; i < this.recipes.length; i++) {
-					if (this.itemList.length == this.recipes[i].length) {
-						for (let j = 0; j < this.recipes[i].length; j++) {
-							if (this.itemList[j].name != this.recipes[i][j]) {
-=======
+
 				for(let i = 0; i < this.recipes.length; i++) {
-
-					if(this.itemList.length == this.recipes[i].length) {
-
-						
+					if(this.itemList.length == this.recipes[i].length) {					
 						success = true;
 
 						for(let j = 0; j < this.recipes[i].length; j++) {
 
 							if(this.itemList[j].type != this.recipes[i][j]) {
-
->>>>>>> Stashed changes
 								success = false;
 							}
 						}
@@ -158,7 +126,6 @@ export class CraftingTable extends InteractableEntity {
 					}
 				}
 
-<<<<<<< Updated upstream
 				if (success) {
 					for (let i = 0; i < this.itemList.length; i++) {
 						//fully clear the item list
@@ -169,9 +136,7 @@ export class CraftingTable extends InteractableEntity {
 					console.log("should now spit out an upgraded item TODO");
 					//SHOOT OUT THE UPGRADED ITEM
 				}
-=======
 
->>>>>>> Stashed changes
 			}
 		}
 	}

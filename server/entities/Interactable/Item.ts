@@ -16,13 +16,21 @@ export class Item extends InteractableEntity {
 	// shape
 	sphere: phys.Sphere;
 
-<<<<<<< Updated upstream
-	constructor(name: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
+
+	/**
+	 * 
+	 * Tag should be a Tag type! For creating an item, it should only realistically be a resource or a tool!
+	 * 
+	 * @param name 
+	 * @param type 
+	 * @param radius 
+	 * @param pos 
+	 * @param model 
+	 * @param tag 
+	 */
+	constructor(name: string, type: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
 		super(name, model, [tag]);
-=======
-	constructor(name: string, type: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: string) {
-		super(name, model);
->>>>>>> Stashed changes
+
 
 		//TODO: ADD A MATERIAL FOR COLLISION
 
@@ -32,14 +40,11 @@ export class Item extends InteractableEntity {
 		this.radius = radius;
 		this.heldBy = null;
 
-<<<<<<< Updated upstream
-=======
 		this.tags.add("item");
 
 		this.tags.add(tag);
 		
 
->>>>>>> Stashed changes
 		this.body = new phys.Body({
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
