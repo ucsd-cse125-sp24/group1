@@ -32,6 +32,8 @@ uniform vec3 u_point_lights[MAX_LIGHTS];
 uniform vec3 u_point_colors[MAX_LIGHTS];
 uniform samplerCube u_point_shadow_maps[MAX_LIGHTS];
 uniform vec4 u_ambient_light;
+uniform int u_enable_tones;
+uniform float u_tones;
 
 float near = 0.001;
 float far = 100.0;
@@ -88,6 +90,9 @@ void main() {
     vec3 half_vector = normalize(to_light + to_eye);
     // Only adjust value (darkness) for HSV light color to avoid changing hue,
     // then convert to RGB
+    if (u_enable_tones == 1) {
+      distance = ceil(distance / u_tones) * u_tones;
+    }
     vec4 light_color =
         vec4(hsv2rgb(vec3(u_point_colors[i].xy,
                           u_point_colors[i].z / (distance * distance))),

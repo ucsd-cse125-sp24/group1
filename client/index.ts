@@ -38,6 +38,7 @@ let freecam: boolean = false; // for debug purposes
  * - 2: show wireframe, ignore depth
  */
 let wireframe = 0;
+let tones = true;
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -107,6 +108,7 @@ type DebugInputs = {
 	toggleRole: boolean;
 	toggleRoleKeepOld: boolean;
 	spawnItem: boolean;
+	toggleTones: boolean;
 };
 const defaultDebugInputs = {
 	forward: false,
@@ -120,6 +122,7 @@ const defaultDebugInputs = {
 	toggleRole: false,
 	toggleRoleKeepOld: false,
 	spawnItem: false,
+	toggleTones: false,
 };
 let debugInputs: FreecamInputs & DebugInputs = { ...defaultDebugInputs };
 const inputListener = new InputListener({
@@ -145,6 +148,7 @@ const inputListener = new InputListener({
 		KeyB: "toggleRole",
 		KeyN: "toggleRoleKeepOld",
 		KeyX: "spawnItem",
+		KeyT: "toggleTones",
 	},
 	handleInputs: (inputs) => {
 		if (inputs.toggleFreecam && !debugInputs.toggleFreecam) {
@@ -162,6 +166,9 @@ const inputListener = new InputListener({
 		}
 		if (inputs.spawnItem && !debugInputs.spawnItem) {
 			connection.send({ type: "--debug-spawn-item" });
+		}
+		if (inputs.toggleTones && !debugInputs.toggleTones) {
+			tones = !tones;
 		}
 
 		debugInputs = { ...inputs };
@@ -258,6 +265,8 @@ const paint = () => {
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...ambientLight, 1);
+	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_enable_tones"), +tones);
+	engine.gl.uniform1f(engine.gltfMaterial.uniform("u_tones"), 5);
 
 	// Draw entities
 	const view = camera.getViewProjectionMatrix();

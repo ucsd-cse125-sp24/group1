@@ -1,7 +1,5 @@
 precision mediump float;
 
-#define TONES 8.0
-
 varying vec2 v_texcoord;
 
 uniform sampler2D u_texture_color;
@@ -31,5 +29,5 @@ void main() {
   }
 
   vec4 color = texture2D(u_texture_color, v_texcoord);
-  gl_FragColor = color; // floor(color * TONES + 0.5) / TONES;
+  gl_FragColor = color;
 }
