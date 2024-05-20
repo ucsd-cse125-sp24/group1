@@ -109,10 +109,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
 		this.registerEntity(plane);
 
-		let iron = new Item("Iron Ore", 0.5, [10, 10, 10], ["donut"], "resource");
-		this.registerEntity(iron);
+		let bigIron = new Item("Iron1", "iron-ore", 0.5, [18, 0, 15], [{modelId: "samplePlayer", scale: .5}], "resource");
+		this.registerEntity(bigIron);
 
-		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], [{ modelId: "fish1", scale: 10 }], [["Iron Ore"]]);
+		let smallIron = new Item("Iron2", "iron-ore", 0.5, [10, 0, 10], [{modelId: "samplePlayer", scale: .5}], "resource");
+		this.registerEntity(smallIron);
+
+		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{modelId: "fish1", scale: .75}], "tool");
+		this.registerEntity(Pick);
+
+		let tempCrafter = new CraftingTable("crafter", [18, 0, 18], [{ modelId: "fish1", scale: 10 }], [["iron-ore", "String"]]);
 		this.registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);

@@ -2,7 +2,7 @@ import * as phys from "cannon-es";
 import { PhysicsWorld } from "../physics";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 
-export type Tag = "environment" | "interactable" | "player" | "resource" | "tool";
+export type Tag = "environment" | "interactable" | "player" | "resource" | "tool" | "item";
 
 export abstract class Entity {
 	name: string;
