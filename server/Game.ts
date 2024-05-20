@@ -106,19 +106,38 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.registerEntity(mapEntity);
 
-		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
+		let plane = new PlaneEntity("normal plane", [0, -5.5, 0], [-1, 0, 0, 1], []);
 		this.registerEntity(plane);
 
-		let bigIron = new Item("Iron1", "iron-ore", 0.5, [18, 0, 15], [{modelId: "samplePlayer", scale: .5}], "resource");
+		let bigIron = new Item(
+			"Iron1",
+			"iron-ore",
+			0.5,
+			[18, 0, 15],
+			[{ modelId: "samplePlayer", scale: 0.5 }],
+			"resource",
+		);
 		this.registerEntity(bigIron);
 
-		let smallIron = new Item("Iron2", "iron-ore", 0.5, [10, 0, 10], [{modelId: "samplePlayer", scale: .5}], "resource");
+		let smallIron = new Item(
+			"Iron2",
+			"iron-ore",
+			0.5,
+			[10, 0, 10],
+			[{ modelId: "samplePlayer", scale: 0.5 }],
+			"resource",
+		);
 		this.registerEntity(smallIron);
 
-		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{modelId: "fish1", scale: .75}], "tool");
+		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
 		this.registerEntity(Pick);
 
-		let tempCrafter = new CraftingTable("crafter", [18, 0, 18], [{ modelId: "fish1", scale: 10 }], [["iron-ore", "String"]]);
+		let tempCrafter = new CraftingTable(
+			"crafter",
+			[18, 0, 18],
+			[{ modelId: "fish1", scale: 10 }],
+			[["iron-ore", "String"]],
+		);
 		this.registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);

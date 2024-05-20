@@ -1,4 +1,5 @@
 import * as phys from "cannon-es";
+import { quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
@@ -122,8 +123,15 @@ export abstract class PlayerEntity extends Entity {
 		return {
 			name: this.name,
 			model: this.model,
-			position: this.body.position.toArray(),
-			quaternion: this.body.quaternion.toArray(),
+			position: this.body.position.vsub(new phys.Vec3(0, this.#eyeHeight, 0)).toArray(),
+			quaternion: quat.rotationTo(
+				quat.create(),
+				vec3.fromValues(1, 0, 0),
+				this.lookDir
+					.vmul(new phys.Vec3(1, 0, 1))
+					.unit()
+					.toArray(),
+			),
 		};
 	}
 
