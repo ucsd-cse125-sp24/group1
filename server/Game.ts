@@ -82,8 +82,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * so that it can be interacted with. Unregistered entities do not
 	 * affect the game in any way
 	 * @param entity the constructed entity to register
+	 *
+	 * NOTE: After the world has been created, use `addToCreateQueue` to avoid
+	 * issues while creating or removing entities during a tick.
 	 */
-	registerEntity(entity: Entity) {
+	#registerEntity(entity: Entity) {
 		this.#entities.set(entity.name, entity);
 		this.#bodyToEntityMap.set(entity.body, entity);
 
@@ -97,7 +100,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		entity.addToWorld(TheWorld);
 	}
 
-	unregisterEntity(entity: Entity) {
+	/**
+	 * NOTE: After the world has been created, use `addToDeleteQueue` to avoid
+	 * issues while creating or removing entities during a tick.
+	 */
+	#unregisterEntity(entity: Entity) {
 		this.#entities.delete(entity.name);
 		this.#bodyToEntityMap.delete(entity.body);
 		entity.removeFromWorld(TheWorld);
@@ -130,10 +137,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	async setup() {
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
-		this.registerEntity(mapEntity);
+		this.#registerEntity(mapEntity);
 
 		let plane = new PlaneEntity("normal plane", [0, -5.5, 0], [-1, 0, 0, 1], []);
-		this.registerEntity(plane);
+		this.#registerEntity(plane);
 
 		let bigIron = new Item(
 			"Iron1",
@@ -143,7 +150,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[{ modelId: "samplePlayer", scale: 0.5 }],
 			"resource",
 		);
-		this.registerEntity(bigIron);
+		this.#registerEntity(bigIron);
 
 		let smallIron = new Item(
 			"Iron2",
@@ -154,10 +161,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			"resource",
 		);
 
-		this.registerEntity(smallIron);
+		this.#registerEntity(smallIron);
 
 		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
-		this.registerEntity(Pick);
+		this.#registerEntity(Pick);
 
 		let tempCrafter = new CraftingTable(
 			"crafter",
@@ -167,13 +174,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this,
 		);
 
-		this.registerEntity(tempCrafter);
+		this.#registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
-		this.registerEntity(tempSphere);
+		this.#registerEntity(tempSphere);
 
 		let tempCylinder = new CylinderEntity("temp cylinder 1", [1, 20, 5], 1.5, 5);
-		this.registerEntity(tempCylinder);
+		this.#registerEntity(tempCylinder);
 	}
 
 	updateGameState() {
@@ -232,7 +239,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
 				);
 			}
-			this.registerEntity(playerEntity);
+			this.addToCreateQueue(playerEntity);
 
 			let input = new PlayerInput();
 			this.#createdInputs.push(input);
@@ -285,14 +292,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					// Ensure camera does not lock to it
 					player.entity.name = `formerly ${player.entity.name}`;
 				} else {
-					this.unregisterEntity(player.entity);
+					this.addToDeleteQueue(player.entity.name);
 				}
 				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
 					conn.id,
 					[20, 20, 20],
 					[playerModels[Math.floor(Math.random() * playerModels.length)]],
 				);
-				this.registerEntity(newEntity);
+				this.addToCreateQueue(newEntity);
 				player.entity = newEntity;
 				conn.send({
 					type: "camera-lock",
@@ -302,7 +309,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				break;
 			case "--debug-spawn-item":
 				const modelId = itemModels[Math.floor(Math.random() * itemModels.length)];
-				this.registerEntity(
+				this.addToCreateQueue(
 					// TODO: other parameters?
 					new Item(
 						`debug spawned item ${new Date()}`,
