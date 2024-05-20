@@ -69,9 +69,10 @@ export class Item extends InteractableEntity {
 
 	interact(player: PlayerEntity) {
 		if (this.heldBy) {
+			const heldBy = this.heldBy;
 			this.unbind(); // You prob need some COFFEE
 			// this.body.mass = 1.0;
-			if (this.heldBy == player) {
+			if (heldBy == player) {
 				this.throw(player.lookDir);
 				return;
 			}
@@ -96,7 +97,7 @@ export class Item extends InteractableEntity {
 		//unlock it from the player's hands
 		let throwForce = direction;
 		throwForce.normalize();
-		this.body.applyForce(throwForce);
+		this.body.applyForce(throwForce.scale(600));
 	}
 
 	serialize(): SerializedEntity {

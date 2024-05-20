@@ -113,24 +113,24 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	/**
-	 * TODO: call this function
+	 * Checks for objects intersecting a line segment (*not* a ray) from `start`
+	 * to `end`.
+	 *
+	 * TODO: Do we need to sort this? It's currently kind of hard to line items
+	 * up (they're all spheres), so I can't test this.
+	 *
+	 * IMPORTANT: `Ray.intersectWorld` does NOT return the closest object. Do not
+	 * use it.
 	 */
-	verifyState() {
-		let error = false;
-		for (const body of TheWorld.getPhantomBodies(this.#bodyToEntityMap)) {
-			console.warn(`Body ${body.id} is missing entity`);
-			error = true;
-		}
-		const entities = Array.from(this.#entities.values());
-		for (const entity of this.#bodyToEntityMap.values()) {
-			if (!entities.includes(entity)) {
-				console.warn(`#bodyToEntityMap maps to an entity '${entity.name}' not in #entities`);
-				error = true;
-			}
-		}
-		if (error) {
-			throw new Error("The game is not in sync with the physics engine. Errors have been reported in the conosle.");
-		}
+	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions): Entity[] {
+		return Array.from(
+			new Set(
+				TheWorld.castRay(start, end, rayOptions).flatMap(({ body }) => {
+					const entity = body && this.#bodyToEntityMap.get(body);
+					return entity ? [entity] : [];
+				}),
+			),
+		);
 	}
 
 	/**
@@ -201,20 +201,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				lookDir: inputs.lookDir,
 			};
 
-			player.entity.g = this; // TEMP
-			player.entity.move(movement);
+			const { from, to } = player.entity.checkOnGroundSegment();
+			player.entity.move(movement, this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP }));
 
 			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
 			if (posedge.use) {
 				if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
 				else {
-					const body = player.entity.lookForInteractables();
-					if (body != null) {
-						const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
-						if (lookedAtEntity) {
-							if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player.entity);
-						}
-					}
+					const { from, to } = player.entity.lookForInteractablesSegment();
+					const entities = this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP });
+					console.log(
+						"use",
+						entities.map((e) => e.name),
+					);
+					if (entities[0] instanceof InteractableEntity) entities[0].interact(player.entity);
 				}
 			}
 		}

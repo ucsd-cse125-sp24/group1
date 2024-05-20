@@ -69,16 +69,12 @@ export class PhysicsWorld {
 		}*/
 	}
 
-	castRay(ray: phys.Ray, rayOptions: phys.RayOptions): phys.RaycastResult {
-		ray.intersectWorld(this.#world, rayOptions);
-		return ray.result;
-	}
-
-	/**
-	 * Returns a list of bodies that are not present in the given map.
-	 */
-	getPhantomBodies(bodyToEntityMap: Map<Body, Entity>): Body[] {
-		return this.#world.bodies.filter((body) => !bodyToEntityMap.has(body));
+	castRay(from: phys.Vec3, to: phys.Vec3, rayOptions: phys.RayOptions): phys.RaycastResult[] {
+		const results: phys.RaycastResult[] = [];
+		this.#world.raycastAll(from, to, rayOptions, (result) => {
+			results.push(result);
+		});
+		return results;
 	}
 
 	/**
