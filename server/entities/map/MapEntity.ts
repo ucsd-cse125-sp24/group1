@@ -1,6 +1,5 @@
-import { Box } from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel, SerializedCollider, SerializedEntity } from "../../../common/messages";
+import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { GroundMaterial } from "../../materials/SourceMaterials";
 import { StaticEntity } from "../StaticEntity";
 import { MapCollider } from "./colliders";

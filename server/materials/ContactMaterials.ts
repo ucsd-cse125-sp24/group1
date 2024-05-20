@@ -21,11 +21,10 @@ export const PlayerSlipperyCM = new ContactMaterial(PlayerMaterial, SlipperyMate
 	friction: 0,
 });
 
-
 export const ItemPlayerCM = new ContactMaterial(PlayerMaterial, ItemMaterial, {
 	friction: 0.2,
-}) ;
+});
 
 export const ItemGroundCM = new ContactMaterial(PlayerMaterial, ItemMaterial, {
 	friction: 0.4,
-}) ;
+});
