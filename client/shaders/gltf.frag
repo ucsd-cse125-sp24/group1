@@ -59,7 +59,7 @@ void main() {
   vec3 to_eye = normalize(u_eye_pos - v_position);
   vec4 base_specular = vec4(0.5, 0.5, 0.5, 1.0);
   float shininess = 4.0;
-  
+
   gl_FragColor = u_ambient_light * base_color;
   for (int i = 0; i < MAX_LIGHTS; i++) {
     if (i >= u_num_lights) {
@@ -71,18 +71,19 @@ void main() {
     to_light = to_light / distance;
     float shadow_dist =
         linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
-    if (distance > 10.0 || shadow_dist < distance - 0.005) {
+    if (shadow_dist < distance - 0.005) {
       // occluded
       continue;
     }
 
     vec3 half_vector = normalize(to_light + to_eye);
-    vec4 light_color = vec4(u_point_colors[i], 1.0); // / (distance * distance);
+    // TODO: Use HSV to avoid color bands of different hues
+    vec4 light_color = vec4(u_point_colors[i], 1.0) / (distance * distance);
     vec4 diffuse_factor = step(0.5, dot(to_light, v_normal)) * light_color;
     vec4 diffuse = base_color * diffuse_factor;
-    vec4 specular_factor = step(
-        0.875,
-        pow(max(dot(half_vector, v_normal), 0.0), shininess) * light_color);
+    vec4 specular_factor =
+        step(0.875, pow(max(dot(half_vector, v_normal), 0.0), shininess) *
+                        light_color);
     vec4 specular = base_specular * specular_factor;
 
     gl_FragColor += diffuse + 0.0 * specular;

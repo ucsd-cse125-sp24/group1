@@ -187,20 +187,20 @@ const tempEntities: ClientEntity[] = [particles];
  * Up to 8 lights allowed by the gltf.frag shader
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, 1, 0), vec3.fromValues(0.3, 0.3, 0.3)),
-	new PointLight(engine, vec3.fromValues(-3, 0, 0), vec3.fromValues(2, 2, 2)),
-	new PointLight(engine, vec3.fromValues(0, 0, 0), vec3.fromValues(0.4, 0.5, 0.5)),
+	new PointLight(engine, vec3.fromValues(0, 1, 0), vec3.fromValues(30, 30, 30)),
+	new PointLight(engine, vec3.fromValues(-3, 0, 0), vec3.fromValues(50, 50, 50)),
+	new PointLight(engine, vec3.fromValues(0, 0, 0), vec3.fromValues(20, 30, 30)),
 ];
 
 const paint = () => {
 	camera.setAspectRatio(window.innerWidth / window.innerHeight);
 	tempLights[0].color = vec3.fromValues(
-		((Math.sin(Date.now() / 500) + 1) / 2) * 1,
-		((Math.sin(Date.now() / 500) + 1) / 2) * 0.5,
-		((Math.sin(Date.now() / 500) + 1) / 2) * 0.1,
+		((Math.sin(Date.now() / 500) + 1) / 2) * 100,
+		((Math.sin(Date.now() / 500) + 1) / 2) * 50,
+		((Math.sin(Date.now() / 500) + 1) / 2) * 10,
 	);
 	tempLights[0].position[1] = Math.sin(Date.now() / 200) * 5 + 1;
-	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 20, 0, Math.sin(Date.now() / 3000) * 20);
+	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
@@ -213,7 +213,8 @@ const paint = () => {
 	if (cameraTarget) {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
-		tempLights[2].position = position;
+		const dir = camera.getForwardDir();
+		tempLights[2].position = vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		if (!freecam) {
 			if (isFirstPerson) {
 				camera.setPosition(position);
