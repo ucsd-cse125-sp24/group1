@@ -12,6 +12,7 @@ import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
+import { ModelId } from "../assets/models";
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
@@ -27,7 +28,6 @@ import { getColliders } from "./entities/map/colliders";
 import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
-import { ModelId } from "../assets/models";
 import { log } from "./net/_tempDebugLog";
 
 // TEMP? (used for randomization)

@@ -1,7 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
-import { Vector3 } from "../common/commontypes";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { ClientInputMessage, ClientInputs, ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
+import { ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";

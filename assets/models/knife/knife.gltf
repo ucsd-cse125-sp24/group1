@@ -1,224 +1,182 @@
 {
-	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.62",
-		"version":"2.0"
+	"asset": {
+		"generator": "Khronos glTF Blender I/O v4.1.62",
+		"version": "2.0"
 	},
-	"extensionsUsed":[
-		"KHR_materials_specular"
-	],
-	"scene":0,
-	"scenes":[
+	"extensionsUsed": ["KHR_materials_specular"],
+	"scene": 0,
+	"scenes": [
 		{
-			"name":"Scene",
-			"nodes":[
-				0
-			]
+			"name": "Scene",
+			"nodes": [0]
 		}
 	],
-	"nodes":[
+	"nodes": [
 		{
-			"mesh":0,
-			"name":"Cube",
-			"scale":[
-				0.21039606630802155,
-				0.21039606630802155,
-				0.21039606630802155
-			],
-			"translation":[
-				0,
-				0.9250706434249878,
-				0
-			]
+			"mesh": 0,
+			"name": "Cube",
+			"scale": [0.21039606630802155, 0.21039606630802155, 0.21039606630802155],
+			"translation": [0, 0.9250706434249878, 0]
 		}
 	],
-	"materials":[
+	"materials": [
 		{
-			"doubleSided":true,
-			"extensions":{
-				"KHR_materials_specular":{
-					"specularColorFactor":[
-						1.2285715341567993,
-						1.2285715341567993,
-						1.2285715341567993
-					]
+			"doubleSided": true,
+			"extensions": {
+				"KHR_materials_specular": {
+					"specularColorFactor": [1.2285715341567993, 1.2285715341567993, 1.2285715341567993]
 				}
 			},
-			"name":"metal",
-			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.6669926643371582,
-					0.8083546161651611,
-					0.828618586063385,
-					1
-				],
-				"metallicFactor":0.5275590419769287,
-				"roughnessFactor":0.18787401914596558
+			"name": "metal",
+			"pbrMetallicRoughness": {
+				"baseColorFactor": [0.6669926643371582, 0.8083546161651611, 0.828618586063385, 1],
+				"metallicFactor": 0.5275590419769287,
+				"roughnessFactor": 0.18787401914596558
 			}
 		},
 		{
-			"doubleSided":true,
-			"name":"wood",
-			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.5049751400947571,
-					0.15846464037895203,
-					0.0060278624296188354,
-					1
-				],
-				"metallicFactor":0,
-				"roughnessFactor":0.7914285659790039
+			"doubleSided": true,
+			"name": "wood",
+			"pbrMetallicRoughness": {
+				"baseColorFactor": [0.5049751400947571, 0.15846464037895203, 0.0060278624296188354, 1],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.7914285659790039
 			}
 		}
 	],
-	"meshes":[
+	"meshes": [
 		{
-			"name":"Cube.002",
-			"primitives":[
+			"name": "Cube.002",
+			"primitives": [
 				{
-					"attributes":{
-						"POSITION":0,
-						"NORMAL":1,
-						"TEXCOORD_0":2
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2
 					},
-					"indices":3,
-					"material":0
+					"indices": 3,
+					"material": 0
 				},
 				{
-					"attributes":{
-						"POSITION":4,
-						"NORMAL":5,
-						"TEXCOORD_0":6
+					"attributes": {
+						"POSITION": 4,
+						"NORMAL": 5,
+						"TEXCOORD_0": 6
 					},
-					"indices":7,
-					"material":1
+					"indices": 7,
+					"material": 1
 				}
 			]
 		}
 	],
-	"accessors":[
+	"accessors": [
 		{
-			"bufferView":0,
-			"componentType":5126,
-			"count":42,
-			"max":[
-				6.161369323730469,
-				17.072011947631836,
-				1.0222113132476807
-			],
-			"min":[
-				1,
-				5.844113349914551,
-				-1.0222113132476807
-			],
-			"type":"VEC3"
+			"bufferView": 0,
+			"componentType": 5126,
+			"count": 42,
+			"max": [6.161369323730469, 17.072011947631836, 1.0222113132476807],
+			"min": [1, 5.844113349914551, -1.0222113132476807],
+			"type": "VEC3"
 		},
 		{
-			"bufferView":1,
-			"componentType":5126,
-			"count":42,
-			"type":"VEC3"
+			"bufferView": 1,
+			"componentType": 5126,
+			"count": 42,
+			"type": "VEC3"
 		},
 		{
-			"bufferView":2,
-			"componentType":5126,
-			"count":42,
-			"type":"VEC2"
+			"bufferView": 2,
+			"componentType": 5126,
+			"count": 42,
+			"type": "VEC2"
 		},
 		{
-			"bufferView":3,
-			"componentType":5123,
-			"count":66,
-			"type":"SCALAR"
+			"bufferView": 3,
+			"componentType": 5123,
+			"count": 66,
+			"type": "SCALAR"
 		},
 		{
-			"bufferView":4,
-			"componentType":5126,
-			"count":48,
-			"max":[
-				1.0444227457046509,
-				17.068092346191406,
-				1.0444227457046509
-			],
-			"min":[
-				-1.0444227457046509,
-				-1.1234099864959717,
-				-1.0444227457046509
-			],
-			"type":"VEC3"
+			"bufferView": 4,
+			"componentType": 5126,
+			"count": 48,
+			"max": [1.0444227457046509, 17.068092346191406, 1.0444227457046509],
+			"min": [-1.0444227457046509, -1.1234099864959717, -1.0444227457046509],
+			"type": "VEC3"
 		},
 		{
-			"bufferView":5,
-			"componentType":5126,
-			"count":48,
-			"type":"VEC3"
+			"bufferView": 5,
+			"componentType": 5126,
+			"count": 48,
+			"type": "VEC3"
 		},
 		{
-			"bufferView":6,
-			"componentType":5126,
-			"count":48,
-			"type":"VEC2"
+			"bufferView": 6,
+			"componentType": 5126,
+			"count": 48,
+			"type": "VEC2"
 		},
 		{
-			"bufferView":7,
-			"componentType":5123,
-			"count":84,
-			"type":"SCALAR"
+			"bufferView": 7,
+			"componentType": 5123,
+			"count": 84,
+			"type": "SCALAR"
 		}
 	],
-	"bufferViews":[
+	"bufferViews": [
 		{
-			"buffer":0,
-			"byteLength":504,
-			"byteOffset":0,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 504,
+			"byteOffset": 0,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":504,
-			"byteOffset":504,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 504,
+			"byteOffset": 504,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":336,
-			"byteOffset":1008,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 336,
+			"byteOffset": 1008,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":132,
-			"byteOffset":1344,
-			"target":34963
+			"buffer": 0,
+			"byteLength": 132,
+			"byteOffset": 1344,
+			"target": 34963
 		},
 		{
-			"buffer":0,
-			"byteLength":576,
-			"byteOffset":1476,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 576,
+			"byteOffset": 1476,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":576,
-			"byteOffset":2052,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 576,
+			"byteOffset": 2052,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":384,
-			"byteOffset":2628,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 384,
+			"byteOffset": 2628,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":168,
-			"byteOffset":3012,
-			"target":34963
+			"buffer": 0,
+			"byteLength": 168,
+			"byteOffset": 3012,
+			"target": 34963
 		}
 	],
-	"buffers":[
+	"buffers": [
 		{
-			"byteLength":3180,
-			"uri":"knife.bin"
+			"byteLength": 3180,
+			"uri": "knife.bin"
 		}
 	]
 }
