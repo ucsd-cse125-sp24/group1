@@ -42,13 +42,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#entities: Map<string, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
 
-	// player array
-	// mapping from socket to player
+	//Tyler is creating this so like. Might need to change
+	#toCreateQueue: Entity[];
+	#toDeleteQueue: string[];
+
 	constructor() {
 		this.#createdInputs = [];
 		this.#players = new Map();
 		this.#entities = new Map();
 		this.#bodyToEntityMap = new Map();
+
+		this.#toCreateQueue = [];
+		this.#toDeleteQueue = [];
 	}
 
 	/**
@@ -106,13 +111,41 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.registerEntity(mapEntity);
 
-		let plane = new PlaneEntity("normal plane", [0, -5, 0], [-1, 0, 0, 1], []);
+		let plane = new PlaneEntity("normal plane", [0, -5.5, 0], [-1, 0, 0, 1], []);
 		this.registerEntity(plane);
 
-		let iron = new Item("Iron Ore", 0.5, [10, 10, 10], ["donut"], "resource");
-		this.registerEntity(iron);
+		let bigIron = new Item(
+			"Iron1",
+			"iron-ore",
+			0.5,
+			[18, 0, 15],
+			[{ modelId: "samplePlayer", scale: 0.5 }],
+			"resource",
+		);
+		this.registerEntity(bigIron);
 
-		let tempCrafter = new CraftingTable("crafter", [17, 0, 17], [{ modelId: "fish1", scale: 10 }], [["Iron Ore"]]);
+		let smallIron = new Item(
+			"Iron2",
+			"iron-ore",
+			0.5,
+			[10, 0, 10],
+			[{ modelId: "samplePlayer", scale: 0.5 }],
+			"resource",
+		);
+
+		this.registerEntity(smallIron);
+
+		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
+		this.registerEntity(Pick);
+
+		let tempCrafter = new CraftingTable(
+			"crafter",
+			[18, 0, 18],
+			[{ modelId: "fish1", scale: 10 }],
+			[{ ingredients: ["iron-ore", "iron-ore"], output: "debug" }],
+			this,
+		);
+
 		this.registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
@@ -140,12 +173,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 			player.entity.move(movement);
 
-			const body = player.entity.lookForInteractables();
 			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
-			if (posedge.use && body != null) {
-				const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
-				if (lookedAtEntity) {
-					if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player.entity);
+			if (posedge.use) {
+				if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
+				else {
+					const body = player.entity.lookForInteractables();
+					if (body != null) {
+						const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
+						if (lookedAtEntity) {
+							if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player.entity);
+						}
+					}
 				}
 			}
 		}
@@ -161,9 +199,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let playerORHero = Math.floor(Math.random() * 4);
 			let playerEntity;
 			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				playerEntity = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				playerEntity = new HeroEntity(conn.id, [20, 20, 20], [{ modelId: "samplePlayer", offset: [0, 0.5, 0] }]);
 			} else {
-				playerEntity = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				playerEntity = new BossEntity(conn.id, [20, 20, 20], [{ modelId: "samplePlayer", offset: [0, 0.5, 0] }]);
 			}
 			this.registerEntity(playerEntity);
 
@@ -242,6 +280,56 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		TheWorld.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
+		}
+
+		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
+			this.clearEntityQueues();
+		}
+	}
+
+	addToCreateQueue(entity: Entity) {
+		this.#toCreateQueue.push(entity);
+	}
+
+	/**
+	 * This is a string at the moment, but can be changed into not that!
+	 * @param sussyAndRemovable
+	 */
+	addToDeleteQueue(sussyAndRemovable: string) {
+		this.#toDeleteQueue.push(sussyAndRemovable);
+	}
+
+	clearEntityQueues() {
+		for (let i = 0; i < this.#toCreateQueue.length; i++) {
+			let entity = this.#toCreateQueue.pop();
+
+			if (entity) {
+				this.#entities.set(entity.name, entity);
+				this.#bodyToEntityMap.set(entity.body, entity);
+				entity.addToWorld(TheWorld);
+			} else {
+				console.log("Someone added a fake ass object to the creation queue");
+			}
+		}
+
+		for (let i = 0; i < this.#toDeleteQueue.length; i++) {
+			let entityName = this.#toDeleteQueue.pop();
+
+			if (entityName) {
+				let entity = this.#entities.get(entityName);
+
+				console.log(entityName);
+
+				if (entity) {
+					this.#bodyToEntityMap.delete(entity.body);
+					this.#entities.delete(entity.name);
+					entity.removeFromWorld(TheWorld);
+				} else {
+					console.log("Bug Detected! Tried to delete an entity that didn't exist");
+				}
+			} else {
+				console.log("what have you done. you sent in a fake ass name");
+			}
 		}
 	}
 

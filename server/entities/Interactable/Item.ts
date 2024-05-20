@@ -2,8 +2,9 @@ import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
-import { InteractableEntity } from "./InteractableEntity";
 import { Tag } from "../Entity";
+import { ItemMaterial } from "../../materials/SourceMaterials";
+import { InteractableEntity } from "./InteractableEntity";
 
 export class Item extends InteractableEntity {
 	type: string;
@@ -16,22 +17,36 @@ export class Item extends InteractableEntity {
 	// shape
 	sphere: phys.Sphere;
 
-	constructor(name: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
+	/**
+	 *
+	 * Tag should be a Tag type! For creating an item, it should only realistically be a resource or a tool!
+	 *
+	 * @param name
+	 * @param type
+	 * @param radius
+	 * @param pos
+	 * @param model
+	 * @param tag
+	 */
+	constructor(name: string, type: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
 		super(name, model, [tag]);
 
 		//TODO: ADD A MATERIAL FOR COLLISION
 
-		this.type = "item";
+		this.type = type;
 		this.name = name;
 		this.model = model;
 		this.radius = radius;
-		this.radius = radius;
 		this.heldBy = null;
+
+		this.tags.add("item");
+
+		this.tags.add(tag);
 
 		this.body = new phys.Body({
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
-			//material: depends on the item,
+			material: ItemMaterial,
 			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
 
@@ -42,8 +57,25 @@ export class Item extends InteractableEntity {
 		this.body.position = new phys.Vec3(...pos);
 	}
 
+	bind(player: PlayerEntity) {
+		this.heldBy = player;
+		this.heldBy.itemInHands = this;
+	}
+
+	unbind() {
+		if (this.heldBy) this.heldBy.itemInHands = null;
+		this.heldBy = null;
+	}
+
 	interact(player: PlayerEntity) {
-		if (this.heldBy) this.heldBy.itemInHands = null; // You prob need some COFFEE
+		if (this.heldBy) {
+			this.unbind(); // You prob need some COFFEE
+			// this.body.mass = 1.0;
+			if (this.heldBy == player) {
+				this.throw(player.lookDir);
+				return;
+			}
+		}
 		//checks the type of the player entity
 
 		//if a hero, then makes the item's position locked into the player's hands
@@ -51,8 +83,8 @@ export class Item extends InteractableEntity {
 
 		if (player.type === "player-hero") {
 			console.log("touched an item, scandalous");
-			player.itemInHands = this;
-			this.body.mass = 0;
+			this.bind(player);
+			// this.body.mass = 0;
 		} else if (player.type === "player-boss") {
 		}
 
@@ -60,9 +92,9 @@ export class Item extends InteractableEntity {
 		//TBD
 	}
 
-	throw(direction: Vector3) {
+	throw(direction: phys.Vec3) {
 		//unlock it from the player's hands
-		let throwForce = new phys.Vec3(...direction);
+		let throwForce = direction;
 		throwForce.normalize();
 		this.body.applyForce(throwForce);
 	}

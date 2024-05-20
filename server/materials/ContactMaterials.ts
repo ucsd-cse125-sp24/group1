@@ -1,5 +1,5 @@
 import { ContactMaterial } from "cannon-es";
-import { PlayerMaterial, GroundMaterial, SlipperyMaterial } from "./SourceMaterials";
+import { PlayerMaterial, GroundMaterial, SlipperyMaterial, ItemMaterial } from "./SourceMaterials";
 
 // whenever a new CM is added, a new line needed to be added to the world initialization in TheWorld to add the contact material
 export const PlayerGroundCM = new ContactMaterial(PlayerMaterial, GroundMaterial, {
@@ -19,4 +19,12 @@ export const SlipperyGroundCM = new ContactMaterial(SlipperyMaterial, GroundMate
 
 export const PlayerSlipperyCM = new ContactMaterial(PlayerMaterial, SlipperyMaterial, {
 	friction: 0,
+});
+
+export const ItemPlayerCM = new ContactMaterial(PlayerMaterial, ItemMaterial, {
+	friction: 0.2,
+});
+
+export const ItemGroundCM = new ContactMaterial(PlayerMaterial, ItemMaterial, {
+	friction: 0.4,
 });
