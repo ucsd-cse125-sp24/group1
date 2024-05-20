@@ -24,14 +24,12 @@ void main() {
   float depth_y0 = getDepth(vec2(v_texcoord.x, v_texcoord.y - 0.001));
   float depth_y1 = getDepth(vec2(v_texcoord.x, v_texcoord.y + 0.001));
   float threshold = 0.05 * depth;
-  if (abs(depth - depth_x0) > threshold ||
-      abs(depth - depth_x1) > threshold ||
-      abs(depth - depth_y0) > threshold ||
-      abs(depth - depth_y1) > threshold) {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+  if (abs(depth - depth_x0) > threshold || abs(depth - depth_x1) > threshold ||
+      abs(depth - depth_y0) > threshold || abs(depth - depth_y1) > threshold) {
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
     return;
   }
 
   vec4 color = texture2D(u_texture_color, v_texcoord);
-  gl_FragColor = floor(color * TONES + 0.5) / TONES;
+  gl_FragColor = color; // floor(color * TONES + 0.5) / TONES;
 }

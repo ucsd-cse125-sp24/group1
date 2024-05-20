@@ -28,6 +28,7 @@ uniform float u_alpha_cutoff;
 uniform vec3 u_eye_pos;
 uniform int u_num_lights;
 uniform vec3 u_point_lights[MAX_LIGHTS];
+// In HSV
 uniform vec3 u_point_colors[MAX_LIGHTS];
 uniform samplerCube u_point_shadow_maps[MAX_LIGHTS];
 uniform vec4 u_ambient_light;
@@ -38,6 +39,14 @@ float linearizeDepth(float depth) {
   // https://learnopengl.com/Advanced-OpenGL/Depth-testing
   float z = depth * 2.0 - 1.0; // convert to normalized device coords [-1, 1]
   return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
+// All components are in the range [0…1], including hue.
+// https://stackoverflow.com/a/17897228
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
 void main() {
@@ -77,9 +86,13 @@ void main() {
     }
 
     vec3 half_vector = normalize(to_light + to_eye);
-    // TODO: Use HSV to avoid color bands of different hues
-    vec4 light_color = vec4(u_point_colors[i], 1.0) / (distance * distance);
-    vec4 diffuse_factor = step(0.5, dot(to_light, v_normal)) * light_color;
+    // Only adjust value (darkness) for HSV light color to avoid changing hue,
+    // then convert to RGB
+    vec4 light_color =
+        vec4(hsv2rgb(vec3(u_point_colors[i].xy,
+                          u_point_colors[i].z / (distance * distance))),
+             1.0);
+    vec4 diffuse_factor = light_color;
     vec4 diffuse = base_color * diffuse_factor;
     vec4 specular_factor =
         step(0.875, pow(max(dot(half_vector, v_normal), 0.0), shininess) *
