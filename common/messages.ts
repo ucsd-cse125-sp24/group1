@@ -61,7 +61,6 @@ export type CameraLock = {
 };
 
 export type ClientInputs = {
-	[key: string]: any;
 	forward: boolean;
 	backward: boolean;
 	right: boolean;

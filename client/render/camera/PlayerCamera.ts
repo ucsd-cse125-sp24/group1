@@ -6,6 +6,15 @@ import { Camera } from "./Camera";
 /** How fast the camera rotates in radians per pixel moved by the mouse */
 const ROTATION_RATE: number = (0.5 * Math.PI) / 180;
 
+export type FreecamInputs = {
+	forward: boolean;
+	backward: boolean;
+	right: boolean;
+	left: boolean;
+	jump: boolean;
+	freecamDown: boolean;
+};
+
 /**
  * Extends the Camera class to handle looking around as a player.
  */
@@ -15,8 +24,6 @@ export class PlayerCamera extends Camera {
 
 	// For freecam mode
 	#isFree: boolean = false;
-	#inputListener: InputListener<string>;
-	#inputs: Record<string, boolean>;
 
 	constructor(
 		position: vec3,
@@ -30,39 +37,10 @@ export class PlayerCamera extends Camera {
 	) {
 		super(position, orientation, upDir, fovY, aspectRatio, nearBound, farBound, engine);
 		this.#checkPointerLock();
-		this.#inputs = {};
-		this.#inputListener = new InputListener({
-			reset: () => ({ right: false, left: false, up: false, down: false, backward: false, forward: false }),
-			handleKey: (key) => {
-				switch (key) {
-					case "KeyW":
-						return "forward";
-					case "KeyA":
-						return "left";
-					case "KeyS":
-						return "backward";
-					case "KeyD":
-						return "right";
-					case "Space":
-						return "up";
-					case "ShiftLeft":
-						return "down";
-				}
-				return null;
-			},
-			handleInputs: (inputs) => {
-				this.#inputs = inputs;
-			},
-		});
 	}
 
 	setFree(isFree: boolean): void {
 		this.#isFree = isFree;
-		if (isFree) {
-			this.#inputListener.listen();
-		} else {
-			this.#inputListener.disconnect();
-		}
 	}
 
 	listen(): void {
@@ -123,26 +101,26 @@ export class PlayerCamera extends Camera {
 		);
 	};
 
-	update(): void {
+	updateFreecam(inputs: FreecamInputs): void {
 		if (!this.#isFree) {
 			return;
 		}
 		const forward = vec3.fromValues(this._forwardDir[0], 0, this._forwardDir[2]);
 		const right = vec3.cross(vec3.create(), forward, this._upDir);
 		const translation = vec3.create();
-		if (this.#inputs.forward) {
+		if (inputs.forward) {
 			vec3.add(translation, translation, forward);
-		} else if (this.#inputs.backward) {
+		} else if (inputs.backward) {
 			vec3.subtract(translation, translation, forward);
 		}
-		if (this.#inputs.right) {
+		if (inputs.right) {
 			vec3.add(translation, translation, right);
-		} else if (this.#inputs.left) {
+		} else if (inputs.left) {
 			vec3.subtract(translation, translation, right);
 		}
-		if (this.#inputs.up) {
+		if (inputs.jump) {
 			vec3.add(translation, translation, this._upDir);
-		} else if (this.#inputs.down) {
+		} else if (inputs.freecamDown) {
 			vec3.subtract(translation, translation, this._upDir);
 		}
 		if (vec3.length(translation) === 0) {

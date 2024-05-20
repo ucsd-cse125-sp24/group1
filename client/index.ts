@@ -6,7 +6,7 @@ import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/input";
-import { PlayerCamera } from "./render/camera/PlayerCamera";
+import { FreecamInputs, PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { getGl } from "./render/getGl";
@@ -102,76 +102,76 @@ const camera = new PlayerCamera(
 	engine,
 );
 
+type DebugInputs = {
+	toggleFreecam: boolean;
+	cycleWireframe: boolean;
+	toggleRole: boolean;
+	toggleRoleKeepOld: boolean;
+};
+const defaultDebugInputs = {
+	forward: false,
+	backward: false,
+	right: false,
+	left: false,
+	jump: false,
+	freecamDown: false,
+	toggleFreecam: false,
+	cycleWireframe: false,
+	toggleRole: false,
+	toggleRoleKeepOld: false,
+};
+let debugInputs: FreecamInputs & DebugInputs = { ...defaultDebugInputs };
 const inputListener = new InputListener({
-	reset: (): ClientInputs => ({
-		forward: false,
-		backward: false,
-		right: false,
-		left: false,
-		jump: false,
+	default: {
+		...defaultDebugInputs,
 		attack: false,
 		use: false,
 		emote: false,
-		lookDir: [0, 0, 0],
-	}),
-	handleKey: (key) => {
-		switch (key) {
-			case "KeyW":
-				return "forward";
-			case "KeyA":
-				return "left";
-			case "KeyS":
-				return "backward";
-			case "KeyD":
-				return "right";
-			case "Space":
-				return "jump";
-			case "KeyE":
-				return "emote";
-			case 0: // Left mouse button
-				return "attack";
-			case 2: // Right mouse button
-			case "KeyR":
-				return "use";
-			default:
-				return null;
-		}
+	},
+	keymap: {
+		KeyW: "forward",
+		KeyA: "left",
+		KeyS: "backward",
+		KeyD: "right",
+		Space: "jump",
+		KeyE: "emote",
+		0: "attack", // Left mouse button
+		2: "use", // Right mouse button
+		KeyR: "use", // Alias for trackpad users' convenience (may be temporary)
+		ShiftLeft: "freecamDown",
+		KeyP: "toggleFreecam",
+		KeyK: "cycleWireframe",
+		KeyB: "toggleRole",
+		KeyN: "toggleRoleKeepOld",
 	},
 	handleInputs: (inputs) => {
-		let msg: ClientInputMessage = {
-			type: "client-input",
-			...inputs,
-			lookDir: Array.from(camera.getForwardDir()) as Vector3,
-		};
-		connection.send(msg);
+		if (inputs.toggleFreecam && !debugInputs.toggleFreecam) {
+			freecam = !freecam;
+			camera.setFree(freecam);
+		}
+		if (inputs.cycleWireframe && !debugInputs.cycleWireframe) {
+			wireframe = (wireframe + 1) % 3;
+		}
+		if (inputs.toggleRole && !debugInputs.toggleRole) {
+			connection.send({ type: "--debug-switch-role", keepBody: false });
+		}
+		if (inputs.toggleRoleKeepOld && !debugInputs.toggleRoleKeepOld) {
+			connection.send({ type: "--debug-switch-role", keepBody: true });
+		}
+
+		debugInputs = { ...inputs };
+
+		if (!freecam) {
+			const [x, y, z] = camera.getForwardDir();
+			connection.send({
+				type: "client-input",
+				...inputs,
+				lookDir: [x, y, z],
+			});
+		}
 	},
 	period: SERVER_GAME_TICK,
 });
-
-// for debug purposes
-const handleDebugKey = (e: KeyboardEvent) => {
-	switch (e.code) {
-		case "KeyP": {
-			freecam = !freecam;
-			camera.setFree(freecam);
-			if (freecam) {
-				inputListener.disconnect();
-			} else {
-				inputListener.listen();
-			}
-			break;
-		}
-		case "KeyK": {
-			wireframe = (wireframe + 1) % 3;
-			break;
-		}
-		case "KeyB": {
-			connection.send({ type: "--debug-switch-role", keepBody: e.shiftKey });
-			break;
-		}
-	}
-};
-window.addEventListener("keydown", handleDebugKey);
 
 // Define client-side only entities (to debug rendering)
 const particles = new ClientEntity(engine, "", [{ model: engine.models.particles, transform: mat4.create() }]);
@@ -220,7 +220,7 @@ const paint = () => {
 		}
 	}
 	if (freecam) {
-		camera.update();
+		camera.updateFreecam(debugInputs);
 	}
 
 	engine.clear();

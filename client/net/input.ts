@@ -1,6 +1,6 @@
 export type InputListenerOptions<Inputs extends string> = {
-	reset: () => Record<Inputs, boolean>;
-	handleKey: (key: string | number) => Inputs | null;
+	default: Record<Inputs, boolean>;
+	keymap: Record<string | number, Inputs>;
 	handleInputs: (inputs: Record<Inputs, boolean>) => void;
 	/**
 	 * To make the listener fire at a set frequency in addition to after every
@@ -17,7 +17,7 @@ export class InputListener<Inputs extends string> {
 
 	constructor(options: InputListenerOptions<Inputs>) {
 		this.options = options;
-		this.#inputs = options.reset();
+		this.#inputs = { ...options.default };
 	}
 
 	#handleInput(key: Inputs | null, pressed: boolean): void {
@@ -30,14 +30,14 @@ export class InputListener<Inputs extends string> {
 		this.options.handleInputs(this.#inputs);
 	}
 
-	#handleKeydown = (e: KeyboardEvent) => this.#handleInput(this.options.handleKey(e.code), true);
-	#handleKeyup = (e: KeyboardEvent) => this.#handleInput(this.options.handleKey(e.code), false);
-	#handleMousedown = (e: MouseEvent) => this.#handleInput(this.options.handleKey(e.button), true);
-	#handleMouseup = (e: MouseEvent) => this.#handleInput(this.options.handleKey(e.button), false);
+	#handleKeydown = (e: KeyboardEvent) => this.#handleInput(this.options.keymap[e.code] ?? null, true);
+	#handleKeyup = (e: KeyboardEvent) => this.#handleInput(this.options.keymap[e.code] ?? null, false);
+	#handleMousedown = (e: MouseEvent) => this.#handleInput(this.options.keymap[e.button] ?? null, true);
+	#handleMouseup = (e: MouseEvent) => this.#handleInput(this.options.keymap[e.button] ?? null, false);
 
 	/** When the user leaves the page, unpress all keys  */
 	#handleBlur = () => {
-		this.#inputs = this.options.reset();
+		this.#inputs = { ...this.options.default };
 		this.options.handleInputs(this.#inputs);
 	};
 
