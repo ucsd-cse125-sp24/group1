@@ -62,6 +62,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#entities: Map<string, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
+	_bodyToEntityMap: Map<Body, Entity>; // TEMP
 
 	//Tyler is creating this so like. Might need to change
 	#toCreateQueue: Entity[];
@@ -72,6 +73,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#players = new Map();
 		this.#entities = new Map();
 		this.#bodyToEntityMap = new Map();
+		this._bodyToEntityMap = this.#bodyToEntityMap; // TEMP
 
 		this.#toCreateQueue = [];
 		this.#toDeleteQueue = [];
@@ -199,6 +201,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				lookDir: inputs.lookDir,
 			};
 
+			player.entity.g = this; // TEMP
 			player.entity.move(movement);
 
 			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated

@@ -22,6 +22,7 @@ export class SphereEntity extends Entity {
 			position: v3(...pos),
 			shape: new phys.Sphere(radius),
 			material: SlipperyMaterial,
+			collisionFilterGroup: this.getBitFlag(),
 		});
 	}
 

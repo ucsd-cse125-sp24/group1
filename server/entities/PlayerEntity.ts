@@ -6,8 +6,11 @@ import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
+import { Game } from "../Game";
 
 export abstract class PlayerEntity extends Entity {
+	isPlayer = true;
+
 	onGround: boolean;
 	lookDir: phys.Vec3;
 	interactionRange: number;
@@ -62,6 +65,7 @@ export abstract class PlayerEntity extends Entity {
 			position: new phys.Vec3(...pos),
 			fixedRotation: true,
 			material: PlayerMaterial,
+			collisionFilterGroup: this.getBitFlag(),
 		});
 
 		this.#cylinder = new phys.Cylinder(this.#capsuleRadius, this.#capsuleRadius, this.#cylinderHeight, 12);
@@ -114,6 +118,7 @@ export abstract class PlayerEntity extends Entity {
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
 		}
 
+		if (movement.jump) console.log("jump", this.bleh); // TEMP
 		if (movement.jump && this.onGround) {
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
 			this.body.applyImpulse(deltaVy.scale(this.body.mass));
@@ -124,7 +129,7 @@ export abstract class PlayerEntity extends Entity {
 		return {
 			name: this.name,
 			model: this.model,
-			position: this.body.position.vsub(new phys.Vec3(0, this.#eyeHeight, 0)).toArray(),
+			position: this.body.position.toArray(),
 			quaternion: quat.rotationTo(
 				quat.create(),
 				vec3.fromValues(1, 0, 0),
@@ -136,16 +141,24 @@ export abstract class PlayerEntity extends Entity {
 		};
 	}
 
+	// TEMP
+	g: Game | null = null;
+	bleh = "";
 	checkOnGround(): void {
 		// apparently this generate a ray segment and only check intersection within that segment
 		const checkerRay = new phys.Ray(
 			this.body.position,
-			this.body.position.vsub(new phys.Vec3(0, this.#eyeHeight + Entity.EPSILON, 0)),
+			this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + 10 + Entity.EPSILON, 0)),
 		);
 		const result = TheWorld.castRay(checkerRay, {
-			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
+			collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP,
 			checkCollisionResponse: false,
 		});
+		// TEMP
+		// FIXME: why is it only detecting the plane??
+		if (result.body && this.g) {
+			this.bleh = this.g._bodyToEntityMap.get(result.body)?.name ?? "idk";
+		}
 
 		this.onGround = result.hasHit;
 	}
@@ -157,7 +170,7 @@ export abstract class PlayerEntity extends Entity {
 		);
 
 		const result = TheWorld.castRay(checkerRay, {
-			collisionFilterMask: Entity.INTERACTABLE_COLLISION_GROUP,
+			collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP,
 			checkCollisionResponse: false,
 		});
 

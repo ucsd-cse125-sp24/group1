@@ -38,7 +38,7 @@ export class CraftingTable extends InteractableEntity {
 			mass: 1000.0,
 			position: new phys.Vec3(...pos),
 			//material: depends on the item,
-			collisionFilterGroup: Entity.INTERACTABLE_COLLISION_GROUP,
+			collisionFilterGroup: this.getBitFlag(),
 		});
 
 		this.box = new phys.Box(new phys.Vec3(this.halfExtent, this.halfExtent, this.halfExtent));

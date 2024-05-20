@@ -22,6 +22,7 @@ export class CubeEntity extends Entity {
 			position: v3(...pos),
 			shape: new phys.Box(v3(1, 1, 2)),
 			material: SlipperyMaterial,
+			collisionFilterGroup: this.getBitFlag(),
 		});
 	}
 
