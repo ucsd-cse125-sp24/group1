@@ -140,12 +140,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 			player.entity.move(movement);
 
-			const body = player.entity.lookForInteractables();
 			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
-			if (posedge.use && body != null) {
-				const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
-				if (lookedAtEntity) {
-					if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player.entity);
+			if (posedge.use) {
+				if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
+				else {
+					const body = player.entity.lookForInteractables();
+					if (body != null) {
+						const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
+						if (lookedAtEntity) {
+							if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player.entity);
+						}
+					}
 				}
 			}
 		}

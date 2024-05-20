@@ -50,6 +50,8 @@ export abstract class Entity {
 		let flag = 0;
 		if (this.tags.has("environment")) flag |= Entity.ENVIRONMENT_COLLISION_GROUP;
 		if (this.tags.has("interactable")) flag |= Entity.INTERACTABLE_COLLISION_GROUP;
+
+		if (flag == 0) return -1;
 		return flag;
 	}
 }

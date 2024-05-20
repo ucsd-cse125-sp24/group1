@@ -42,8 +42,25 @@ export class Item extends InteractableEntity {
 		this.body.position = new phys.Vec3(...pos);
 	}
 
+	bind(player: PlayerEntity) {
+		this.heldBy = player;
+		this.heldBy.itemInHands = this;
+	}
+
+	unbind() {
+		if (this.heldBy) this.heldBy.itemInHands = null;
+		this.heldBy = null;
+	}
+
 	interact(player: PlayerEntity) {
-		if (this.heldBy) this.heldBy.itemInHands = null; // You prob need some COFFEE
+		if (this.heldBy) {
+			this.unbind(); // You prob need some COFFEE
+			this.body.mass = 1.0;
+			if (this.heldBy == player) {
+				this.throw(player.lookDir);
+				return;
+			}
+		}
 		//checks the type of the player entity
 
 		//if a hero, then makes the item's position locked into the player's hands
@@ -51,7 +68,7 @@ export class Item extends InteractableEntity {
 
 		if (player.type === "player-hero") {
 			console.log("touched an item, scandalous");
-			player.itemInHands = this;
+			this.bind(player);
 			this.body.mass = 0;
 		} else if (player.type === "player-boss") {
 		}
@@ -60,9 +77,9 @@ export class Item extends InteractableEntity {
 		//TBD
 	}
 
-	throw(direction: Vector3) {
+	throw(direction: phys.Vec3) {
 		//unlock it from the player's hands
-		let throwForce = new phys.Vec3(...direction);
+		let throwForce = direction;
 		throwForce.normalize();
 		this.body.applyForce(throwForce);
 	}

@@ -46,7 +46,7 @@ export class CraftingTable extends InteractableEntity {
 		let item = this.itemList.pop();
 
 		if (item instanceof Item) {
-			item.throw([0, 1, 1]);
+			item.throw(new phys.Vec3(0, 1, 1));
 		} // if there's no items in the array do nothing ig
 	}
 
