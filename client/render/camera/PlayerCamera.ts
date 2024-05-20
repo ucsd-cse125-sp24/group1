@@ -2,6 +2,7 @@ import { vec3 } from "gl-matrix";
 import GraphicsEngine from "../engine/GraphicsEngine";
 import { InputListener } from "../../net/InputListener";
 import { Camera } from "./Camera";
+import { allowDomExceptions } from "../../lib/allowDomExceptions";
 
 /** How fast the camera rotates in radians per pixel moved by the mouse */
 const ROTATION_RATE: number = (0.5 * Math.PI) / 180;
@@ -57,7 +58,14 @@ export class PlayerCamera extends Camera {
 		canvas.addEventListener("pointerdown", (e) => {
 			if (e.pointerType === "touch" && !dragState) {
 				dragState = { pointerId: e.pointerId, lastX: e.clientX, lastY: e.clientY };
-				canvas.setPointerCapture(e.pointerId);
+				try {
+					canvas.setPointerCapture(e.pointerId);
+				} catch (error) {
+					// - Failed to execute 'setPointerCapture' on 'Element':
+					//   InvalidStateError [touching after long press right click on
+					//   Windows?]
+					allowDomExceptions(error, ["InvalidStateError"]);
+				}
 			}
 		});
 		canvas.addEventListener("pointermove", (e) => {

@@ -171,6 +171,7 @@ const inputListener = new InputListener({
 		}
 	},
 	period: SERVER_GAME_TICK,
+	_tempControls: document.getElementById("temporary-mobile-controls"),
 });
 
 // Define client-side only entities (to debug rendering)

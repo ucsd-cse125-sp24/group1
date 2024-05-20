@@ -11,6 +11,9 @@ body {
 	background-color: black;
 	color: white;
 }
+button:not(:disabled) {
+	cursor: pointer;
+}
 
 canvas {
 	width: 100%;
@@ -25,14 +28,83 @@ canvas {
 	margin: 10px;
 }
 
-#error-window form {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
+#error-window {
+	& form {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	& h2 {
+		margin: 0;
+	}
+	& pre {
+		margin-bottom: 0;
+	}
 }
-#error-window h2 {
-	margin: 0;
-}
-#error-window pre {
-	margin-bottom: 0;
+
+#temporary-mobile-controls {
+	& h2,
+	& p {
+		margin: 0;
+	}
+	& > .mobile-key,
+	& > div {
+		position: fixed;
+	}
+	& div {
+		display: flex;
+		flex-direction: column;
+	}
+	& .controls-title {
+		top: 10px;
+		left: 10px;
+		& h2 {
+			font-style: italic;
+		}
+	}
+	& .mobile-key {
+		font-size: 2rem;
+		min-width: 3rem;
+		touch-action: none;
+		user-select: none;
+	}
+	& [data-key="KeyW"] {
+		left: 100px;
+		bottom: 150px;
+	}
+	& [data-key="KeyS"] {
+		left: 100px;
+		bottom: 50px;
+	}
+	& [data-key="KeyA"] {
+		left: 50px;
+		bottom: 100px;
+	}
+	& [data-key="KeyD"] {
+		left: 150px;
+		bottom: 100px;
+	}
+	& .space {
+		right: 100px;
+		bottom: 100px;
+	}
+	& .shift {
+		right: 100px;
+		bottom: 50px;
+	}
+
+	& .controls-debug {
+		top: 10px;
+		right: 10px;
+		gap: 5px;
+		& .mobile-key {
+			font-size: 1rem;
+			min-width: 2rem;
+		}
+	}
+	& .bottom-right {
+		right: 10px;
+		bottom: 10px;
+		gap: 5px;
+	}
 }

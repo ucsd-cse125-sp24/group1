@@ -1,3 +1,5 @@
+import { allowDomExceptions } from "../lib/allowDomExceptions";
+
 export function getGl(): WebGL2RenderingContext {
 	const canvas = document.getElementById("canvas");
 	if (!(canvas instanceof HTMLCanvasElement)) {
@@ -37,9 +39,7 @@ export function getGl(): WebGL2RenderingContext {
 				//   completed. [clicking screen shortly after pressing escape]
 				// - UnknownError: If you see this error we have a bug. Please report
 				//   this bug to chromium. [tapping screen on Android]
-				if (!(error instanceof DOMException && (error.name === "SecurityError" || error.name === "UnknownError"))) {
-					throw error;
-				}
+				allowDomExceptions(error, ["SecurityError", "UnknownError"]);
 			}
 		}
 		// Enter landscape mode (Android only)
@@ -52,9 +52,7 @@ export function getGl(): WebGL2RenderingContext {
 				// Ignore these errors:
 				// - NotSupportedError: screen.orientation.lock() is not available on
 				//   this device.
-				if (!(error instanceof DOMException && error.name === "NotSupportedError")) {
-					throw error;
-				}
+				allowDomExceptions(error, ["NotSupportedError"]);
 			}
 		}
 	});
