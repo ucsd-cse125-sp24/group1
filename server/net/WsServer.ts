@@ -175,7 +175,7 @@ export class WsServer {
 					// New player (or they reconnected with an invalid ID; we treat them like a new player)
 					// Generate a new ID
 					id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
-					log(`New player ${id.slice(0, 6)}.`);
+					log(`New player ${id.slice(0, 6)}`);
 				}
 
 				// Create mapping from the new ID to the WebSocket that is currently alive that belongs to that ID

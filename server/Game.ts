@@ -27,6 +27,27 @@ import { getColliders } from "./entities/map/colliders";
 import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
+import { ModelId } from "../assets/models";
+import { log } from "./net/_tempDebugLog";
+
+// TEMP? (used for randomization)
+const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
+const itemModels: ModelId[] = [
+	"axe",
+	"bow",
+	"gamer_bow",
+	"gamer_sword",
+	"iron",
+	"knife",
+	"magic_sauce",
+	"mushroom",
+	"pickaxe",
+	"raw_iron",
+	"shears",
+	"string",
+	"sword",
+	"wood",
+];
 
 interface NetworkedPlayer {
 	input: PlayerInput;
@@ -199,9 +220,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let playerORHero = Math.floor(Math.random() * 4);
 			let playerEntity;
 			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				playerEntity = new HeroEntity(conn.id, [20, 20, 20], [{ modelId: "samplePlayer", offset: [0, 0.5, 0] }]);
+				playerEntity = new HeroEntity(
+					conn.id,
+					[20, 20, 20],
+					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
+				);
 			} else {
-				playerEntity = new BossEntity(conn.id, [20, 20, 20], [{ modelId: "samplePlayer", offset: [0, 0.5, 0] }]);
+				playerEntity = new BossEntity(
+					conn.id,
+					[20, 20, 20],
+					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
+				);
 			}
 			this.registerEntity(playerEntity);
 
@@ -261,7 +290,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
 					conn.id,
 					[20, 20, 20],
-					["samplePlayer"],
+					[playerModels[Math.floor(Math.random() * playerModels.length)]],
 				);
 				this.registerEntity(newEntity);
 				player.entity = newEntity;
@@ -270,6 +299,22 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					entityName: conn.id,
 					pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
+				break;
+			case "--debug-spawn-item":
+				const modelId = itemModels[Math.floor(Math.random() * itemModels.length)];
+				this.registerEntity(
+					// TODO: other parameters?
+					new Item(
+						`debug spawned item ${new Date()}`,
+						"iron-ore",
+						0.5,
+						// Max: (25, 20) Min: (-24, -17)
+						[Math.random() * 50 - 25, 10, Math.random() * 40 - 20],
+						[{ modelId, scale: 0.5 }],
+						"resource",
+					),
+				);
+				log(`Player ${conn.id.slice(0, 6)} spawned ${modelId}`);
 				break;
 			default:
 				console.warn(`Unhandled message '${data["type"]}'`);

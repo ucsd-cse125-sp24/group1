@@ -107,6 +107,7 @@ type DebugInputs = {
 	cycleWireframe: boolean;
 	toggleRole: boolean;
 	toggleRoleKeepOld: boolean;
+	spawnItem: boolean;
 };
 const defaultDebugInputs = {
 	forward: false,
@@ -119,6 +120,7 @@ const defaultDebugInputs = {
 	cycleWireframe: false,
 	toggleRole: false,
 	toggleRoleKeepOld: false,
+	spawnItem: false,
 };
 let debugInputs: FreecamInputs & DebugInputs = { ...defaultDebugInputs };
 const inputListener = new InputListener({
@@ -143,6 +145,7 @@ const inputListener = new InputListener({
 		KeyK: "cycleWireframe",
 		KeyB: "toggleRole",
 		KeyN: "toggleRoleKeepOld",
+		KeyX: "spawnItem",
 	},
 	handleInputs: (inputs) => {
 		if (inputs.toggleFreecam && !debugInputs.toggleFreecam) {
@@ -157,6 +160,9 @@ const inputListener = new InputListener({
 		}
 		if (inputs.toggleRoleKeepOld && !debugInputs.toggleRoleKeepOld) {
 			connection.send({ type: "--debug-switch-role", keepBody: true });
+		}
+		if (inputs.spawnItem && !debugInputs.spawnItem) {
+			connection.send({ type: "--debug-spawn-item" });
 		}
 
 		debugInputs = { ...inputs };
