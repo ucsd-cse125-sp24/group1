@@ -42,13 +42,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#entities: Map<string, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
 
-	// player array
-	// mapping from socket to player
+	//Tyler is creating this so like. Might need to change
+	#toCreateQueue: Entity[]; 
+	#toDeleteQueue: string[];
+
 	constructor() {
 		this.#createdInputs = [];
 		this.#players = new Map();
 		this.#entities = new Map();
 		this.#bodyToEntityMap = new Map();
+
+		this.#toCreateQueue = [];
+		this.#toDeleteQueue = [];
 	}
 
 	/**
@@ -137,7 +142,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			"crafter",
 			[18, 0, 18],
 			[{ modelId: "fish1", scale: 10 }],
-			[["iron-ore", "String"]],
+			[ {ingredients: ["iron-ore", "iron-ore"], output: "debug"} ],
+			this,
 		);
 
 
@@ -194,9 +200,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let playerORHero = Math.floor(Math.random() * 4);
 			let playerEntity;
 			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				playerEntity = new HeroEntity(conn.id, [20, 20, 20], [{modelId: "samplePlayer", offset: [0, -.5, 0]}] );
+				playerEntity = new HeroEntity(conn.id, [20, 20, 20], [{modelId: "samplePlayer", offset: [0, .5, 0]}] );
 			} else {
-				playerEntity = new BossEntity(conn.id, [20, 20, 20], [{modelId: "samplePlayer", offset: [0, -.5, 0]}]);
+				playerEntity = new BossEntity(conn.id, [20, 20, 20], [{modelId: "samplePlayer", offset: [0, .5, 0]}]);
 			}
 			this.registerEntity(playerEntity);
 
@@ -276,6 +282,63 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
+
+		if(this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
+			this.clearEntityQueues();
+		}
+		
+	}
+
+	addToCreateQueue(entity: Entity) {
+		this.#toCreateQueue.push(entity);
+	}
+
+
+	/**
+	 * This is a string at the moment, but can be changed into not that!
+	 * @param sussyAndRemovable 
+	 */
+	addToDeleteQueue(sussyAndRemovable: string) {
+		this.#toDeleteQueue.push(sussyAndRemovable);
+	}
+
+	clearEntityQueues() {
+		for(let i = 0; i < this.#toCreateQueue.length; i++) {
+			let entity = this.#toCreateQueue.pop();
+			
+			if(entity) {
+				this.#entities.set(entity.name, entity);
+				this.#bodyToEntityMap.set(entity.body, entity);
+				entity.addToWorld(TheWorld);
+			} else {
+				console.log("Someone added a fake ass object to the creation queue");
+			}
+			
+		}
+
+		for(let i = 0; i < this.#toDeleteQueue.length; i++) {
+
+			let entityName = this.#toDeleteQueue.pop();
+
+			if(entityName) {
+				let entity = this.#entities.get(entityName);
+
+				console.log(entityName);
+
+				if(entity) {
+
+					this.#bodyToEntityMap.delete(entity.body);
+					this.#entities.delete(entity.name);
+					entity.removeFromWorld(TheWorld);
+				} else {
+					console.log("Bug Detected! Tried to delete an entity that didn't exist");
+				}
+			} else {
+				console.log("what have you done. you sent in a fake ass name");
+			}
+			
+		}
+
 	}
 
 	serialize(): SerializedEntity[] {

@@ -1,6 +1,7 @@
 import * as phys from "cannon-es";
 import { PhysicsWorld } from "../physics";
 import { EntityModel, SerializedEntity } from "../../common/messages";
+import { Vector3 } from "../../common/commontypes";
 
 export type Tag = "environment" | "interactable" | "player" | "resource" | "tool" | "item";
 
@@ -21,8 +22,8 @@ export abstract class Entity {
 		this.tags = new Set(tags);
 	}
 
-	getPos(): phys.Vec3 {
-		return this.body.position;
+	getPos(): Vector3 {
+		return [this.body.position.x, this.body.position.y, this.body.position.z];
 	}
 	getRot(): phys.Quaternion {
 		return this.body.quaternion;
