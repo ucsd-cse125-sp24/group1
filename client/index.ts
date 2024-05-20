@@ -5,7 +5,7 @@ import { ClientInputMessage, ClientInputs, ClientMessage, SerializedCollider, Se
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
-import { InputListener } from "./net/input";
+import { InputListener } from "./net/InputListener";
 import { FreecamInputs, PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";

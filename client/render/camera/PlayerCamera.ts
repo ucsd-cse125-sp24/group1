@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 import GraphicsEngine from "../engine/GraphicsEngine";
-import { InputListener } from "../../net/input";
+import { InputListener } from "../../net/InputListener";
 import { Camera } from "./Camera";
 
 /** How fast the camera rotates in radians per pixel moved by the mouse */
