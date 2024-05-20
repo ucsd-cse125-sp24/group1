@@ -2,7 +2,7 @@ import * as phys from "cannon-es";
 import { Box, Body, Plane, World } from "cannon-es";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { SerializedBody, SerializedCollider, SerializedEntity } from "../common/messages";
-import { PlayerGroundCM, PlayerPlayerCM, PlayerSlipperyCM, SlipperyGroundCM } from "./materials/ContactMaterials";
+import { PlayerGroundCM, PlayerPlayerCM, PlayerSlipperyCM, SlipperyGroundCM, ItemPlayerCM, ItemGroundCM } from "./materials/ContactMaterials";
 import { Entity } from "./entities/Entity";
 import { serializeShape } from "./lib/serializeShape";
 
@@ -32,6 +32,9 @@ export class PhysicsWorld {
 		this.#world.addContactMaterial(PlayerPlayerCM);
 		this.#world.addContactMaterial(SlipperyGroundCM);
 		this.#world.addContactMaterial(PlayerSlipperyCM);
+		this.#world.addContactMaterial(ItemPlayerCM);
+		this.#world.addContactMaterial(ItemGroundCM);
+
 	}
 
 	addBody(body: Body) {

@@ -127,6 +127,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[{ modelId: "samplePlayer", scale: 0.5 }],
 			"resource",
 		);
+
 		this.registerEntity(smallIron);
 
 		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
@@ -138,6 +139,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[{ modelId: "fish1", scale: 10 }],
 			[["iron-ore", "String"]],
 		);
+
+
 		this.registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
@@ -191,9 +194,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let playerORHero = Math.floor(Math.random() * 4);
 			let playerEntity;
 			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				playerEntity = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				playerEntity = new HeroEntity(conn.id, [20, 20, 20], [{modelId: "samplePlayer", offset: [0, -.5, 0]}] );
 			} else {
-				playerEntity = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				playerEntity = new BossEntity(conn.id, [20, 20, 20], [{modelId: "samplePlayer", offset: [0, -.5, 0]}]);
 			}
 			this.registerEntity(playerEntity);
 

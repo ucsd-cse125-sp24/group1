@@ -111,6 +111,7 @@ export abstract class PlayerEntity extends Entity {
 		if (this.itemInHands instanceof Item) {
 			//this is a little janky ngl
 			this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 1, -0.5));
+			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
 		}
 
 		if (movement.jump && this.onGround) {

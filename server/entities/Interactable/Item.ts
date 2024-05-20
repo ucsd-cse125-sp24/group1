@@ -4,6 +4,7 @@ import { EntityModel, SerializedEntity } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { InteractableEntity } from "./InteractableEntity";
 import { Tag } from "../Entity";
+import { ItemMaterial } from "../../materials/SourceMaterials";
 
 export class Item extends InteractableEntity {
 	type: string;
@@ -48,7 +49,7 @@ export class Item extends InteractableEntity {
 		this.body = new phys.Body({
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
-			//material: depends on the item,
+			material: ItemMaterial,
 			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
 
@@ -67,12 +68,12 @@ export class Item extends InteractableEntity {
 	unbind() {
 		if (this.heldBy) this.heldBy.itemInHands = null;
 		this.heldBy = null;
-	}
+	}	
 
 	interact(player: PlayerEntity) {
 		if (this.heldBy) {
 			this.unbind(); // You prob need some COFFEE
-			this.body.mass = 1.0;
+			// this.body.mass = 1.0;
 			if (this.heldBy == player) {
 				this.throw(player.lookDir);
 				return;
@@ -86,7 +87,7 @@ export class Item extends InteractableEntity {
 		if (player.type === "player-hero") {
 			console.log("touched an item, scandalous");
 			this.bind(player);
-			this.body.mass = 0;
+			// this.body.mass = 0;
 		} else if (player.type === "player-boss") {
 		}
 
