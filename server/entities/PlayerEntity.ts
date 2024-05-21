@@ -6,11 +6,7 @@ import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
-<<<<<<< HEAD
 import { BossEntity } from "./BossEntity";
-=======
-import { Game } from "../Game";
->>>>>>> 7ad1d02a45771e768c1f7ed850827638c775ffb0
 
 const COYOTE_FRAMES = 10;
 
@@ -181,7 +177,7 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	interact(player: PlayerEntity) {
-		if(player instanceof BossEntity) {
+		if (player instanceof BossEntity) {
 			let temp = this.walkSpeed;
 			// TODO STUN the Player
 			this.walkSpeed = 0;
