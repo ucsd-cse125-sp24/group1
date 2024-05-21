@@ -6,6 +6,7 @@ import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
+import { BossEntity } from "./BossEntity";
 
 export abstract class PlayerEntity extends Entity {
 	onGround: boolean;
@@ -165,5 +166,18 @@ export abstract class PlayerEntity extends Entity {
 
 	setSpeed(speed: number) {
 		this.walkSpeed = speed;
+	}
+
+	interact(player: PlayerEntity) {
+		if(player instanceof BossEntity) {
+			let temp = this.walkSpeed;
+			// TODO STUN the Player
+			this.walkSpeed = 0;
+			// Wait 3 seconds
+
+			setTimeout(() => {
+				this.walkSpeed = temp;
+			}, 3000);
+		}
 	}
 }
