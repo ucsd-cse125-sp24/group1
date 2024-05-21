@@ -8,6 +8,8 @@ import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { Game } from "../Game";
 
+const COYOTE_FRAMES = 10;
+
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
 
@@ -29,6 +31,9 @@ export abstract class PlayerEntity extends Entity {
 	#cylinder: phys.Cylinder;
 	#sphereTop: phys.Sphere;
 	#sphereBot: phys.Sphere;
+
+	// coyote countdown
+	#coyoteCounter: number;
 
 	constructor(
 		name: string,
@@ -75,12 +80,17 @@ export abstract class PlayerEntity extends Entity {
 		this.body.addShape(this.#cylinder, new phys.Vec3(0, -this.#cylinderHeight / 2, 0));
 		this.body.addShape(this.#sphereTop);
 		this.body.addShape(this.#sphereBot, new phys.Vec3(0, -this.#cylinderHeight, 0));
+
+		this.#coyoteCounter = 0;
 	}
 
 	move(movement: MovementInfo, onGroundResult: Entity[]): void {
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
 		this.onGround = onGroundResult.length > 0;
+
+		if (this.onGround) this.#coyoteCounter = COYOTE_FRAMES;
+		else if (this.#coyoteCounter > 0) this.#coyoteCounter -= 1;
 
 		const forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
 		forwardVector.normalize();
@@ -125,7 +135,7 @@ export abstract class PlayerEntity extends Entity {
 				"jump",
 				onGroundResult.map((e) => e.name),
 			);
-		if (movement.jump && this.onGround) {
+		if (movement.jump && this.#coyoteCounter > 0) {
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
 			this.body.applyImpulse(deltaVy.scale(this.body.mass));
 		}
