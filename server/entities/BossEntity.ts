@@ -38,4 +38,5 @@ export class BossEntity extends PlayerEntity {
 		this.type = "player-boss";
 		this.jumping = false;
 	}
+
 }
