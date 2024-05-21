@@ -2,7 +2,7 @@ import { Vector3 } from "../../common/commontypes";
 import { EntityModel } from "../../common/messages";
 import { PlayerEntity } from "./PlayerEntity";
 
-const PLAYER_INTERACTION_RANGE = 2.0;
+const PLAYER_INTERACTION_RANGE = 15.0; // TEMP, but 2 is too low IMO
 const HERO_CAPSULE_HEIGHT = 2;
 const HERO_CAPSULE_RADIUS = 0.5;
 

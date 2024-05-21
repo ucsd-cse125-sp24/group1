@@ -22,6 +22,7 @@ export class CylinderEntity extends Entity {
 			mass: 1.0,
 			position: v3(...pos),
 			shape: new phys.Cylinder(radius, radius, height, CylinderEntity.NUM_SEGMENTS),
+			collisionFilterGroup: this.getBitFlag(),
 		});
 	}
 

@@ -6,9 +6,15 @@ import { PlayerMaterial } from "../materials/SourceMaterials";
 import { TheWorld } from "../physics";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
+<<<<<<< HEAD
 import { BossEntity } from "./BossEntity";
+=======
+import { Game } from "../Game";
+>>>>>>> 7ad1d02a45771e768c1f7ed850827638c775ffb0
 
 export abstract class PlayerEntity extends Entity {
+	isPlayer = true;
+
 	onGround: boolean;
 	lookDir: phys.Vec3;
 	interactionRange: number;
@@ -63,6 +69,7 @@ export abstract class PlayerEntity extends Entity {
 			position: new phys.Vec3(...pos),
 			fixedRotation: true,
 			material: PlayerMaterial,
+			collisionFilterGroup: this.getBitFlag(),
 		});
 
 		this.#cylinder = new phys.Cylinder(this.#capsuleRadius, this.#capsuleRadius, this.#cylinderHeight, 12);
@@ -74,10 +81,10 @@ export abstract class PlayerEntity extends Entity {
 		this.body.addShape(this.#sphereBot, new phys.Vec3(0, -this.#cylinderHeight, 0));
 	}
 
-	move(movement: MovementInfo): void {
+	move(movement: MovementInfo, onGroundResult: Entity[]): void {
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
-		this.checkOnGround();
+		this.onGround = onGroundResult.length > 0;
 
 		const forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
 		forwardVector.normalize();
@@ -111,9 +118,17 @@ export abstract class PlayerEntity extends Entity {
 
 		if (this.itemInHands instanceof Item) {
 			//this is a little janky ngl
-			this.itemInHands.body.position = this.body.position.vadd(new phys.Vec3(0, 1, -0.5));
+			this.itemInHands.body.position = this.body.position.vadd(
+				new phys.Vec3(this.lookDir.x, 0, this.lookDir.z).unit().scale(this.#capsuleRadius + this.itemInHands.radius),
+			);
+			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
 		}
 
+		if (movement.jump)
+			console.log(
+				"jump",
+				onGroundResult.map((e) => e.name),
+			);
 		if (movement.jump && this.onGround) {
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
 			this.body.applyImpulse(deltaVy.scale(this.body.mass));
@@ -124,7 +139,7 @@ export abstract class PlayerEntity extends Entity {
 		return {
 			name: this.name,
 			model: this.model,
-			position: this.body.position.vsub(new phys.Vec3(0, this.#eyeHeight, 0)).toArray(),
+			position: this.body.position.toArray(),
 			quaternion: quat.rotationTo(
 				quat.create(),
 				vec3.fromValues(1, 0, 0),
@@ -136,48 +151,23 @@ export abstract class PlayerEntity extends Entity {
 		};
 	}
 
-	checkOnGround(): void {
-		// apparently this generate a ray segment and only check intersection within that segment
-		const checkerRay = new phys.Ray(
-			this.body.position,
-			this.body.position.vsub(new phys.Vec3(0, this.#eyeHeight + Entity.EPSILON, 0)),
-		);
-		const result = TheWorld.castRay(checkerRay, {
-			collisionFilterMask: Entity.ENVIRONMENT_COLLISION_GROUP,
-			checkCollisionResponse: false,
-		});
+	// HACK: Entities do not have access to Game for some reason, so they must
+	// provide the rays they wanted casted for the Game to execute
 
-		this.onGround = result.hasHit;
+	checkOnGroundSegment(): phys.Ray {
+		// apparently this generate a ray segment and only check intersection within that segment
+		return new phys.Ray(
+			this.body.position,
+			this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
+		);
 	}
 
-	lookForInteractables(): phys.Body | null {
-		const checkerRay = new phys.Ray(
-			this.body.position,
-			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
-		);
-
-		const result = TheWorld.castRay(checkerRay, {
-			collisionFilterMask: Entity.INTERACTABLE_COLLISION_GROUP,
-			checkCollisionResponse: false,
-		});
-
-		return result.body;
+	lookForInteractablesSegment(): phys.Ray {
+		return new phys.Ray(this.body.position, this.body.position.vadd(this.lookDir.scale(this.interactionRange)));
 	}
 
 	setSpeed(speed: number) {
 		this.walkSpeed = speed;
 	}
 
-	interact(player: PlayerEntity) {
-		if(player instanceof BossEntity) {
-			let temp = this.walkSpeed;
-			// TODO STUN the Player
-			this.walkSpeed = 0;
-			// Wait 3 seconds
-
-			setTimeout(() => {
-				this.walkSpeed = temp;
-			}, 3000);
-		}
-	}
 }

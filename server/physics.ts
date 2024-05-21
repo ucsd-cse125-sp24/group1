@@ -1,8 +1,15 @@
 import * as phys from "cannon-es";
-import { Box, Body, Plane, World } from "cannon-es";
+import { Body, World } from "cannon-es";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { SerializedBody, SerializedCollider, SerializedEntity } from "../common/messages";
-import { PlayerGroundCM, PlayerPlayerCM, PlayerSlipperyCM, SlipperyGroundCM } from "./materials/ContactMaterials";
+import { SerializedBody } from "../common/messages";
+import {
+	PlayerGroundCM,
+	PlayerPlayerCM,
+	PlayerSlipperyCM,
+	SlipperyGroundCM,
+	ItemPlayerCM,
+	ItemGroundCM,
+} from "./materials/ContactMaterials";
 import { Entity } from "./entities/Entity";
 import { serializeShape } from "./lib/serializeShape";
 
@@ -32,6 +39,8 @@ export class PhysicsWorld {
 		this.#world.addContactMaterial(PlayerPlayerCM);
 		this.#world.addContactMaterial(SlipperyGroundCM);
 		this.#world.addContactMaterial(PlayerSlipperyCM);
+		this.#world.addContactMaterial(ItemPlayerCM);
+		this.#world.addContactMaterial(ItemGroundCM);
 	}
 
 	addBody(body: Body) {
@@ -60,16 +69,12 @@ export class PhysicsWorld {
 		}*/
 	}
 
-	castRay(ray: phys.Ray, rayOptions: phys.RayOptions): phys.RaycastResult {
-		ray.intersectWorld(this.#world, rayOptions);
-		return ray.result;
-	}
-
-	/**
-	 * Returns a list of bodies that are not present in the given map.
-	 */
-	getPhantomBodies(bodyToEntityMap: Map<Body, Entity>): Body[] {
-		return this.#world.bodies.filter((body) => !bodyToEntityMap.has(body));
+	castRay(from: phys.Vec3, to: phys.Vec3, rayOptions: phys.RayOptions): phys.RaycastResult[] {
+		const results: phys.RaycastResult[] = [];
+		this.#world.raycastAll(from, to, rayOptions, (result) => {
+			results.push(result);
+		});
+		return results;
 	}
 
 	/**

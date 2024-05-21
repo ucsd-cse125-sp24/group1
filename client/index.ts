@@ -1,12 +1,11 @@
 import { mat4, vec3 } from "gl-matrix";
-import { Vector3 } from "../common/commontypes";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { ClientInputMessage, ClientInputs, ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
+import { ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
-import { InputListener } from "./net/input";
-import { PlayerCamera } from "./render/camera/PlayerCamera";
+import { InputListener } from "./net/InputListener";
+import { FreecamInputs, PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { getGl } from "./render/getGl";
@@ -39,6 +38,7 @@ let freecam: boolean = false; // for debug purposes
  * - 2: show wireframe, ignore depth
  */
 let wireframe = 0;
+let tones = true;
 
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
@@ -102,76 +102,89 @@ const camera = new PlayerCamera(
 	engine,
 );
 
+type DebugInputs = {
+	toggleFreecam: boolean;
+	cycleWireframe: boolean;
+	toggleRole: boolean;
+	toggleRoleKeepOld: boolean;
+	spawnItem: boolean;
+	toggleTones: boolean;
+};
+const defaultDebugInputs = {
+	forward: false,
+	backward: false,
+	right: false,
+	left: false,
+	jump: false,
+	freecamDown: false,
+	toggleFreecam: false,
+	cycleWireframe: false,
+	toggleRole: false,
+	toggleRoleKeepOld: false,
+	spawnItem: false,
+	toggleTones: false,
+};
+let debugInputs: FreecamInputs & DebugInputs = { ...defaultDebugInputs };
 const inputListener = new InputListener({
-	reset: (): ClientInputs => ({
-		forward: false,
-		backward: false,
-		right: false,
-		left: false,
-		jump: false,
+	default: {
+		...defaultDebugInputs,
 		attack: false,
 		use: false,
 		emote: false,
-		lookDir: [0, 0, 0],
-	}),
-	handleKey: (key) => {
-		switch (key) {
-			case "KeyW":
-				return "forward";
-			case "KeyA":
-				return "left";
-			case "KeyS":
-				return "backward";
-			case "KeyD":
-				return "right";
-			case "Space":
-				return "jump";
-			case "KeyE":
-				return "emote";
-			case 0: // Left mouse button
-				return "attack";
-			case 2: // Right mouse button
-			case "KeyR":
-				return "use";
-			default:
-				return null;
-		}
+	},
+	keymap: {
+		KeyW: "forward",
+		KeyA: "left",
+		KeyS: "backward",
+		KeyD: "right",
+		Space: "jump",
+		KeyE: "emote",
+		0: "attack", // Left mouse button
+		2: "use", // Right mouse button
+		KeyR: "use", // Alias for trackpad users' convenience (may be temporary)
+		ShiftLeft: "freecamDown",
+		KeyP: "toggleFreecam",
+		KeyK: "cycleWireframe",
+		KeyB: "toggleRole",
+		KeyN: "toggleRoleKeepOld",
+		KeyX: "spawnItem",
+		KeyT: "toggleTones",
 	},
 	handleInputs: (inputs) => {
-		let msg: ClientInputMessage = {
-			type: "client-input",
-			...inputs,
-			lookDir: Array.from(camera.getForwardDir()) as Vector3,
-		};
-		connection.send(msg);
-	},
-	period: SERVER_GAME_TICK,
-});
-
-// for debug purposes
-const handleDebugKey = (e: KeyboardEvent) => {
-	switch (e.code) {
-		case "KeyP": {
+		if (inputs.toggleFreecam && !debugInputs.toggleFreecam) {
 			freecam = !freecam;
 			camera.setFree(freecam);
-			if (freecam) {
-				inputListener.disconnect();
-			} else {
-				inputListener.listen();
-			}
-			break;
 		}
-		case "KeyK": {
+		if (inputs.cycleWireframe && !debugInputs.cycleWireframe) {
 			wireframe = (wireframe + 1) % 3;
-			break;
 		}
-		case "KeyB": {
-			connection.send({ type: "--debug-switch-role", keepBody: e.shiftKey });
-			break;
+		if (inputs.toggleRole && !debugInputs.toggleRole) {
+			connection.send({ type: "--debug-switch-role", keepBody: false });
 		}
-	}
-};
-window.addEventListener("keydown", handleDebugKey);
+		if (inputs.toggleRoleKeepOld && !debugInputs.toggleRoleKeepOld) {
+			connection.send({ type: "--debug-switch-role", keepBody: true });
+		}
+		if (inputs.spawnItem && !debugInputs.spawnItem) {
+			connection.send({ type: "--debug-spawn-item" });
+		}
+		if (inputs.toggleTones && !debugInputs.toggleTones) {
+			tones = !tones;
+		}
+
+		debugInputs = { ...inputs };
+
+		if (!freecam) {
+			const [x, y, z] = camera.getForwardDir();
+			connection.send({
+				type: "client-input",
+				...inputs,
+				lookDir: [x, y, z],
+			});
+		}
+	},
+	period: SERVER_GAME_TICK,
+	_tempControls: document.getElementById("temporary-mobile-controls"),
+});
 
 // Define client-side only entities (to debug rendering)
 const particles = new ClientEntity(engine, "", [{ model: engine.models.particles, transform: mat4.create() }]);
@@ -179,22 +192,21 @@ const tempEntities: ClientEntity[] = [particles];
 
 /**
  * Up to 8 lights allowed by the gltf.frag shader
+ *
+ * Position and color (HSV, H and S in [0, 1])
  */
 const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, 1, 0), vec3.fromValues(0.3, 0.3, 0.3)),
-	new PointLight(engine, vec3.fromValues(-3, 0, 0), vec3.fromValues(2, 2, 2)),
-	new PointLight(engine, vec3.fromValues(0, 0, 0), vec3.fromValues(0.4, 0.5, 0.5)),
+	new PointLight(engine, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0)),
+	new PointLight(engine, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30)),
+	new PointLight(engine, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5)),
 ];
+const ambientLight = [0.2, 0.2, 0.2] as const;
 
 const paint = () => {
 	camera.setAspectRatio(window.innerWidth / window.innerHeight);
-	tempLights[0].color = vec3.fromValues(
-		((Math.sin(Date.now() / 500) + 1) / 2) * 1,
-		((Math.sin(Date.now() / 500) + 1) / 2) * 0.5,
-		((Math.sin(Date.now() / 500) + 1) / 2) * 0.1,
-	);
-	tempLights[0].position[1] = Math.sin(Date.now() / 200) * 5 + 1;
-	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 20, 0, Math.sin(Date.now() / 3000) * 20);
+	tempLights[0].color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
+	tempLights[0].position[1] = Math.sin(Date.now() / 738) * 5 + 1;
+	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
@@ -207,7 +219,8 @@ const paint = () => {
 	if (cameraTarget) {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
-		tempLights[2].position = position;
+		const dir = camera.getForwardDir();
+		tempLights[2].position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		if (!freecam) {
 			if (isFirstPerson) {
 				camera.setPosition(position);
@@ -220,7 +233,7 @@ const paint = () => {
 		}
 	}
 	if (freecam) {
-		camera.update();
+		camera.updateFreecam(debugInputs);
 	}
 
 	engine.clear();
@@ -231,7 +244,7 @@ const paint = () => {
 	}
 
 	pipeline.startRender();
-	engine.clear();
+	engine.clear(ambientLight);
 
 	// Set up lighting
 	const lightPositions: number[] = [];
@@ -251,7 +264,9 @@ const paint = () => {
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
-	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), 0.2, 0.2, 0.2, 1);
+	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...ambientLight, 1);
+	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_enable_tones"), +tones);
+	engine.gl.uniform1f(engine.gltfMaterial.uniform("u_tones"), 5);
 
 	// Draw entities
 	const view = camera.getViewProjectionMatrix();

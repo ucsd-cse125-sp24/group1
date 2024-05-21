@@ -19,6 +19,7 @@ export class StaticEntity extends Entity {
 			type: phys.Body.STATIC,
 			shape: shape,
 			material: material,
+			collisionFilterGroup: this.getBitFlag(),
 		});
 	}
 

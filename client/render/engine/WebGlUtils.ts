@@ -63,9 +63,9 @@ export class WebGlUtils {
 		throw new SyntaxError(`${name} failed to compile:\n${infoLog}`);
 	}
 
-	clear() {
+	clear(color: readonly [r: number, g: number, b: number] = [0, 0, 0]) {
 		const gl = this.gl;
-		gl.clearColor(0, 0, 0, 1);
+		gl.clearColor(...color, 1);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 	}

@@ -12,6 +12,7 @@ import { Body } from "cannon-es";
 import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
+import { ModelId } from "../assets/models";
 import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
@@ -27,6 +28,26 @@ import { getColliders } from "./entities/map/colliders";
 import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
+import { log } from "./net/_tempDebugLog";
+
+// TEMP? (used for randomization)
+const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
+const itemModels: ModelId[] = [
+	"axe",
+	"bow",
+	"gamer_bow",
+	"gamer_sword",
+	"iron",
+	"knife",
+	"magic_sauce",
+	"mushroom",
+	"pickaxe",
+	"raw_iron",
+	"shears",
+	"string",
+	"sword",
+	"wood",
+];
 
 interface NetworkedPlayer {
 	input: PlayerInput;
@@ -41,14 +62,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#entities: Map<string, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
+	_bodyToEntityMap: Map<Body, Entity>; // TEMP
 
-	// player array
-	// mapping from socket to player
+	//Tyler is creating this so like. Might need to change
+	#toCreateQueue: Entity[];
+	#toDeleteQueue: string[];
+
 	constructor() {
 		this.#createdInputs = [];
 		this.#players = new Map();
 		this.#entities = new Map();
 		this.#bodyToEntityMap = new Map();
+		this._bodyToEntityMap = this.#bodyToEntityMap; // TEMP
+
+		this.#toCreateQueue = [];
+		this.#toDeleteQueue = [];
 	}
 
 	/**
@@ -56,8 +84,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * so that it can be interacted with. Unregistered entities do not
 	 * affect the game in any way
 	 * @param entity the constructed entity to register
+	 *
+	 * NOTE: After the world has been created, use `addToCreateQueue` to avoid
+	 * issues while creating or removing entities during a tick.
 	 */
-	registerEntity(entity: Entity) {
+	#registerEntity(entity: Entity) {
 		this.#entities.set(entity.name, entity);
 		this.#bodyToEntityMap.set(entity.body, entity);
 
@@ -71,31 +102,35 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		entity.addToWorld(TheWorld);
 	}
 
-	unregisterEntity(entity: Entity) {
+	/**
+	 * NOTE: After the world has been created, use `addToDeleteQueue` to avoid
+	 * issues while creating or removing entities during a tick.
+	 */
+	#unregisterEntity(entity: Entity) {
 		this.#entities.delete(entity.name);
 		this.#bodyToEntityMap.delete(entity.body);
 		entity.removeFromWorld(TheWorld);
 	}
 
 	/**
-	 * TODO: call this function
+	 * Checks for objects intersecting a line segment (*not* a ray) from `start`
+	 * to `end`.
+	 *
+	 * TODO: Do we need to sort this? It's currently kind of hard to line items
+	 * up (they're all spheres), so I can't test this.
+	 *
+	 * IMPORTANT: `Ray.intersectWorld` does NOT return the closest object. Do not
+	 * use it.
 	 */
-	verifyState() {
-		let error = false;
-		for (const body of TheWorld.getPhantomBodies(this.#bodyToEntityMap)) {
-			console.warn(`Body ${body.id} is missing entity`);
-			error = true;
-		}
-		const entities = Array.from(this.#entities.values());
-		for (const entity of this.#bodyToEntityMap.values()) {
-			if (!entities.includes(entity)) {
-				console.warn(`#bodyToEntityMap maps to an entity '${entity.name}' not in #entities`);
-				error = true;
-			}
-		}
-		if (error) {
-			throw new Error("The game is not in sync with the physics engine. Errors have been reported in the conosle.");
-		}
+	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions): Entity[] {
+		return Array.from(
+			new Set(
+				TheWorld.castRay(start, end, rayOptions).flatMap(({ body }) => {
+					const entity = body && this.#bodyToEntityMap.get(body);
+					return entity ? [entity] : [];
+				}),
+			),
+		);
 	}
 
 	/**
@@ -104,10 +139,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	async setup() {
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
-		this.registerEntity(mapEntity);
+		this.#registerEntity(mapEntity);
 
 		let plane = new PlaneEntity("normal plane", [0, -5.5, 0], [-1, 0, 0, 1], []);
-		this.registerEntity(plane);
+		this.#registerEntity(plane);
 
 		let bigIron = new Item(
 			"Iron1",
@@ -117,7 +152,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[{ modelId: "samplePlayer", scale: 0.5 }],
 			"resource",
 		);
-		this.registerEntity(bigIron);
+		this.#registerEntity(bigIron);
 
 		let smallIron = new Item(
 			"Iron2",
@@ -127,24 +162,27 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[{ modelId: "samplePlayer", scale: 0.5 }],
 			"resource",
 		);
-		this.registerEntity(smallIron);
+
+		this.#registerEntity(smallIron);
 
 		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
-		this.registerEntity(Pick);
+		this.#registerEntity(Pick);
 
 		let tempCrafter = new CraftingTable(
 			"crafter",
 			[18, 0, 18],
 			[{ modelId: "fish1", scale: 10 }],
-			[["iron-ore", "String"]],
+			[{ ingredients: ["iron-ore", "iron-ore"], output: "debug" }],
+			this,
 		);
-		this.registerEntity(tempCrafter);
+
+		this.#registerEntity(tempCrafter);
 
 		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
-		this.registerEntity(tempSphere);
+		this.#registerEntity(tempSphere);
 
 		let tempCylinder = new CylinderEntity("temp cylinder 1", [1, 20, 5], 1.5, 5);
-		this.registerEntity(tempCylinder);
+		this.#registerEntity(tempCylinder);
 	}
 
 	updateGameState() {
@@ -163,19 +201,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				lookDir: inputs.lookDir,
 			};
 
-			player.entity.move(movement);
+			const { from, to } = player.entity.checkOnGroundSegment();
+			player.entity.move(movement, this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP }));
 
 			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
 			if (posedge.use) {
 				if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
 				else {
-					const body = player.entity.lookForInteractables();
-					if (body != null) {
-						const lookedAtEntity = this.#bodyToEntityMap.get(body as phys.Body);
-						if (lookedAtEntity) {
-							if (lookedAtEntity instanceof InteractableEntity) lookedAtEntity.interact(player.entity);
-						}
-					}
+					const { from, to } = player.entity.lookForInteractablesSegment();
+					const entities = this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP });
+					console.log(
+						"use",
+						entities.map((e) => e.name),
+					);
+					if (entities[0] instanceof InteractableEntity) entities[0].interact(player.entity);
 				}
 			}
 		}
@@ -191,11 +230,19 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let playerORHero = Math.floor(Math.random() * 4);
 			let playerEntity;
 			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				playerEntity = new HeroEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				playerEntity = new HeroEntity(
+					conn.id,
+					[20, 20, 20],
+					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
+				);
 			} else {
-				playerEntity = new BossEntity(conn.id, [20, 20, 20], ["samplePlayer"]);
+				playerEntity = new BossEntity(
+					conn.id,
+					[20, 20, 20],
+					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
+				);
 			}
-			this.registerEntity(playerEntity);
+			this.addToCreateQueue(playerEntity);
 
 			let input = new PlayerInput();
 			this.#createdInputs.push(input);
@@ -248,20 +295,36 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					// Ensure camera does not lock to it
 					player.entity.name = `formerly ${player.entity.name}`;
 				} else {
-					this.unregisterEntity(player.entity);
+					this.addToDeleteQueue(player.entity.name);
 				}
 				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
 					conn.id,
 					[20, 20, 20],
-					["samplePlayer"],
+					[playerModels[Math.floor(Math.random() * playerModels.length)]],
 				);
-				this.registerEntity(newEntity);
+				this.addToCreateQueue(newEntity);
 				player.entity = newEntity;
 				conn.send({
 					type: "camera-lock",
 					entityName: conn.id,
 					pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
+				break;
+			case "--debug-spawn-item":
+				const modelId = itemModels[Math.floor(Math.random() * itemModels.length)];
+				this.addToCreateQueue(
+					// TODO: other parameters?
+					new Item(
+						`debug spawned item ${new Date()}`,
+						"iron-ore",
+						0.5,
+						// Max: (25, 20) Min: (-24, -17)
+						[Math.random() * 50 - 25, 10, Math.random() * 40 - 20],
+						[{ modelId, scale: 0.5 }],
+						"resource",
+					),
+				);
+				log(`Player ${conn.id.slice(0, 6)} spawned ${modelId}`);
 				break;
 			default:
 				console.warn(`Unhandled message '${data["type"]}'`);
@@ -272,6 +335,56 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		TheWorld.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
+		}
+
+		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
+			this.clearEntityQueues();
+		}
+	}
+
+	addToCreateQueue(entity: Entity) {
+		this.#toCreateQueue.push(entity);
+	}
+
+	/**
+	 * This is a string at the moment, but can be changed into not that!
+	 * @param sussyAndRemovable
+	 */
+	addToDeleteQueue(sussyAndRemovable: string) {
+		this.#toDeleteQueue.push(sussyAndRemovable);
+	}
+
+	clearEntityQueues() {
+		for (let i = 0; i < this.#toCreateQueue.length; i++) {
+			let entity = this.#toCreateQueue.pop();
+
+			if (entity) {
+				this.#entities.set(entity.name, entity);
+				this.#bodyToEntityMap.set(entity.body, entity);
+				entity.addToWorld(TheWorld);
+			} else {
+				console.log("Someone added a fake ass object to the creation queue");
+			}
+		}
+
+		for (let i = 0; i < this.#toDeleteQueue.length; i++) {
+			let entityName = this.#toDeleteQueue.pop();
+
+			if (entityName) {
+				let entity = this.#entities.get(entityName);
+
+				console.log(entityName);
+
+				if (entity) {
+					this.#bodyToEntityMap.delete(entity.body);
+					this.#entities.delete(entity.name);
+					entity.removeFromWorld(TheWorld);
+				} else {
+					console.log("Bug Detected! Tried to delete an entity that didn't exist");
+				}
+			} else {
+				console.log("what have you done. you sent in a fake ass name");
+			}
 		}
 	}
 

@@ -1,6 +1,7 @@
 import * as phys from "cannon-es";
 import { PhysicsWorld } from "../physics";
 import { EntityModel, SerializedEntity } from "../../common/messages";
+import { Vector3 } from "../../common/commontypes";
 
 export type Tag = "environment" | "interactable" | "player" | "resource" | "tool" | "item";
 
@@ -12,17 +13,21 @@ export abstract class Entity {
 	// tags system is very helpful for scalablilities and is also used in Unity
 	// example: a crafting table entity that players can also jump on
 	tags: Set<Tag>;
+	/** Whether the entity is a player. */
+	isPlayer = false;
 
 	constructor(name: string, model: EntityModel[] = [], tags: Tag[] = []) {
 		this.name = name;
 		this.type = "entity";
-		this.body = new phys.Body();
 		this.model = model;
 		this.tags = new Set(tags);
+		this.body = new phys.Body({
+			collisionFilterGroup: this.getBitFlag(),
+		});
 	}
 
-	getPos(): phys.Vec3 {
-		return this.body.position;
+	getPos(): Vector3 {
+		return [this.body.position.x, this.body.position.y, this.body.position.z];
 	}
 	getRot(): phys.Quaternion {
 		return this.body.quaternion;
@@ -40,16 +45,20 @@ export abstract class Entity {
 
 	abstract serialize(): SerializedEntity;
 
-	static readonly ENVIRONMENT_COLLISION_GROUP = 2;
-	static readonly INTERACTABLE_COLLISION_GROUP = 4;
+	/**
+	 * Used for collisions and selecting items so that you can jump on both ramps
+	 * and crafting tables, as well as not pick up items through walls.
+	 */
+	static readonly PLAYER_COLLISION_GROUP = 2;
+	static readonly NONPLAYER_COLLISION_GROUP = 4;
 	static readonly EPSILON = 0.1;
 
 	getBitFlag(): number {
 		if (this.tags.size == 0) return -1;
 
 		let flag = 0;
-		if (this.tags.has("environment")) flag |= Entity.ENVIRONMENT_COLLISION_GROUP;
-		if (this.tags.has("interactable")) flag |= Entity.INTERACTABLE_COLLISION_GROUP;
+		if (this.isPlayer) flag |= Entity.PLAYER_COLLISION_GROUP;
+		else flag |= Entity.NONPLAYER_COLLISION_GROUP;
 
 		if (flag == 0) return -1;
 		return flag;

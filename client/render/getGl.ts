@@ -1,3 +1,5 @@
+import { allowDomExceptions } from "../lib/allowDomExceptions";
+
 export function getGl(): WebGL2RenderingContext {
 	const canvas = document.getElementById("canvas");
 	if (!(canvas instanceof HTMLCanvasElement)) {
@@ -25,18 +27,32 @@ export function getGl(): WebGL2RenderingContext {
 	});
 	observer.observe(canvas, { box: "content-box" });
 
-	// Lock pointer to canvas
-	// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 	canvas.addEventListener("click", async () => {
+		// Lock pointer to canvas
+		// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 		if (!document.pointerLockElement) {
 			try {
 				await canvas.requestPointerLock({ unadjustedMovement: true });
 			} catch (error) {
-				// Ignore SecurityError: The user has exited the lock before this
-				// request was completed.
-				if (!(error instanceof DOMException && error.name === "SecurityError")) {
-					throw error;
-				}
+				// Ignore these errors:
+				// - SecurityError: The user has exited the lock before this request was
+				//   completed. [clicking screen shortly after pressing escape]
+				// - UnknownError: If you see this error we have a bug. Please report
+				//   this bug to chromium. [tapping screen on Android]
+				allowDomExceptions(error, ["SecurityError", "UnknownError"]);
+			}
+		}
+		// Enter landscape mode (Android only)
+		// https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/lock
+		if ("lock" in screen.orientation && screen.orientation.type.startsWith("portrait")) {
+			try {
+				await document.documentElement.requestFullscreen();
+				await screen.orientation.lock("landscape");
+			} catch (error) {
+				// Ignore these errors:
+				// - NotSupportedError: screen.orientation.lock() is not available on
+				//   this device.
+				allowDomExceptions(error, ["NotSupportedError"]);
 			}
 		}
 	});

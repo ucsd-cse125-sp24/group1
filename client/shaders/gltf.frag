@@ -28,9 +28,12 @@ uniform float u_alpha_cutoff;
 uniform vec3 u_eye_pos;
 uniform int u_num_lights;
 uniform vec3 u_point_lights[MAX_LIGHTS];
+// In HSV
 uniform vec3 u_point_colors[MAX_LIGHTS];
 uniform samplerCube u_point_shadow_maps[MAX_LIGHTS];
 uniform vec4 u_ambient_light;
+uniform int u_enable_tones;
+uniform float u_tones;
 
 float near = 0.001;
 float far = 100.0;
@@ -38,6 +41,14 @@ float linearizeDepth(float depth) {
   // https://learnopengl.com/Advanced-OpenGL/Depth-testing
   float z = depth * 2.0 - 1.0; // convert to normalized device coords [-1, 1]
   return (2.0 * near * far) / (far + near - z * (far - near));
+}
+
+// All components are in the range [0…1], including hue.
+// https://stackoverflow.com/a/17897228
+vec3 hsv2rgb(vec3 c) {
+  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+  vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+  return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
 void main() {
@@ -59,7 +70,7 @@ void main() {
   vec3 to_eye = normalize(u_eye_pos - v_position);
   vec4 base_specular = vec4(0.5, 0.5, 0.5, 1.0);
   float shininess = 4.0;
-  
+
   gl_FragColor = u_ambient_light * base_color;
   for (int i = 0; i < MAX_LIGHTS; i++) {
     if (i >= u_num_lights) {
@@ -71,18 +82,26 @@ void main() {
     to_light = to_light / distance;
     float shadow_dist =
         linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
-    if (distance > 10.0 || shadow_dist < distance - 0.005) {
+    if (shadow_dist < distance - 0.005) {
       // occluded
       continue;
     }
 
     vec3 half_vector = normalize(to_light + to_eye);
-    vec4 light_color = vec4(u_point_colors[i], 1.0); // / (distance * distance);
-    vec4 diffuse_factor = step(0.5, dot(to_light, v_normal)) * light_color;
+    // Only adjust value (darkness) for HSV light color to avoid changing hue,
+    // then convert to RGB
+    if (u_enable_tones == 1) {
+      distance = ceil(distance / u_tones) * u_tones;
+    }
+    vec4 light_color =
+        vec4(hsv2rgb(vec3(u_point_colors[i].xy,
+                          u_point_colors[i].z / (distance * distance))),
+             1.0);
+    vec4 diffuse_factor = light_color;
     vec4 diffuse = base_color * diffuse_factor;
-    vec4 specular_factor = step(
-        0.875,
-        pow(max(dot(half_vector, v_normal), 0.0), shininess) * light_color);
+    vec4 specular_factor =
+        step(0.875, pow(max(dot(half_vector, v_normal), 0.0), shininess) *
+                        light_color);
     vec4 specular = base_specular * specular_factor;
 
     gl_FragColor += diffuse + 0.0 * specular;
