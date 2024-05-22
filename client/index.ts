@@ -11,9 +11,6 @@ import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { getGl } from "./render/getGl";
 import { PointLight } from "./render/lights/PointLight";
 import { RenderPipeline } from "./render/engine/RenderPipeline";
-import { ShaderProgram } from "./render/engine/ShaderProgram";
-import filterVertexSource from "./shaders/filter.vert";
-import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -73,6 +70,10 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			isFirstPerson = data.pov === "first-person";
 			camera.canRotate = isFirstPerson;
 			break;
+		case "sabotage-hero":
+			pipeline.pushFilter(pipeline.sporeFilter);
+			setTimeout(() => pipeline.popFilter(), data.time);
+			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
 	}
@@ -81,16 +82,7 @@ const connection = new Connection(wsUrl, handleMessage, document.getElementById(
 
 const engine = new GraphicsEngine(getGl());
 const pipeline = new RenderPipeline(engine);
-// pipeline.addFilter(pipeline.noOpFilter);
-pipeline.addFilter(
-	new ShaderProgram(
-		engine,
-		engine.createProgram(
-			engine.createShader("vertex", filterVertexSource, "filter.vert"),
-			engine.createShader("fragment", outlineFilterFragmentSource, "outlineFilter.frag"),
-		),
-	),
-);
+pipeline.pushFilter(pipeline.outlineFilter);
 const camera = new PlayerCamera(
 	vec3.fromValues(5, 5, 5),
 	vec3.fromValues(0, Math.PI, 0),
@@ -138,10 +130,10 @@ const inputListener = new InputListener({
 		KeyS: "backward",
 		KeyD: "right",
 		Space: "jump",
-		KeyE: "emote",
+		KeyE: "use", // Alias for trackpad users' convenience (may be temporary)
 		0: "attack", // Left mouse button
 		2: "use", // Right mouse button
-		KeyR: "use", // Alias for trackpad users' convenience (may be temporary)
+		KeyR: "emote",
 		ShiftLeft: "freecamDown",
 		KeyP: "toggleFreecam",
 		KeyK: "cycleWireframe",
