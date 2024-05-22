@@ -3,10 +3,8 @@ import { quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
-import { TheWorld } from "../physics";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
-import { BossEntity } from "./BossEntity";
 
 const COYOTE_FRAMES = 10;
 
@@ -51,6 +49,7 @@ export abstract class PlayerEntity extends Entity {
 		super(name, model, ["player"]);
 
 		this.type = "player";
+		this.isPlayer = true;
 
 		this.itemInHands = null;
 		this.interactionRange = interactionRange;
@@ -174,18 +173,5 @@ export abstract class PlayerEntity extends Entity {
 
 	setSpeed(speed: number) {
 		this.walkSpeed = speed;
-	}
-
-	interact(player: PlayerEntity) {
-		if (player instanceof BossEntity) {
-			let temp = this.walkSpeed;
-			// TODO STUN the Player
-			this.walkSpeed = 0;
-			// Wait 3 seconds
-
-			setTimeout(() => {
-				this.walkSpeed = temp;
-			}, 3000);
-		}
 	}
 }

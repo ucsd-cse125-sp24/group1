@@ -19,6 +19,7 @@ const HERO_JUMP_SPEED = 10;
 export class HeroEntity extends PlayerEntity {
 	// Game properties
 	jumping: boolean;
+	isSabotaged: boolean = false;
 
 	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
 		super(
@@ -37,5 +38,14 @@ export class HeroEntity extends PlayerEntity {
 
 		this.type = "player-hero";
 		this.jumping = false;
+	}
+
+	sabotage(): void {
+		this.isSabotaged = true;
+		this.setSpeed(HERO_WALK_SPEED / 2);
+		setTimeout(() => {
+			this.isSabotaged = false;
+			this.setSpeed(HERO_WALK_SPEED);
+		}, 5000);
 	}
 }

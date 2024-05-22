@@ -3,8 +3,8 @@ import { EntityModel } from "../../common/messages";
 import { PlayerEntity } from "./PlayerEntity";
 
 const PLAYER_INTERACTION_RANGE = 2.0;
-const BOSS_CAPSULE_HEIGHT = 2;
-const BOSS_CAPSULE_RADIUS = 0.5;
+const BOSS_CAPSULE_HEIGHT = 1;
+const BOSS_CAPSULE_RADIUS = 0.25;
 
 const BOSS_WALK_SPEED = 20;
 /**
@@ -38,5 +38,4 @@ export class BossEntity extends PlayerEntity {
 		this.type = "player-boss";
 		this.jumping = false;
 	}
-
 }

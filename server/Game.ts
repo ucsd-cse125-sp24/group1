@@ -209,12 +209,23 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
 				else {
 					const { from, to } = player.entity.lookForInteractablesSegment();
-					const entities = this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP });
+					const entities = this.raycast(from, to, {});
 					console.log(
 						"use",
 						entities.map((e) => e.name),
 					);
 					if (entities[0] instanceof InteractableEntity) entities[0].interact(player.entity);
+					else if (
+						player.entity instanceof BossEntity &&
+						entities[0] instanceof HeroEntity &&
+						!entities[0].isSabotaged
+					) {
+						const target = this.#players.get(entities[0].name);
+						if (target) {
+							target.conn.send({ type: "sabotage-hero", time: 5000 });
+							entities[0].sabotage();
+						}
+					}
 				}
 			}
 		}
@@ -259,7 +270,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		conn.send({
 			type: "camera-lock",
 			entityName: conn.id,
-			pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
+			pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 		});
 	}
 
