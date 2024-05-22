@@ -10,7 +10,6 @@ import {
 	ItemPlayerCM,
 	ItemGroundCM,
 } from "./materials/ContactMaterials";
-import { Entity } from "./entities/Entity";
 import { serializeShape } from "./lib/serializeShape";
 
 type WorldSetup = {
@@ -99,4 +98,4 @@ export class PhysicsWorld {
 	}
 }
 
-export const TheWorld = new PhysicsWorld({ gravity: [0, -15.82, 0] });
+export const TheWorld = new PhysicsWorld({ gravity: [0, -60, 0] });
