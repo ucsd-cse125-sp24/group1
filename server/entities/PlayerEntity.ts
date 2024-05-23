@@ -3,7 +3,6 @@ import { quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
-import { TheWorld } from "../physics";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { BossEntity } from "./BossEntity";
