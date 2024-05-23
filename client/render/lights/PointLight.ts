@@ -3,6 +3,11 @@ import GraphicsEngine from "../engine/GraphicsEngine";
 import { ShadowMapCamera } from "../camera/ShadowMapCamera";
 import { ClientEntity } from "../ClientEntity";
 
+/**
+ * Up to 8 lights allowed by the gltf.frag shader
+ *
+ * Color is in HSV. H and S in [0, 1]
+ */
 export class PointLight {
 	color: vec3;
 	#shadowCamera: ShadowMapCamera;

@@ -14,6 +14,10 @@ import { RenderPipeline } from "./render/engine/RenderPipeline";
 import { ShaderProgram } from "./render/engine/ShaderProgram";
 import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
+import { TempLightModel } from "./render/lights/TempLightModel";
+import tempLightVertexSource from "./shaders/temp_light.vert";
+import tempLightFragmentSource from "./shaders/temp_light.frag";
+import { TempLightEntity } from "./render/lights/TempLightEntity";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -25,7 +29,6 @@ if (errorWindow instanceof HTMLDialogElement) {
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
 
-let position = { x: 0, y: 0, z: 0 };
 let entities: ClientEntity[] = [];
 let colliders: { collider: SerializedCollider; transform: mat4 }[] = [];
 let cameraLockTarget: string | null = null;
@@ -187,26 +190,26 @@ const inputListener = new InputListener({
 });
 
 // Define client-side only entities (to debug rendering)
-const particles = new ClientEntity(engine, "", [{ model: engine.models.particles, transform: mat4.create() }]);
-const tempEntities: ClientEntity[] = [particles];
-
-/**
- * Up to 8 lights allowed by the gltf.frag shader
- *
- * Position and color (HSV, H and S in [0, 1])
- */
-const tempLights = [
-	new PointLight(engine, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0)),
-	new PointLight(engine, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30)),
-	new PointLight(engine, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5)),
+const tempLightShader = new ShaderProgram(
+	engine,
+	engine.createProgram(
+		engine.createShader("vertex", tempLightVertexSource, "temp_light.vert"),
+		engine.createShader("fragment", tempLightFragmentSource, "temp_light.frag"),
+	),
+);
+const tempEntities = [
+	new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0)),
+	new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30)),
+	new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5)),
 ];
+
 const ambientLight = [0.2, 0.2, 0.2] as const;
 
 const paint = () => {
 	camera.setAspectRatio(window.innerWidth / window.innerHeight);
-	tempLights[0].color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
-	tempLights[0].position[1] = Math.sin(Date.now() / 738) * 5 + 1;
-	tempLights[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
+	tempEntities[0].color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
+	tempEntities[0].position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
+	tempEntities[1].position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
@@ -220,14 +223,13 @@ const paint = () => {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
-		tempLights[2].position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
+		tempEntities[2].position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		if (!freecam) {
 			if (isFirstPerson) {
 				camera.setPosition(position);
 			} else {
 				const offset = vec3.fromValues(-20, 50, 20);
-				vec3.add(position, position, offset);
-				camera.setPosition(position);
+				camera.setPosition(vec3.add(vec3.create(), position, offset));
 				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
 			}
 		}
@@ -239,7 +241,8 @@ const paint = () => {
 	engine.clear();
 
 	// Cast shadows
-	for (const light of tempLights) {
+	const lights = [...entities, ...tempEntities].flatMap((entity) => (entity.light ? [entity.light] : []));
+	for (const light of lights) {
 		light.renderShadowMap([...entities, ...tempEntities]);
 	}
 
@@ -249,8 +252,7 @@ const paint = () => {
 	// Set up lighting
 	const lightPositions: number[] = [];
 	const lightColors: number[] = [];
-	for (let i = 0; i < tempLights.length; i++) {
-		const light = tempLights[i];
+	for (const [i, light] of lights.entries()) {
 		lightPositions.push(...light.position);
 		lightColors.push(...light.color);
 		const shadowMap = light.getShadowMap();
@@ -260,9 +262,11 @@ const paint = () => {
 	}
 	engine.gltfMaterial.use();
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_eye_pos"), camera.getPosition());
-	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_num_lights"), tempLights.length);
-	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
-	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
+	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_num_lights"), lights.length);
+	if (lights.length > 0) {
+		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
+		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
+	}
 	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
 	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...ambientLight, 1);
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_enable_tones"), +tones);

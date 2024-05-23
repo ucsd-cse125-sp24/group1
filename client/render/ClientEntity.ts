@@ -2,6 +2,7 @@ import { mat4 } from "gl-matrix";
 import { EntityModelObject, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./engine/GraphicsEngine";
 import { Model } from "./model/Model";
+import { PointLight } from "./lights/PointLight";
 
 export type ModelWithTransform = {
 	model: Model;
@@ -24,6 +25,7 @@ export class ClientEntity {
 	 */
 	transform: mat4;
 	visible = true;
+	light?: PointLight;
 
 	constructor(engine: GraphicsEngine, name: string, models: ModelWithTransform[], transform = mat4.create()) {
 		this.engine = engine;
