@@ -6,6 +6,7 @@ import { PlayerMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { BossEntity } from "./BossEntity";
+import { Game } from "../Game";
 
 const COYOTE_FRAMES = 10;
 
@@ -35,7 +36,7 @@ export abstract class PlayerEntity extends Entity {
 	#coyoteCounter: number;
 
 	constructor(
-		name: string,
+		game: Game,
 		pos: Vector3,
 		model: EntityModel[] = [],
 		mass: number,
@@ -47,7 +48,7 @@ export abstract class PlayerEntity extends Entity {
 		jumpSpeed: number,
 		interactionRange: number,
 	) {
-		super(name, model, ["player"]);
+		super(game, model, ["player"]);
 
 		this.type = "player";
 
@@ -129,11 +130,6 @@ export abstract class PlayerEntity extends Entity {
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
 		}
 
-		if (movement.jump)
-			console.log(
-				"jump",
-				onGroundResult.map((e) => e.name),
-			);
 		if (movement.jump && this.#coyoteCounter > 0) {
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
 			this.body.applyImpulse(deltaVy.scale(this.body.mass));
@@ -142,8 +138,7 @@ export abstract class PlayerEntity extends Entity {
 
 	serialize(): SerializedEntity {
 		return {
-			name: this.name,
-			model: this.model,
+			...super.serialize(),
 			position: this.body.position.toArray(),
 			quaternion: quat.rotationTo(
 				quat.create(),

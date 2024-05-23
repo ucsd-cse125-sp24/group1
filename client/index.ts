@@ -18,6 +18,7 @@ import { TempLightModel } from "./render/lights/TempLightModel";
 import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
+import { EntityId } from "../server/entities/Entity";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -31,7 +32,7 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 
 let entities: ClientEntity[] = [];
 let colliders: { collider: SerializedCollider; transform: mat4 }[] = [];
-let cameraLockTarget: string | null = null;
+let cameraLockTarget: EntityId | null = null;
 let isFirstPerson: boolean = true;
 let freecam: boolean = false; // for debug purposes
 /**
@@ -72,7 +73,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			});
 			break;
 		case "camera-lock":
-			cameraLockTarget = data.entityName;
+			cameraLockTarget = data.entityId;
 			isFirstPerson = data.pov === "first-person";
 			camera.canRotate = isFirstPerson;
 			break;
@@ -207,8 +208,8 @@ const tempEntities: ClientEntity[] = [
 	...tempLightEntities,
 	new ClientEntity(
 		engine,
-		"",
 		[{ model: engine.models.defaultCube, transform: mat4.fromScaling(mat4.create(), [5, 5, 5]) }],
+		undefined,
 		mat4.mul(
 			mat4.create(),
 			mat4.fromTranslation(mat4.create(), [0, -15, 30]),
@@ -237,11 +238,11 @@ const paint = () => {
 	// Set camera position
 	if (!freecam && isFirstPerson) {
 		for (const entity of entities) {
-			entity.visible = entity.name !== cameraLockTarget;
+			entity.visible = entity.id !== cameraLockTarget;
 		}
 	}
 
-	const cameraTarget = entities.find((entity) => entity.name === cameraLockTarget);
+	const cameraTarget = entities.find((entity) => entity.id === cameraLockTarget);
 	if (cameraTarget) {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP

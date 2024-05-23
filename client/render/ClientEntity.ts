@@ -3,6 +3,7 @@ import { EntityModelObject, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./engine/GraphicsEngine";
 import { Model } from "./model/Model";
 import { PointLight } from "./lights/PointLight";
+import { EntityId } from "../../server/entities/Entity";
 
 export type ModelWithTransform = {
 	model: Model;
@@ -17,8 +18,8 @@ export type ModelWithTransform = {
  */
 export class ClientEntity {
 	engine: GraphicsEngine;
-	name: string;
 	models: ModelWithTransform[];
+	id?: EntityId;
 	/**
 	 * A transformation to apply to all the models in the entity. You can think of
 	 * it like the anchor position and rotation of the entity.
@@ -27,10 +28,10 @@ export class ClientEntity {
 	visible = true;
 	light?: PointLight;
 
-	constructor(engine: GraphicsEngine, name: string, models: ModelWithTransform[], transform = mat4.create()) {
+	constructor(engine: GraphicsEngine, models: ModelWithTransform[], id?: EntityId, transform = mat4.create()) {
 		this.engine = engine;
-		this.name = name;
 		this.models = models;
+		this.id = id;
 		this.transform = transform;
 	}
 
@@ -65,7 +66,6 @@ export class ClientEntity {
 		const transform = mat4.fromRotationTranslation(mat4.create(), entity.quaternion, entity.position);
 		return new ClientEntity(
 			engine,
-			entity.name,
 			entity.model.map((model) => {
 				const {
 					modelId,
@@ -81,6 +81,7 @@ export class ClientEntity {
 					transform: mat4.fromRotationTranslationScale(mat4.create(), rotation, offset, [scale, scale, scale]),
 				};
 			}),
+			entity.id,
 			transform,
 		);
 	}

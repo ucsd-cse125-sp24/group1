@@ -3,16 +3,17 @@ import { Vector3 } from "../../common/commontypes";
 import { v3 } from "../physics";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { Entity } from "./Entity";
+import { Game } from "../Game";
 
 export class StaticEntity extends Entity {
 	constructor(
-		name: string,
+		game: Game,
 		position: Vector3,
 		shape: phys.Shape | undefined,
 		material: phys.Material,
 		model: EntityModel[] = [],
 	) {
-		super(name, model);
+		super(game, model);
 		this.type = "static";
 		this.body = new phys.Body({
 			position: v3(...position),
@@ -21,14 +22,5 @@ export class StaticEntity extends Entity {
 			material: material,
 			collisionFilterGroup: this.getBitFlag(),
 		});
-	}
-
-	serialize(): SerializedEntity {
-		return {
-			name: this.name,
-			model: this.model,
-			position: this.body.position.toArray(),
-			quaternion: this.body.quaternion.toArray(),
-		};
 	}
 }

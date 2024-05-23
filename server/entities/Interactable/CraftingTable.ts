@@ -20,15 +20,12 @@ export class CraftingTable extends InteractableEntity {
 	// shape
 	box: phys.Box;
 
-	game: Game;
 	static nameCounter: 0;
 
-	constructor(name: string, pos: Vector3, model: EntityModel[] = [], recipes: Recipe[], game: Game) {
-		super(name, model);
-		this.game = game; //TEMPORARY
+	constructor(game: Game, pos: Vector3, model: EntityModel[] = [], recipes: Recipe[]) {
+		super(game, model);
 
 		this.type = "crafting-table";
-		this.name = name;
 		this.model = model;
 		this.itemList = [];
 		this.recipes = recipes;
@@ -98,7 +95,7 @@ export class CraftingTable extends InteractableEntity {
 						console.log("Item should be deleted!");
 
 						this.itemList.push(otherEntity);
-						this.game.addToDeleteQueue(otherEntity.name);
+						this.game.addToDeleteQueue(otherEntity.id);
 
 						return;
 					}
@@ -125,7 +122,7 @@ export class CraftingTable extends InteractableEntity {
 
 							let name = this.recipes[i].output + CraftingTable.nameCounter;
 							let result = new Item(
-								name,
+								this.game,
 								this.recipes[i].output,
 								0.5,
 								this.getPos(),
@@ -146,7 +143,7 @@ export class CraftingTable extends InteractableEntity {
 						let item = this.itemList.pop();
 
 						if (item) {
-							this.game.addToDeleteQueue(item.name);
+							this.game.addToDeleteQueue(item.id);
 						}
 					}
 
@@ -157,14 +154,5 @@ export class CraftingTable extends InteractableEntity {
 				}
 			}
 		}
-	}
-
-	serialize(): SerializedEntity {
-		return {
-			name: this.name,
-			model: this.model,
-			position: this.body.position.toArray(),
-			quaternion: this.body.quaternion.toArray(),
-		};
 	}
 }

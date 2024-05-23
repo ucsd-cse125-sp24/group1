@@ -1,4 +1,5 @@
 import { ModelId } from "../assets/models";
+import { EntityId } from "../server/entities/Entity";
 import { Vector2, Vector3, Quaternion } from "./commontypes";
 
 export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameState | CameraLock;
@@ -46,12 +47,10 @@ export type EntireGameState = {
 export type CameraLock = {
 	type: "camera-lock";
 	/**
-	 * Name of the entity to lock the camera to. If there are multiple entities
-	 * with the same name, the client will hide all of them, but only lock to the
-	 * first entity with the name. If there is no entity with such name, the
-	 * camera may stop moving.
+	 * Name of the entity to lock the camera to. If there is no entity with the
+	 * ID, the camera may stop moving.
 	 */
-	entityName: string;
+	entityId: EntityId;
 	/**
 	 * Camera point of view directive. In first-person mode, the camera locks to
 	 * the POV of the entity and can rotate freely. In top-down mode, the camera
@@ -95,7 +94,7 @@ export type EntityModelObject = {
 export type EntityModel = ModelId | EntityModelObject;
 
 export type SerializedEntity = {
-	name: string;
+	id: EntityId;
 	model: EntityModel[];
 	quaternion: Quaternion;
 	position: Vector3;

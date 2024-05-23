@@ -1,5 +1,6 @@
 import { Vector3 } from "../../common/commontypes";
 import { EntityModel } from "../../common/messages";
+import { Game } from "../Game";
 import { PlayerEntity } from "./PlayerEntity";
 
 const PLAYER_INTERACTION_RANGE = 2.0;
@@ -20,9 +21,9 @@ export class BossEntity extends PlayerEntity {
 	// Game properties
 	jumping: boolean;
 
-	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
+	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
-			name,
+			game,
 			pos,
 			model,
 			10,

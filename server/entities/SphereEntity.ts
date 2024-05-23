@@ -4,6 +4,7 @@ import { v3 } from "../physics";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { SlipperyMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
+import { Game } from "../Game";
 
 export class SphereEntity extends Entity {
 	// name: string;
@@ -11,10 +12,9 @@ export class SphereEntity extends Entity {
 	// body: phys.Body;
 	// model: EntityModel[];
 
-	constructor(name: string, pos: Vector3, radius: number, model: EntityModel[] = []) {
-		super(name, model);
+	constructor(game: Game, pos: Vector3, radius: number, model: EntityModel[] = []) {
+		super(game, model);
 		this.type = "sphere";
-		this.name = name;
 		this.model = model;
 
 		this.body = new phys.Body({
@@ -24,14 +24,5 @@ export class SphereEntity extends Entity {
 			material: SlipperyMaterial,
 			collisionFilterGroup: this.getBitFlag(),
 		});
-	}
-
-	serialize(): SerializedEntity {
-		return {
-			name: this.name,
-			model: this.model,
-			position: this.body.position.toArray(),
-			quaternion: this.body.quaternion.toArray(),
-		};
 	}
 }
