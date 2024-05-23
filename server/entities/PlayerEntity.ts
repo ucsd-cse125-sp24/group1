@@ -154,6 +154,22 @@ export abstract class PlayerEntity extends Entity {
 		}
 	}
 
+	attack(): void {
+		const entities = this.game.raycast(
+			this.body.position.vadd(this.lookDir.scale(2)), // TODO: why won't it raycast more if it hits the current player?
+			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+			{ collisionFilterMask: Entity.PLAYER_COLLISION_GROUP },
+		);
+		for (const entity of entities) {
+			// Apply knockback to player when attacked
+			if (entity !== this && entity instanceof PlayerEntity) {
+				console.log("attack", entity.id);
+				entity.body.applyForce(this.lookDir.scale(1000));
+				entity.body.applyForce(new phys.Vec3(0, 1000, 0));
+			}
+		}
+	}
+
 	serialize(): SerializedEntity {
 		return {
 			...super.serialize(),

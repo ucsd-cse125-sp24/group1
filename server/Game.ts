@@ -188,9 +188,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 			player.entity.move(movement);
 
-			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
 			if (posedge.use) {
 				player.entity.use();
+			}
+			if (posedge.attack) {
+				player.entity.attack();
 			}
 		}
 		this.#nextTick();
