@@ -21,6 +21,8 @@ const CUBE_UP_DIR = [
 	vec3.fromValues(0, -1, 0),
 ];
 
+let i = 0; // TEMP
+
 /**
  * Extends the Camera class to render a cubic shadow/depth map.
  */
@@ -31,7 +33,7 @@ export class ShadowMapCamera extends Camera {
 	#framebuffer: WebGLFramebuffer;
 
 	constructor(position: vec3, nearBound: number, farBound: number, size: number, engine: GraphicsEngine) {
-		super(position, vec3.fromValues(1, 0, 0), vec3.fromValues(0, 1, 0), Math.PI / 4, 1, nearBound, farBound, engine);
+		super(position, vec3.fromValues(1, 0, 0), vec3.fromValues(0, 1, 0), Math.PI / 2, 1, nearBound, farBound, engine);
 		this.#perspective = mat4.perspective(mat4.create(), this._fovY, this._aspectRatio, this._nearBound, this._farBound);
 		this.#textureSize = size;
 		const gl = engine.gl;
@@ -70,7 +72,7 @@ export class ShadowMapCamera extends Camera {
 		// Bind color attachment - even though we only care about depth, some
 		// devices still require the framebuffer to have a color attachment
 		gl.bindTexture(gl.TEXTURE_2D, colorTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, size, size, 0, gl.RED, gl.UNSIGNED_BYTE, null);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size, size, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); // TEMP: revert to R8/RED
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -123,6 +125,46 @@ export class ShadowMapCamera extends Camera {
 				entity.draw(view);
 				entity.visible = wasVisible;
 			}
+			// TEMP
+			if (Math.floor(i / 6) === 104) {
+				var data = new Uint8Array(this.#textureSize * this.#textureSize * 4);
+				gl.readPixels(0, 0, this.#textureSize, this.#textureSize, gl.RGBA, gl.UNSIGNED_BYTE, data);
+				var canvas = document.createElement("canvas");
+				canvas.width = this.#textureSize;
+				canvas.height = this.#textureSize;
+				var context = canvas.getContext("2d")!;
+				var imageData = context.createImageData(this.#textureSize, this.#textureSize);
+				imageData.data.set(
+					data /*Uint8Array.from(
+						[...data].flatMap((depth) => [depth > 0 ? depth * 255 : 0, depth < 0 ? depth * -255 : 0, 0, 255]),
+					),*/,
+				);
+				context.putImageData(imageData, 0, 0);
+				context.font = `${40}px sans-serif`;
+				context.fillText(
+					`[${Array.from(this._position, (a) => a.toFixed(2)).join(", ")}] ${["+X", "-X", "+Y", "-Y", "+Z", "-Z"][side]}`,
+					0,
+					this.#textureSize - 10,
+				);
+				var img = new Image();
+				img.src = canvas.toDataURL();
+				img.style.width = "30vh";
+				img.style.height = "30vh";
+				const [x, y] = [
+					[2, 1],
+					[0, 1],
+					[1, 0],
+					[1, 2],
+					[1, 1],
+					[3, 1],
+				][side];
+				img.style.position = "absolute";
+				img.style.marginLeft = `100vw`;
+				img.style.left = `${x * 30}vh`;
+				img.style.top = `${y * 30}vh`;
+				document.body.append(img);
+			}
+			i++;
 		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	}

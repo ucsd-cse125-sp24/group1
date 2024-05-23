@@ -80,9 +80,12 @@ void main() {
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
     to_light = to_light / distance;
-    float shadow_dist =
-        linearizeDepth(textureCube(u_point_shadow_maps[i], -to_light).r);
+    float bruh = textureCube(u_point_shadow_maps[i], -to_light).r;
+    float shadow_dist = linearizeDepth(bruh) *
+                        2.0; // TODO: why does this need to be multiplied by 2?
     if (shadow_dist < distance - 0.005) {
+      // TEMP
+      gl_FragColor += vec4((distance - shadow_dist) / distance, 0.0, 0.0, 1.0);
       // occluded
       continue;
     }

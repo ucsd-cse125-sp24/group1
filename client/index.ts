@@ -198,38 +198,30 @@ const tempLightShader = new ShaderProgram(
 		engine.createShader("fragment", tempLightFragmentSource, "temp_light.frag"),
 	),
 );
-const tempLightEntities = [
-	new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0)),
-	new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30)),
-	// new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5)),
-	new TempLightEntity(tempLightShader, vec3.fromValues(0, -15, 30), vec3.fromValues(0, 0.5, 5)),
-];
-const tempEntities: ClientEntity[] = [
-	...tempLightEntities,
-	new ClientEntity(
-		engine,
-		[{ model: engine.models.defaultCube, transform: mat4.fromScaling(mat4.create(), [5, 5, 5]) }],
-		undefined,
-		mat4.mul(
-			mat4.create(),
-			mat4.fromTranslation(mat4.create(), [0, -15, 30]),
-			mat4.fromRotation(mat4.create(), 0.5, [1, 2, 3]),
-		),
+const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
+const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30));
+const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5));
+const redLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, -15, 30), vec3.fromValues(0, 0.5, 5));
+const box = new ClientEntity(
+	engine,
+	[{ model: engine.models.defaultCube, transform: mat4.fromScaling(mat4.create(), [5, 5, 5]) }],
+	undefined,
+	mat4.mul(
+		mat4.create(),
+		mat4.fromTranslation(mat4.create(), [0, -15, 30]),
+		mat4.fromRotation(mat4.create(), 0.5, [1, 2, 3]),
 	),
-];
+);
+const tempEntities: ClientEntity[] = [warmLight, box];
 
 const ambientLight = [0.2, 0.2, 0.2] as const;
 
 const paint = () => {
 	camera.setAspectRatio(window.innerWidth / window.innerHeight);
-	tempLightEntities[0].color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
-	tempLightEntities[0].position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
-	tempLightEntities[1].position = vec3.fromValues(
-		Math.cos(Date.now() / 3000) * 15,
-		2,
-		Math.sin(Date.now() / 3000) * 15,
-	);
-	tempEntities[3].transform = mat4.mul(
+	warmLight.color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
+	warmLight.position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
+	whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
+	box.transform = mat4.mul(
 		mat4.create(),
 		mat4.fromTranslation(mat4.create(), [0, -15, 30]),
 		mat4.fromRotation(mat4.create(), Date.now() / 10000, [1, 2, 3]),
@@ -247,7 +239,7 @@ const paint = () => {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
-		// tempLightEntities[2].position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
+		warmLight.position = vec3.add(vec3.create(), position, [0, -1, 0]); //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		if (!freecam) {
 			if (isFirstPerson) {
 				camera.setPosition(position);
