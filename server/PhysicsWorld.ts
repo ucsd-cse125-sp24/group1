@@ -97,5 +97,3 @@ export class PhysicsWorld {
 		}));
 	}
 }
-
-export const TheWorld = new PhysicsWorld({ gravity: [0, -15.82, 0] });

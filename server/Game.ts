@@ -9,11 +9,10 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
+import { ClientMessage, SerializedBody, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { ModelId } from "../assets/models";
-import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
 import { BossEntity } from "./entities/BossEntity";
@@ -29,6 +28,7 @@ import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 import { log } from "./net/_tempDebugLog";
+import { PhysicsWorld } from "./PhysicsWorld";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -57,12 +57,13 @@ interface NetworkedPlayer {
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
+	#world = new PhysicsWorld({ gravity: [0, -15.82, 0] });
+
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
 
 	#entities: Map<EntityId, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
-	_bodyToEntityMap: Map<Body, Entity>; // TEMP
 
 	//Tyler is creating this so like. Might need to change
 	#toCreateQueue: Entity[];
@@ -73,7 +74,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#players = new Map();
 		this.#entities = new Map();
 		this.#bodyToEntityMap = new Map();
-		this._bodyToEntityMap = this.#bodyToEntityMap; // TEMP
 
 		this.#toCreateQueue = [];
 		this.#toDeleteQueue = [];
@@ -99,7 +99,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (otherEntity) entity.onCollide(otherEntity);
 		});
 
-		entity.addToWorld(TheWorld);
+		entity.addToWorld(this.#world);
 	}
 
 	/**
@@ -109,7 +109,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#unregisterEntity(entity: Entity) {
 		this.#entities.delete(entity.id);
 		this.#bodyToEntityMap.delete(entity.body);
-		entity.removeFromWorld(TheWorld);
+		entity.removeFromWorld(this.#world);
 	}
 
 	/**
@@ -125,7 +125,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions): Entity[] {
 		return Array.from(
 			new Set(
-				TheWorld.castRay(start, end, rayOptions).flatMap(({ body }) => {
+				this.#world.castRay(start, end, rayOptions).flatMap(({ body }) => {
 					const entity = body && this.#bodyToEntityMap.get(body);
 					return entity ? [entity] : [];
 				}),
@@ -310,7 +310,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	#nextTick() {
-		TheWorld.nextTick();
+		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
@@ -339,7 +339,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (entity) {
 				this.#entities.set(entity.id, entity);
 				this.#bodyToEntityMap.set(entity.body, entity);
-				entity.addToWorld(TheWorld);
+				entity.addToWorld(this.#world);
 			} else {
 				console.log("Someone added a fake ass object to the creation queue");
 			}
@@ -356,7 +356,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (entity) {
 					this.#bodyToEntityMap.delete(entity.body);
 					this.#entities.delete(entity.id);
-					entity.removeFromWorld(TheWorld);
+					entity.removeFromWorld(this.#world);
 				} else {
 					console.log("Bug Detected! Tried to delete an entity that didn't exist");
 				}
@@ -374,5 +374,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 
 		return serial;
+	}
+
+	serializePhysicsBodies(): SerializedBody[] {
+		return this.#world.serialize();
 	}
 }

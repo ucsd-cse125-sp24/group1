@@ -1,6 +1,6 @@
 import * as phys from "cannon-es";
 import { Quaternion, Vector3 } from "../../common/commontypes";
-import { q4, v3 } from "../physics";
+import { q4, v3 } from "../PhysicsWorld";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { GroundMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";

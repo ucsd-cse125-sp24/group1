@@ -1,6 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { v3 } from "../physics";
+import { v3 } from "../PhysicsWorld";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { SlipperyMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
