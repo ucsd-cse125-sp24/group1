@@ -4,7 +4,6 @@ import { ShadowMapCamera } from "../camera/ShadowMapCamera";
 import { ClientEntity } from "../ClientEntity";
 
 export class PointLight {
-	position: vec3;
 	color: vec3;
 	#shadowCamera: ShadowMapCamera;
 	#shadowMapSize = 1024;
@@ -12,9 +11,16 @@ export class PointLight {
 
 	constructor(engine: GraphicsEngine, position: vec3, color: vec3) {
 		this.#engine = engine;
-		this.position = position;
 		this.color = color;
 		this.#shadowCamera = new ShadowMapCamera(position, 0.001, 100, this.#shadowMapSize, engine);
+	}
+
+	get position(): vec3 {
+		return this.#shadowCamera.getPosition();
+	}
+
+	set position(position: vec3) {
+		this.#shadowCamera.setPosition(position);
 	}
 
 	renderShadowMap(entities: ClientEntity[]): void {
