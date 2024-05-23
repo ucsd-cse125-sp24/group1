@@ -10,7 +10,6 @@ import {
 	ItemPlayerCM,
 	ItemGroundCM,
 } from "./materials/ContactMaterials";
-import { Entity } from "./entities/Entity";
 import { serializeShape } from "./lib/serializeShape";
 
 type WorldSetup = {
