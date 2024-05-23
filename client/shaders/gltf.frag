@@ -104,7 +104,7 @@ void main() {
                         light_color);
     vec4 specular = base_specular * specular_factor;
 
-    gl_FragColor += diffuse + 0.0 * specular;
+    gl_FragColor += diffuse + (u_enable_tones == 1 ? specular : vec4(0.0));
   }
 
   if (base_color.a < u_alpha_cutoff) {
