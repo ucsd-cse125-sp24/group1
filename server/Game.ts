@@ -9,15 +9,14 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ClientMessage, SerializedEntity, ServerMessage } from "../common/messages";
+import { ClientMessage, SerializedBody, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { ModelId } from "../assets/models";
-import { TheWorld } from "./physics";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
 import { BossEntity } from "./entities/BossEntity";
-import { Entity } from "./entities/Entity";
+import { Entity, EntityId } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
 import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
@@ -29,6 +28,7 @@ import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 import { log } from "./net/_tempDebugLog";
+import { PhysicsWorld } from "./PhysicsWorld";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -57,23 +57,23 @@ interface NetworkedPlayer {
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
+	#world = new PhysicsWorld({ gravity: [0, -60, 0] });
+
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
 
-	#entities: Map<string, Entity>;
+	#entities: Map<EntityId, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
-	_bodyToEntityMap: Map<Body, Entity>; // TEMP
 
 	//Tyler is creating this so like. Might need to change
 	#toCreateQueue: Entity[];
-	#toDeleteQueue: string[];
+	#toDeleteQueue: EntityId[];
 
 	constructor() {
 		this.#createdInputs = [];
 		this.#players = new Map();
 		this.#entities = new Map();
 		this.#bodyToEntityMap = new Map();
-		this._bodyToEntityMap = this.#bodyToEntityMap; // TEMP
 
 		this.#toCreateQueue = [];
 		this.#toDeleteQueue = [];
@@ -89,7 +89,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * issues while creating or removing entities during a tick.
 	 */
 	#registerEntity(entity: Entity) {
-		this.#entities.set(entity.name, entity);
+		this.#entities.set(entity.id, entity);
 		this.#bodyToEntityMap.set(entity.body, entity);
 
 		// this is one way to implement collision that uses bodyToEntityMap without passing Game reference to entities
@@ -99,7 +99,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (otherEntity) entity.onCollide(otherEntity);
 		});
 
-		entity.addToWorld(TheWorld);
+		entity.addToWorld(this.#world);
 	}
 
 	/**
@@ -107,9 +107,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * issues while creating or removing entities during a tick.
 	 */
 	#unregisterEntity(entity: Entity) {
-		this.#entities.delete(entity.name);
+		this.#entities.delete(entity.id);
 		this.#bodyToEntityMap.delete(entity.body);
-		entity.removeFromWorld(TheWorld);
+		entity.removeFromWorld(this.#world);
 	}
 
 	/**
@@ -125,7 +125,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions): Entity[] {
 		return Array.from(
 			new Set(
-				TheWorld.castRay(start, end, rayOptions).flatMap(({ body }) => {
+				this.#world.castRay(start, end, rayOptions).flatMap(({ body }) => {
 					const entity = body && this.#bodyToEntityMap.get(body);
 					return entity ? [entity] : [];
 				}),
@@ -138,50 +138,35 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	async setup() {
 		const mapColliders = getColliders(await sampleMapColliders);
-		const mapEntity = new MapEntity("the map", [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
+		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.#registerEntity(mapEntity);
 
-		let plane = new PlaneEntity("normal plane", [0, -5.5, 0], [-1, 0, 0, 1], []);
+		let plane = new PlaneEntity(this, [0, -5.5, 0], [-1, 0, 0, 1], []);
 		this.#registerEntity(plane);
 
-		let bigIron = new Item(
-			"Iron1",
-			"iron-ore",
-			0.5,
-			[18, 0, 15],
-			[{ modelId: "samplePlayer", scale: 0.5 }],
-			"resource",
-		);
+		let bigIron = new Item(this, "iron-ore", 0.5, [18, 0, 15], [{ modelId: "samplePlayer", scale: 0.5 }], "resource");
 		this.#registerEntity(bigIron);
 
-		let smallIron = new Item(
-			"Iron2",
-			"iron-ore",
-			0.5,
-			[10, 0, 10],
-			[{ modelId: "samplePlayer", scale: 0.5 }],
-			"resource",
-		);
+		let smallIron = new Item(this, "iron-ore", 0.5, [10, 0, 10], [{ modelId: "samplePlayer", scale: 0.5 }], "resource");
 
 		this.#registerEntity(smallIron);
 
-		let Pick = new Item("pickaxe", "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
+		let Pick = new Item(this, "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
 		this.#registerEntity(Pick);
 
 		let tempCrafter = new CraftingTable(
-			"crafter",
+			this,
 			[18, 0, 18],
 			[{ modelId: "fish1", scale: 10 }],
 			[{ ingredients: ["iron-ore", "iron-ore"], output: "debug" }],
-			this,
 		);
 
 		this.#registerEntity(tempCrafter);
 
-		let tempSphere = new SphereEntity("temp sphere 1", [1, 20, 1], 2);
+		let tempSphere = new SphereEntity(this, [1, 20, 1], 2);
 		this.#registerEntity(tempSphere);
 
-		let tempCylinder = new CylinderEntity("temp cylinder 1", [1, 20, 5], 1.5, 5);
+		let tempCylinder = new CylinderEntity(this, [1, 20, 5], 1.5, 5);
 		this.#registerEntity(tempCylinder);
 	}
 
@@ -201,32 +186,34 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				lookDir: inputs.lookDir,
 			};
 
-			const { from, to } = player.entity.checkOnGroundSegment();
-			player.entity.move(movement, this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP }));
+			player.entity.move(movement);
 
-			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
 			if (posedge.use) {
-				if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
-				else {
-					const { from, to } = player.entity.lookForInteractablesSegment();
-					const entities = this.raycast(from, to, {});
-					console.log(
-						"use",
-						entities.map((e) => e.name),
-					);
-					if (entities[0] instanceof InteractableEntity) entities[0].interact(player.entity);
-					else if (
-						player.entity instanceof BossEntity &&
-						entities[0] instanceof HeroEntity &&
-						!entities[0].isSabotaged
-					) {
-						const target = this.#players.get(entities[0].name);
-						if (target) {
-							target.conn.send({ type: "sabotage-hero", time: 5000 });
-							entities[0].sabotage();
-						}
-					}
-				}
+				// if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
+				// else {
+				// 	const { from, to } = player.entity.lookForInteractablesSegment();
+				// 	const entities = this.raycast(from, to, {});
+				// 	console.log(
+				// 		"use",
+				// 		entities.map((e) => e.name),
+				// 	);
+				// 	if (entities[0] instanceof InteractableEntity) entities[0].interact(player.entity);
+				// 	else if (
+				// 		player.entity instanceof BossEntity &&
+				// 		entities[0] instanceof HeroEntity &&
+				// 		!entities[0].isSabotaged
+				// 	) {
+				// 		const target = this.#players.get(entities[0].name);
+				// 		if (target) {
+				// 			target.conn.send({ type: "sabotage-hero", time: 5000 });
+				// 			entities[0].sabotage();
+				// 		}
+				// 	}
+				// }
+				player.entity.use();
+			}
+			if (posedge.attack) {
+				player.entity.attack();
 			}
 		}
 		this.#nextTick();
@@ -242,13 +229,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let playerEntity;
 			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
 				playerEntity = new HeroEntity(
-					conn.id,
+					this,
 					[20, 20, 20],
 					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
 				);
 			} else {
 				playerEntity = new BossEntity(
-					conn.id,
+					this,
 					[20, 20, 20],
 					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
 				);
@@ -269,7 +256,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		conn.send({
 			type: "camera-lock",
-			entityName: conn.id,
+			entityId: player.entity.id,
 			pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 		});
 	}
@@ -302,14 +289,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (!player) {
 					return;
 				}
-				if (data.keepBody) {
-					// Ensure camera does not lock to it
-					player.entity.name = `formerly ${player.entity.name}`;
-				} else {
-					this.addToDeleteQueue(player.entity.name);
+				if (!data.keepBody) {
+					this.addToDeleteQueue(player.entity.id);
 				}
 				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
-					conn.id,
+					this,
 					[20, 20, 20],
 					[playerModels[Math.floor(Math.random() * playerModels.length)]],
 				);
@@ -317,7 +301,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				player.entity = newEntity;
 				conn.send({
 					type: "camera-lock",
-					entityName: conn.id,
+					entityId: player.entity.id,
 					pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
 				break;
@@ -326,7 +310,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				this.addToCreateQueue(
 					// TODO: other parameters?
 					new Item(
-						`debug spawned item ${new Date()}`,
+						this,
 						"iron-ore",
 						0.5,
 						// Max: (25, 20) Min: (-24, -17)
@@ -343,7 +327,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	#nextTick() {
-		TheWorld.nextTick();
+		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
@@ -361,7 +345,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * This is a string at the moment, but can be changed into not that!
 	 * @param sussyAndRemovable
 	 */
-	addToDeleteQueue(sussyAndRemovable: string) {
+	addToDeleteQueue(sussyAndRemovable: number) {
 		this.#toDeleteQueue.push(sussyAndRemovable);
 	}
 
@@ -370,9 +354,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			let entity = this.#toCreateQueue.pop();
 
 			if (entity) {
-				this.#entities.set(entity.name, entity);
+				this.#entities.set(entity.id, entity);
 				this.#bodyToEntityMap.set(entity.body, entity);
-				entity.addToWorld(TheWorld);
+				entity.addToWorld(this.#world);
 			} else {
 				console.log("Someone added a fake ass object to the creation queue");
 			}
@@ -388,8 +372,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 				if (entity) {
 					this.#bodyToEntityMap.delete(entity.body);
-					this.#entities.delete(entity.name);
-					entity.removeFromWorld(TheWorld);
+					this.#entities.delete(entity.id);
+					entity.removeFromWorld(this.#world);
 				} else {
 					console.log("Bug Detected! Tried to delete an entity that didn't exist");
 				}
@@ -407,5 +391,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 
 		return serial;
+	}
+
+	serializePhysicsBodies(): SerializedBody[] {
+		return this.#world.serialize();
 	}
 }

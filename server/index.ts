@@ -3,7 +3,6 @@ import { SERVER_GAME_TICK } from "../common/constants";
 import { Game } from "./Game";
 import { WsServer } from "./net/WsServer";
 import { log } from "./net/_tempDebugLog";
-import { TheWorld } from "./physics";
 
 /**
  * Whether the server is being compiled for the browser. This is set by the
@@ -36,7 +35,7 @@ let totalDelta = 0;
 		server.broadcast({
 			type: "entire-game-state",
 			entities: game.serialize(), //the game instead!
-			physicsBodies: TheWorld.serialize(),
+			physicsBodies: game.serializePhysicsBodies(),
 			// ... other game data
 		});
 		// wait until end of tick

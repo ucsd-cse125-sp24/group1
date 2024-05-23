@@ -35,12 +35,12 @@ uniform vec4 u_ambient_light;
 uniform int u_enable_tones;
 uniform float u_tones;
 
-float near = 0.001;
-float far = 100.0;
+#define NEAR 0.001
+#define FAR 100.0
 float linearizeDepth(float depth) {
   // https://learnopengl.com/Advanced-OpenGL/Depth-testing
   float z = depth * 2.0 - 1.0; // convert to normalized device coords [-1, 1]
-  return (2.0 * near * far) / (far + near - z * (far - near));
+  return (2.0 * NEAR * FAR) / (FAR + NEAR - z * (FAR - NEAR));
 }
 
 // All components are in the range [0…1], including hue.
@@ -104,7 +104,7 @@ void main() {
                         light_color);
     vec4 specular = base_specular * specular_factor;
 
-    gl_FragColor += diffuse + 0.0 * specular;
+    gl_FragColor += diffuse + (u_enable_tones == 1 ? specular : vec4(0.0));
   }
 
   if (base_color.a < u_alpha_cutoff) {

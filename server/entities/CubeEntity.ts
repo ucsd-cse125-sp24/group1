@@ -1,9 +1,10 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { v3 } from "../physics";
+import { v3 } from "../PhysicsWorld";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { SlipperyMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
+import { Game } from "../Game";
 
 export class CubeEntity extends Entity {
 	// name: string;
@@ -11,9 +12,8 @@ export class CubeEntity extends Entity {
 	// body: phys.Body;
 	// model: ModelId[];
 
-	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
-		super(name, model);
-		this.name = name;
+	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
+		super(game, model);
 		this.type = "cube";
 		this.model = model;
 
@@ -28,7 +28,7 @@ export class CubeEntity extends Entity {
 
 	serialize(): SerializedEntity {
 		return {
-			name: this.name,
+			id: this.id,
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),

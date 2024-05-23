@@ -5,6 +5,9 @@ import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
+import { BossEntity } from "./BossEntity";
+import { Game } from "../Game";
+import { InteractableEntity } from "./Interactable/InteractableEntity";
 
 const COYOTE_FRAMES = 10;
 
@@ -34,7 +37,7 @@ export abstract class PlayerEntity extends Entity {
 	#coyoteCounter: number;
 
 	constructor(
-		name: string,
+		game: Game,
 		pos: Vector3,
 		model: EntityModel[] = [],
 		mass: number,
@@ -46,7 +49,7 @@ export abstract class PlayerEntity extends Entity {
 		jumpSpeed: number,
 		interactionRange: number,
 	) {
-		super(name, model, ["player"]);
+		super(game, model, ["player"]);
 
 		this.type = "player";
 		this.isPlayer = true;
@@ -83,10 +86,15 @@ export abstract class PlayerEntity extends Entity {
 		this.#coyoteCounter = 0;
 	}
 
-	move(movement: MovementInfo, onGroundResult: Entity[]): void {
+	move(movement: MovementInfo): void {
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
-		this.onGround = onGroundResult.length > 0;
+		this.onGround =
+			this.game.raycast(
+				this.body.position,
+				this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
+				{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+			).length > 0;
 
 		if (this.onGround) this.#coyoteCounter = COYOTE_FRAMES;
 		else if (this.#coyoteCounter > 0) this.#coyoteCounter -= 1;
@@ -129,21 +137,43 @@ export abstract class PlayerEntity extends Entity {
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
 		}
 
-		if (movement.jump)
-			console.log(
-				"jump",
-				onGroundResult.map((e) => e.name),
-			);
 		if (movement.jump && this.#coyoteCounter > 0) {
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
 			this.body.applyImpulse(deltaVy.scale(this.body.mass));
 		}
 	}
 
+	use(): void {
+		if (this.itemInHands) this.itemInHands.interact(this);
+		else {
+			const entities = this.game.raycast(
+				this.body.position,
+				this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+				{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+			);
+			if (entities[0] instanceof InteractableEntity) entities[0].interact(this);
+		}
+	}
+
+	attack(): void {
+		const entities = this.game.raycast(
+			this.body.position.vadd(this.lookDir), // TODO: why won't it raycast more if it hits the current player?
+			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+			{ collisionFilterMask: Entity.PLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+		);
+		for (const entity of entities) {
+			// Apply knockback to player when attacked
+			if (entity !== this && entity instanceof PlayerEntity) {
+				console.log("attack", entity.id);
+				entity.body.applyForce(this.lookDir.scale(2000));
+				entity.body.applyForce(new phys.Vec3(0, 2000, 0));
+			}
+		}
+	}
+
 	serialize(): SerializedEntity {
 		return {
-			name: this.name,
-			model: this.model,
+			...super.serialize(),
 			position: this.body.position.toArray(),
 			quaternion: quat.rotationTo(
 				quat.create(),
@@ -154,21 +184,6 @@ export abstract class PlayerEntity extends Entity {
 					.toArray(),
 			),
 		};
-	}
-
-	// HACK: Entities do not have access to Game for some reason, so they must
-	// provide the rays they wanted casted for the Game to execute
-
-	checkOnGroundSegment(): phys.Ray {
-		// apparently this generate a ray segment and only check intersection within that segment
-		return new phys.Ray(
-			this.body.position,
-			this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
-		);
-	}
-
-	lookForInteractablesSegment(): phys.Ray {
-		return new phys.Ray(this.body.position, this.body.position.vadd(this.lookDir.scale(this.interactionRange)));
 	}
 
 	setSpeed(speed: number) {

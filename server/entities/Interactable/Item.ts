@@ -5,10 +5,10 @@ import { PlayerEntity } from "../PlayerEntity";
 import { Tag } from "../Entity";
 import { ItemMaterial } from "../../materials/SourceMaterials";
 import { InteractableEntity } from "./InteractableEntity";
+import { Game } from "../../Game";
 
 export class Item extends InteractableEntity {
 	type: string;
-	name: string;
 	body: phys.Body;
 	model: EntityModel[];
 	radius: number;
@@ -18,23 +18,14 @@ export class Item extends InteractableEntity {
 	sphere: phys.Sphere;
 
 	/**
-	 *
 	 * Tag should be a Tag type! For creating an item, it should only realistically be a resource or a tool!
-	 *
-	 * @param name
-	 * @param type
-	 * @param radius
-	 * @param pos
-	 * @param model
-	 * @param tag
 	 */
-	constructor(name: string, type: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
-		super(name, model, [tag]);
+	constructor(game: Game, type: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
+		super(game, model, [tag]);
 
 		//TODO: ADD A MATERIAL FOR COLLISION
 
 		this.type = type;
-		this.name = name;
 		this.model = model;
 		this.radius = radius;
 		this.heldBy = null;
@@ -98,14 +89,5 @@ export class Item extends InteractableEntity {
 		let throwForce = direction;
 		throwForce.normalize();
 		this.body.applyForce(throwForce.scale(600));
-	}
-
-	serialize(): SerializedEntity {
-		return {
-			name: this.name,
-			model: this.model,
-			position: this.body.position.toArray(),
-			quaternion: this.body.quaternion.toArray(),
-		};
 	}
 }

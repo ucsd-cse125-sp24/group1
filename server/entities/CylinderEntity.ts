@@ -1,8 +1,9 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { v3 } from "../physics";
+import { v3 } from "../PhysicsWorld";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { Entity } from "./Entity";
+import { Game } from "../Game";
 
 export class CylinderEntity extends Entity {
 	static NUM_SEGMENTS = 20;
@@ -12,10 +13,9 @@ export class CylinderEntity extends Entity {
 	// body: phys.Body;
 	// model: EntityModel[];
 
-	constructor(name: string, pos: Vector3, radius: number, height: number, model: EntityModel[] = []) {
-		super(name, model);
+	constructor(game: Game, pos: Vector3, radius: number, height: number, model: EntityModel[] = []) {
+		super(game, model);
 		this.type = "cylinder";
-		this.name = name;
 		this.model = model;
 
 		this.body = new phys.Body({
@@ -28,7 +28,7 @@ export class CylinderEntity extends Entity {
 
 	serialize(): SerializedEntity {
 		return {
-			name: this.name,
+			id: this.id,
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),

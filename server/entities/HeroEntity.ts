@@ -1,5 +1,6 @@
 import { Vector3 } from "../../common/commontypes";
 import { EntityModel } from "../../common/messages";
+import { Game } from "../Game";
 import { PlayerEntity } from "./PlayerEntity";
 
 const PLAYER_INTERACTION_RANGE = 15.0; // TEMP, but 2 is too low IMO
@@ -21,9 +22,9 @@ export class HeroEntity extends PlayerEntity {
 	jumping: boolean;
 	isSabotaged: boolean = false;
 
-	constructor(name: string, pos: Vector3, model: EntityModel[] = []) {
+	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
-			name,
+			game,
 			pos,
 			model,
 			10,

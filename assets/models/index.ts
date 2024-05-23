@@ -25,13 +25,14 @@ import { shears } from "./shears";
 import { string } from "./string";
 import { sword } from "./sword";
 import { wood } from "./wood";
+import { defaultCube } from "./default-cube";
 
 export const getModels = (engine: GraphicsEngine) =>
 	({
 		fish1: GltfModelWrapper.from(engine.gltfMaterial, fish1),
 		// fish2: GltfModelWrapper.from(engine.gltfMaterial, fish2),
 		// cavecube: GltfModelWrapper.from(engine.gltfMaterial, cavecube),
-		// defaultCube: GltfModelWrapper.from(engine.gltfMaterial, defaultCube),
+		defaultCube: GltfModelWrapper.from(engine.gltfMaterial, defaultCube),
 		// defaultCubeColor: GltfModelWrapper.from(engine.gltfMaterial, defaultCubeColor),
 		donut: GltfModelWrapper.from(engine.gltfMaterial, donut),
 		// twoTextureTest: GltfModelWrapper.from(engine.gltfMaterial, twoTextureTest),
