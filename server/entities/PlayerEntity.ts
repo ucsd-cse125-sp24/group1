@@ -7,6 +7,7 @@ import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { BossEntity } from "./BossEntity";
 import { Game } from "../Game";
+import { InteractableEntity } from "./Interactable/InteractableEntity";
 
 const COYOTE_FRAMES = 10;
 
@@ -84,10 +85,15 @@ export abstract class PlayerEntity extends Entity {
 		this.#coyoteCounter = 0;
 	}
 
-	move(movement: MovementInfo, onGroundResult: Entity[]): void {
+	move(movement: MovementInfo): void {
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
-		this.onGround = onGroundResult.length > 0;
+		this.onGround =
+			this.game.raycast(
+				this.body.position,
+				this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
+				{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP },
+			).length > 0;
 
 		if (this.onGround) this.#coyoteCounter = COYOTE_FRAMES;
 		else if (this.#coyoteCounter > 0) this.#coyoteCounter -= 1;
@@ -136,6 +142,18 @@ export abstract class PlayerEntity extends Entity {
 		}
 	}
 
+	use(): void {
+		if (this.itemInHands) this.itemInHands.interact(this);
+		else {
+			const entities = this.game.raycast(
+				this.body.position,
+				this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+				{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP },
+			);
+			if (entities[0] instanceof InteractableEntity) entities[0].interact(this);
+		}
+	}
+
 	serialize(): SerializedEntity {
 		return {
 			...super.serialize(),
@@ -149,21 +167,6 @@ export abstract class PlayerEntity extends Entity {
 					.toArray(),
 			),
 		};
-	}
-
-	// HACK: Entities do not have access to Game for some reason, so they must
-	// provide the rays they wanted casted for the Game to execute
-
-	checkOnGroundSegment(): phys.Ray {
-		// apparently this generate a ray segment and only check intersection within that segment
-		return new phys.Ray(
-			this.body.position,
-			this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
-		);
-	}
-
-	lookForInteractablesSegment(): phys.Ray {
-		return new phys.Ray(this.body.position, this.body.position.vadd(this.lookDir.scale(this.interactionRange)));
 	}
 
 	setSpeed(speed: number) {

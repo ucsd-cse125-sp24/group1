@@ -186,17 +186,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				lookDir: inputs.lookDir,
 			};
 
-			const { from, to } = player.entity.checkOnGroundSegment();
-			player.entity.move(movement, this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP }));
+			player.entity.move(movement);
 
 			// if (posedge.use) console.log("USE CLICKED WAWFAHDKSLHALKDJHASJLKDHASJKd"); // Use is not being activated
 			if (posedge.use) {
-				if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
-				else {
-					const { from, to } = player.entity.lookForInteractablesSegment();
-					const entities = this.raycast(from, to, { collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP });
-					if (entities[0] instanceof InteractableEntity) entities[0].interact(player.entity);
-				}
+				player.entity.use();
 			}
 		}
 		this.#nextTick();
