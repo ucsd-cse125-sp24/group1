@@ -1,6 +1,8 @@
 import { Vector3 } from "../../common/commontypes";
 import { EntityModel } from "../../common/messages";
 import { Game } from "../Game";
+import { Entity } from "./Entity";
+import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
 
 const PLAYER_INTERACTION_RANGE = 2.0;
@@ -38,5 +40,21 @@ export class BossEntity extends PlayerEntity {
 
 		this.type = "player-boss";
 		this.jumping = false;
+	}
+
+	use(): boolean {
+		const interacted = super.use();
+		if (interacted) {
+			return true;
+		}
+		const entities = this.game.raycast(
+			this.body.position,
+			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+			{ collisionFilterMask: Entity.PLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+		);
+		if (entities[0] instanceof HeroEntity && !entities[0].isSabotaged) {
+			this.game.sabotageHero(entities[0].id);
+		}
+		return false;
 	}
 }

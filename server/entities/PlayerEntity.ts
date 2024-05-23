@@ -3,10 +3,9 @@ import { quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
+import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
-import { BossEntity } from "./BossEntity";
-import { Game } from "../Game";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 
 const COYOTE_FRAMES = 10;
@@ -143,16 +142,26 @@ export abstract class PlayerEntity extends Entity {
 		}
 	}
 
-	use(): void {
-		if (this.itemInHands) this.itemInHands.interact(this);
-		else {
-			const entities = this.game.raycast(
-				this.body.position,
-				this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
-				{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP, checkCollisionResponse: false },
-			);
-			if (entities[0] instanceof InteractableEntity) entities[0].interact(this);
+	/**
+	 * @returns true if an interaction occurred, false otherwise. Subclasses can
+	 * call this (`super.use()`) and use the return value to determine whether to
+	 * perform subclass-unique actions.
+	 */
+	use(): boolean {
+		if (this.itemInHands) {
+			this.itemInHands.interact(this);
+			return true;
 		}
+		const entities = this.game.raycast(
+			this.body.position,
+			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+			{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+		);
+		if (entities[0] instanceof InteractableEntity) {
+			entities[0].interact(this);
+			return true;
+		}
+		return false;
 	}
 
 	attack(): void {

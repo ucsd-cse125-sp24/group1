@@ -44,6 +44,7 @@ export class HeroEntity extends PlayerEntity {
 	sabotage(): void {
 		this.isSabotaged = true;
 		this.setSpeed(HERO_WALK_SPEED / 2);
+		// TODO: Maybe use some tick counter instead of setTimeout
 		setTimeout(() => {
 			this.isSabotaged = false;
 			this.setSpeed(HERO_WALK_SPEED);

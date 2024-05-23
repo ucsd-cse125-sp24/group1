@@ -22,7 +22,6 @@ import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
 import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
-import { InteractableEntity } from "./entities/Interactable/InteractableEntity";
 import { getColliders } from "./entities/map/colliders";
 import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
@@ -189,27 +188,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.entity.move(movement);
 
 			if (posedge.use) {
-				// if (player.entity.itemInHands) player.entity.itemInHands.interact(player.entity);
-				// else {
-				// 	const { from, to } = player.entity.lookForInteractablesSegment();
-				// 	const entities = this.raycast(from, to, {});
-				// 	console.log(
-				// 		"use",
-				// 		entities.map((e) => e.name),
-				// 	);
-				// 	if (entities[0] instanceof InteractableEntity) entities[0].interact(player.entity);
-				// 	else if (
-				// 		player.entity instanceof BossEntity &&
-				// 		entities[0] instanceof HeroEntity &&
-				// 		!entities[0].isSabotaged
-				// 	) {
-				// 		const target = this.#players.get(entities[0].name);
-				// 		if (target) {
-				// 			target.conn.send({ type: "sabotage-hero", time: 5000 });
-				// 			entities[0].sabotage();
-				// 		}
-				// 	}
-				// }
 				player.entity.use();
 			}
 			if (posedge.attack) {
@@ -217,6 +195,23 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 		}
 		this.#nextTick();
+	}
+
+	sabotageHero(id: EntityId) {
+		const target = this.#getPlayerByEntityId(id);
+		if (target && target.entity instanceof HeroEntity) {
+			target.conn.send({ type: "sabotage-hero", time: 5000 });
+			target.entity.sabotage();
+		}
+	}
+
+	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
+		for (const [_, player] of this.#players) {
+			if (player.entity.id === id) {
+				return player;
+			}
+		}
+		return undefined;
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>) {
@@ -302,7 +297,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				conn.send({
 					type: "camera-lock",
 					entityId: player.entity.id,
-					pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
+					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
 				break;
 			case "--debug-spawn-item":
