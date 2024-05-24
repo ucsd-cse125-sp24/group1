@@ -13,7 +13,7 @@ export type ParticleOptions = {
 	mass: number;
 	initialPosition: vec3;
 	initialVelocity: vec3;
-	initialVelocityRange: vec3;
+	initialVelocityRange?: vec3;
 	/** Remaining time to live in seconds */
 	ttl: number;
 };
@@ -59,16 +59,16 @@ export class ParticleSystem implements Model {
 
 	constructor(
 		engine: GraphicsEngine,
-		maxParticles = 100,
+		maxParticles = 10,
 		spawnPeriod = 1000,
-		spawnCount = 10,
+		spawnCount = 5,
 		{
 			size = 16,
 			color = [1, 1, 1],
 			mass = 1,
 			initialPosition = [0, 0, 0],
-			initialVelocity = [1, 1, 0],
-			initialVelocityRange = [0, 0, 0],
+			initialVelocity = [0, 1, 0],
+			initialVelocityRange = undefined,
 			ttl = 5,
 		}: Partial<ParticleOptions> = {},
 	) {
@@ -127,9 +127,9 @@ export class ParticleSystem implements Model {
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
 			gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, this.#transformFeedbacks[i]);
-			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, positionAttribIndex, VBO_position);
-			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, velocityAttribIndex, VBO_velocity);
-			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, ttlAttribIndex, VBO_ttl);
+			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, VBO_position);
+			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, VBO_velocity);
+			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 2, VBO_ttl);
 			gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
 
 			gl.bindVertexArray(null);
@@ -187,28 +187,15 @@ export class ParticleSystem implements Model {
 		const numToSpawn = Math.min(this.spawnCount, this.#maxParticles);
 		const availableBufferLength = this.#maxParticles - this.#nextParticleIndex;
 
-		gl.bindVertexArray(this.#VAOs[this.#currentVAOIndex]);
-
-		const positionBuffer: WebGLBuffer = gl.getVertexAttrib(
-			this.shader.attrib("a_position"),
-			gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
-		);
 		const newPositions = Float32Array.from(new Array(numToSpawn).fill(this.options.initialPosition).flat());
-		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-		gl.bufferSubData(gl.ARRAY_BUFFER, this.#nextParticleIndex * 3, newPositions.subarray(0, availableBufferLength * 3));
-		if (availableBufferLength < numToSpawn) {
-			gl.bufferSubData(gl.ARRAY_BUFFER, 0, newPositions.subarray(availableBufferLength * 3));
-		}
-
-		const velocityBuffer: WebGLBuffer = gl.getVertexAttrib(
-			this.shader.attrib("a_velocity"),
-			gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
-		);
 		const newVelocities = Float32Array.from(
 			new Array(numToSpawn)
 				.fill(this.options.initialVelocity)
 				.map((v: [number, number, number]) => {
 					const range = this.options.initialVelocityRange;
+					if (range === undefined) {
+						return v;
+					}
 					const r0 = Math.random() * range[0] - range[0] / 2;
 					const r1 = Math.random() * range[1] - range[1] / 2;
 					const r2 = Math.random() * range[2] - range[2] / 2;
@@ -216,25 +203,50 @@ export class ParticleSystem implements Model {
 				})
 				.flat(),
 		);
+		const newTtls = Float32Array.from(new Array(numToSpawn).fill(this.options.ttl));
+
+		gl.bindVertexArray(this.#VAOs[this.#currentVAOIndex]);
+
+		const positionBuffer: WebGLBuffer = gl.getVertexAttrib(
+			this.shader.attrib("a_position"),
+			gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
+		);
+		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+		gl.bufferSubData(
+			gl.ARRAY_BUFFER,
+			this.#nextParticleIndex * Float32Array.BYTES_PER_ELEMENT * 3,
+			newPositions.subarray(0, availableBufferLength * 3),
+		);
+		if (availableBufferLength < numToSpawn) {
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, newPositions.subarray((numToSpawn - availableBufferLength) * 3));
+		}
+
+		const velocityBuffer: WebGLBuffer = gl.getVertexAttrib(
+			this.shader.attrib("a_velocity"),
+			gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
+		);
 		gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
 		gl.bufferSubData(
 			gl.ARRAY_BUFFER,
-			this.#nextParticleIndex * 3,
+			this.#nextParticleIndex * Float32Array.BYTES_PER_ELEMENT * 3,
 			newVelocities.subarray(0, availableBufferLength * 3),
 		);
 		if (availableBufferLength < numToSpawn) {
-			gl.bufferSubData(gl.ARRAY_BUFFER, 0, newVelocities.subarray(availableBufferLength * 3));
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, newVelocities.subarray((numToSpawn - availableBufferLength) * 3));
 		}
 
 		const ttlBuffer: WebGLBuffer = gl.getVertexAttrib(
 			this.shader.attrib("a_ttl"),
 			gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
 		);
-		const newTtls = Float32Array.from(new Array(numToSpawn).fill(this.options.ttl));
 		gl.bindBuffer(gl.ARRAY_BUFFER, ttlBuffer);
-		gl.bufferSubData(gl.ARRAY_BUFFER, this.#nextParticleIndex, newTtls.subarray(0, availableBufferLength));
+		gl.bufferSubData(
+			gl.ARRAY_BUFFER,
+			this.#nextParticleIndex * Float32Array.BYTES_PER_ELEMENT,
+			newTtls.subarray(0, availableBufferLength),
+		);
 		if (availableBufferLength < numToSpawn) {
-			gl.bufferSubData(gl.ARRAY_BUFFER, 0, newTtls.subarray(availableBufferLength));
+			gl.bufferSubData(gl.ARRAY_BUFFER, 0, newTtls.subarray(numToSpawn - availableBufferLength));
 		}
 
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
@@ -273,5 +285,37 @@ export class ParticleSystem implements Model {
 
 		// Swap buffers
 		this.#currentVAOIndex = (1 - this.#currentVAOIndex) as 0 | 1;
+	}
+
+	#print() {
+		const gl = this.shader.engine.gl;
+		console.log(`current index: ${this.#currentVAOIndex}`);
+		const debugArray = new Float32Array(this.#maxParticles * 3);
+		for (let i = 0; i < 2; i++) {
+			gl.bindVertexArray(this.#VAOs[i]);
+			const positionBuffer: WebGLBuffer = gl.getVertexAttrib(
+				this.shader.attrib("a_position"),
+				gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
+			);
+			gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+			gl.getBufferSubData(gl.ARRAY_BUFFER, 0, debugArray);
+			console.log(`position buffer ${i}: ${debugArray}`);
+			const velocityBuffer: WebGLBuffer = gl.getVertexAttrib(
+				this.shader.attrib("a_velocity"),
+				gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
+			);
+			gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
+			gl.getBufferSubData(gl.ARRAY_BUFFER, 0, debugArray);
+			console.log(`velocity buffer ${i}: ${debugArray}`);
+			const ttlBuffer: WebGLBuffer = gl.getVertexAttrib(
+				this.shader.attrib("a_ttl"),
+				gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING,
+			);
+			gl.bindBuffer(gl.ARRAY_BUFFER, ttlBuffer);
+			gl.getBufferSubData(gl.ARRAY_BUFFER, 0, debugArray, 0, this.#maxParticles);
+			console.log(`ttl buffer ${i}: ${debugArray.subarray(0, this.#maxParticles)}`);
+			gl.bindBuffer(gl.ARRAY_BUFFER, null);
+			gl.bindVertexArray(null);
+		}
 	}
 }
