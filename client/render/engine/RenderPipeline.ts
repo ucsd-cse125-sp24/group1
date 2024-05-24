@@ -1,5 +1,7 @@
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
+import outlineFilterFragmentSource from "../../shaders/outlineFilter.frag";
+import sporeFilterFragmentSource from "../../shaders/sporeFilter.frag";
 import GraphicsEngine from "./GraphicsEngine";
 import { ShaderProgram } from "./ShaderProgram";
 
@@ -17,6 +19,8 @@ export class RenderPipeline {
 	#filters: ShaderProgram[];
 
 	noOpFilter: ShaderProgram;
+	outlineFilter: ShaderProgram;
+	sporeFilter: ShaderProgram;
 
 	constructor(engine: GraphicsEngine) {
 		this.#engine = engine;
@@ -62,10 +66,28 @@ export class RenderPipeline {
 				engine.createShader("fragment", noOpFilterFragmentSource, "filterNoOp.frag"),
 			),
 		);
+		this.outlineFilter = new ShaderProgram(
+			engine,
+			engine.createProgram(
+				engine.createShader("vertex", filterVertexSource, "filter.vert"),
+				engine.createShader("fragment", outlineFilterFragmentSource, "outlineFilter.frag"),
+			),
+		);
+		this.sporeFilter = new ShaderProgram(
+			engine,
+			engine.createProgram(
+				engine.createShader("vertex", filterVertexSource, "filter.vert"),
+				engine.createShader("fragment", sporeFilterFragmentSource, "sporeFilter.frag"),
+			),
+		);
 	}
 
-	addFilter(filter: ShaderProgram): void {
+	pushFilter(filter: ShaderProgram): void {
 		this.#filters.push(filter);
+	}
+
+	popFilter(): void {
+		this.#filters.pop();
 	}
 
 	startRender(): void {

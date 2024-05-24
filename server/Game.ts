@@ -22,7 +22,6 @@ import { SphereEntity } from "./entities/SphereEntity";
 import { CylinderEntity } from "./entities/CylinderEntity";
 import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
-import { InteractableEntity } from "./entities/Interactable/InteractableEntity";
 import { getColliders } from "./entities/map/colliders";
 import { MapEntity } from "./entities/map/MapEntity";
 import { Item } from "./entities/Interactable/Item";
@@ -57,7 +56,7 @@ interface NetworkedPlayer {
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
-	#world = new PhysicsWorld({ gravity: [0, -15.82, 0] });
+	#world = new PhysicsWorld({ gravity: [0, -60, 0] });
 
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
@@ -198,6 +197,23 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#nextTick();
 	}
 
+	sabotageHero(id: EntityId) {
+		const target = this.#getPlayerByEntityId(id);
+		if (target && target.entity instanceof HeroEntity) {
+			target.conn.send({ type: "sabotage-hero", time: 5000 });
+			target.entity.sabotage();
+		}
+	}
+
+	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
+		for (const [_, player] of this.#players) {
+			if (player.entity.id === id) {
+				return player;
+			}
+		}
+		return undefined;
+	}
+
 	handlePlayerJoin(conn: Connection<ServerMessage>) {
 		console.log("Player joining!", this.#players.size);
 		let player = this.#players.get(conn.id);
@@ -236,7 +252,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		conn.send({
 			type: "camera-lock",
 			entityId: player.entity.id,
-			pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
+			pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 		});
 	}
 
@@ -281,7 +297,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				conn.send({
 					type: "camera-lock",
 					entityId: player.entity.id,
-					pov: player.entity instanceof BossEntity ? "top-down" : "first-person",
+					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
 				break;
 			case "--debug-spawn-item":
