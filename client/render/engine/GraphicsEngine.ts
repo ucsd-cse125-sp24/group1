@@ -27,14 +27,14 @@ class GraphicsEngine extends WebGlUtils {
 			this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
 		),
 	);
-	particleMaterial = new ShaderProgram(
-		this,
-		this.createProgram(
-			this.createShader("vertex", particleVertexSource, "particle.vert"),
-			this.createShader("fragment", particleFragmentSource, "particle.frag"),
-			["v_position", "v_velocity", "v_age", "v_life"],
-		),
-	);
+	// particleMaterial = new ShaderProgram(
+	// 	this,
+	// 	this.createProgram(
+	// 		this.createShader("vertex", particleVertexSource, "particle.vert"),
+	// 		this.createShader("fragment", particleFragmentSource, "particle.frag"),
+	// 		["v_position", "v_velocity", "v_age", "v_life"],
+	// 	),
+	// );
 	models = getModels(this);
 
 	/**

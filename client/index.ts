@@ -1,6 +1,7 @@
 import { mat4, vec3 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
+import { EntityId } from "../server/entities/Entity";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
@@ -9,16 +10,12 @@ import { FreecamInputs, PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { getGl } from "./render/getGl";
-import { PointLight } from "./render/lights/PointLight";
 import { RenderPipeline } from "./render/engine/RenderPipeline";
 import { ShaderProgram } from "./render/engine/ShaderProgram";
-import filterVertexSource from "./shaders/filter.vert";
-import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
-import { TempLightModel } from "./render/lights/TempLightModel";
 import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
-import { EntityId } from "../server/entities/Entity";
+import { ParticleSystem } from "./render/model/ParticleSystem";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -211,7 +208,9 @@ const tempEntities: ClientEntity[] = [
 			mat4.fromRotation(mat4.create(), 0.5, [1, 2, 3]),
 		),
 	),
+	new ClientEntity(engine, [{ model: new ParticleSystem(engine), transform: mat4.create() }]),
 ];
+(tempEntities[4].models[0].model as ParticleSystem).enable();
 
 const ambientLight = [0.2, 0.2, 0.2] as const;
 

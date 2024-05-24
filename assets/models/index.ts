@@ -40,7 +40,7 @@ export const getModels = (engine: GraphicsEngine) =>
 		samplePlayer: GltfModelWrapper.from(engine.gltfMaterial, samplePlayer),
 		// box1: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
 		// box2: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
-		particles: new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)),
+		// particles: new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)),
 		axe: GltfModelWrapper.from(engine.gltfMaterial, axe),
 		bow: GltfModelWrapper.from(engine.gltfMaterial, bow),
 		gamer_bow: GltfModelWrapper.from(engine.gltfMaterial, gamer_bow),
