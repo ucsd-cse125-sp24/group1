@@ -82,26 +82,12 @@ void main() {
 
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
-    // gl_FragColor += vec4(1.0 / (1.0 + distance), 0.0, 0.0, 1.0);
-    float bruh = textureCube(u_point_shadow_maps[i], -to_light / distance).r;
-    float shadow_dist = linearizeDepth(bruh);
+    float shadow_dist = linearizeDepth(
+        textureCube(u_point_shadow_maps[i], -to_light / distance).r);
     // https://stackoverflow.com/a/10789527
     vec3 abs_to_light = abs(to_light);
     float local_z = max(abs_to_light.x, max(abs_to_light.y, abs_to_light.z));
-    /*
-    gl_FragColor +=
-        vec4(mod(bruh, 0.000001) / 0.000001, mod(bruh, 0.0000001) / 0.0000001,
-             mod(bruh, 0.00000001) / 0.00000001, 1.0);
-    // gl_FragColor += vec4(0.9978 > bruh ? 1.0 : 0.0, 0.0, 0.0, 1.0);
-    // gl_FragColor += vec4(to_light * 0.5 + vec3(0.5), 1.0);
-    // gl_FragColor += vec4((1.0 - bruh) * 1000.0, 0.0, 0.0, 1.0);
-    // gl_FragColor += vec4(hsv2rgb(vec3(v_position.x / 5.0, 1.0, 1.0)), 1.0);
-    /*/
     if (shadow_dist < local_z + W) {
-      // TEMP
-      // gl_FragColor += vec4(5.0 / (1.0 + distance), 0.0,
-      //                      distance < 4.0 ? (4.0 - distance) / 4.0 :
-      //                      0.0, 1.0);
       // occluded
       continue;
     }
@@ -123,10 +109,7 @@ void main() {
                         light_color);
     vec4 specular = base_specular * specular_factor;
 
-    // gl_FragColor += vec4(0.0, 0.0, (shadow_dist - distance) /
-    // shadow_dist, 1.0);
     gl_FragColor += diffuse + (u_enable_tones == 1 ? specular : vec4(0.0));
-    //*/
   }
 
   if (base_color.a < u_alpha_cutoff) {
