@@ -212,7 +212,7 @@ const box = new ClientEntity(
 		mat4.fromRotation(mat4.create(), 0.5, [1, 2, 3]),
 	),
 );
-const tempEntities: ClientEntity[] = [warmLight, box];
+const tempEntities: ClientEntity[] = [coolLight, box];
 
 const ambientLight = [0.2, 0.2, 0.2] as const;
 
@@ -239,7 +239,7 @@ const paint = () => {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
-		warmLight.position = vec3.add(vec3.create(), position, [0, -1, 0]); //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
+		coolLight.position = vec3.add(vec3.create(), position, [0, -1, 0]); //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		if (!freecam) {
 			if (isFirstPerson) {
 				camera.setPosition(position);
