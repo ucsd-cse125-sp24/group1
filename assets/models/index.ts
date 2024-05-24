@@ -1,6 +1,5 @@
 import { vec3 } from "gl-matrix";
 import GraphicsEngine from "../../client/render/engine/GraphicsEngine";
-import { particleGeometry } from "../../client/render/geometries/ParticleGeometry";
 import { Model } from "../../client/render/model/Model";
 import { GltfModelWrapper } from "../../client/render/model/GltfModel";
 import { donut } from "./donut";
@@ -40,7 +39,6 @@ export const getModels = (engine: GraphicsEngine) =>
 		samplePlayer: GltfModelWrapper.from(engine.gltfMaterial, samplePlayer),
 		// box1: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
 		// box2: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
-		// particles: new particleGeometry(engine.particleMaterial, vec3.fromValues(1, 2, 3)),
 		axe: GltfModelWrapper.from(engine.gltfMaterial, axe),
 		bow: GltfModelWrapper.from(engine.gltfMaterial, bow),
 		gamer_bow: GltfModelWrapper.from(engine.gltfMaterial, gamer_bow),

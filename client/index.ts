@@ -15,7 +15,6 @@ import { ShaderProgram } from "./render/engine/ShaderProgram";
 import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
-import { ParticleSystem } from "./render/model/ParticleSystem";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -208,9 +207,7 @@ const tempEntities: ClientEntity[] = [
 			mat4.fromRotation(mat4.create(), 0.5, [1, 2, 3]),
 		),
 	),
-	new ClientEntity(engine, [{ model: new ParticleSystem(engine), transform: mat4.create() }]),
 ];
-(tempEntities[4].models[0].model as ParticleSystem).enable();
 
 const ambientLight = [0.2, 0.2, 0.2] as const;
 
