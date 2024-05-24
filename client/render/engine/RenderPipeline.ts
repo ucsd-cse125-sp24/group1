@@ -1,7 +1,9 @@
+import { mat4 } from "gl-matrix";
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
 import outlineFilterFragmentSource from "../../shaders/outlineFilter.frag";
 import sporeFilterFragmentSource from "../../shaders/sporeFilter.frag";
+import { ParticleSystem } from "../model/ParticleSystem";
 import GraphicsEngine from "./GraphicsEngine";
 import { ShaderProgram } from "./ShaderProgram";
 
@@ -17,6 +19,8 @@ export class RenderPipeline {
 	#imagePlanePositions: WebGLBuffer | null;
 	#imagePlaneTexCoords: WebGLBuffer | null;
 	#filters: ShaderProgram[];
+
+	#reticle: ParticleSystem;
 
 	noOpFilter: ShaderProgram;
 	outlineFilter: ShaderProgram;
@@ -80,6 +84,16 @@ export class RenderPipeline {
 				engine.createShader("fragment", sporeFilterFragmentSource, "sporeFilter.frag"),
 			),
 		);
+
+		this.#reticle = new ParticleSystem(engine, 1, Number.POSITIVE_INFINITY, 1, {
+			size: 20,
+			color: [1, 1, 1],
+			mass: 0,
+			initialPosition: [0, 0, -0.5],
+			initialVelocity: [0, 0, 0],
+			ttl: Number.POSITIVE_INFINITY,
+		});
+		this.#reticle.enable();
 	}
 
 	pushFilter(filter: ShaderProgram): void {
@@ -143,6 +157,10 @@ export class RenderPipeline {
 
 		// Final draw to canvas
 		this.#drawToPlane(this.#filters.length - 1);
+		this.#reticle.shader.use();
+		gl.uniformMatrix4fv(this.#reticle.shader.uniform("u_view"), false, mat4.create());
+		gl.uniformMatrix4fv(this.#reticle.shader.uniform("u_model"), false, mat4.create());
+		this.#reticle.draw();
 	}
 
 	#drawToPlane(filterIndex: number): void {
