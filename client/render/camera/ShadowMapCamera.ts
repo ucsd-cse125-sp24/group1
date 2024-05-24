@@ -31,7 +31,7 @@ export class ShadowMapCamera extends Camera {
 	#framebuffer: WebGLFramebuffer;
 
 	constructor(position: vec3, nearBound: number, farBound: number, size: number, engine: GraphicsEngine) {
-		super(position, vec3.fromValues(1, 0, 0), vec3.fromValues(0, 1, 0), Math.PI / 4, 1, nearBound, farBound, engine);
+		super(position, vec3.fromValues(1, 0, 0), vec3.fromValues(0, 1, 0), Math.PI / 2, 1, nearBound, farBound, engine);
 		this.#perspective = mat4.perspective(mat4.create(), this._fovY, this._aspectRatio, this._nearBound, this._farBound);
 		this.#textureSize = size;
 		const gl = engine.gl;

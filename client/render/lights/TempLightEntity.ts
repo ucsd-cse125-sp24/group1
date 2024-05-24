@@ -11,7 +11,7 @@ export class TempLightEntity extends ClientEntity {
 
 	constructor(shader: ShaderProgram, position?: vec3, color?: vec3) {
 		const model = new TempLightModel(shader, vec3.create());
-		super(shader.engine, "", [{ model, transform: mat4.create() }]);
+		super(shader.engine, [{ model, transform: mat4.create() }]);
 		this.#model = model;
 		this.light = new PointLight(shader.engine, vec3.create(), vec3.create());
 		if (position) {
