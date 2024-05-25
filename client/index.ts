@@ -196,10 +196,7 @@ const tempLightShader = new ShaderProgram(
 const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
 const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30));
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5));
-const tempEntities: ClientEntity[] = [
-	//warmLight, whiteLight,
-	coolLight,
-];
+const tempEntities: ClientEntity[] = [warmLight, whiteLight, coolLight];
 
 const ambientLight = [0.2, 0.2, 0.2] as const;
 
