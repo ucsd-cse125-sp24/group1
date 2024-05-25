@@ -2,8 +2,6 @@ import gltfFragmentSource from "../../shaders/gltf.frag";
 import gltfVertexSource from "../../shaders/gltf.vert";
 import wireframeFragmentSource from "../../shaders/wireframe.frag";
 import wireframeVertexSource from "../../shaders/wireframe.vert";
-import particleFragmentSource from "../../shaders/particle.frag";
-import particleVertexSource from "../../shaders/particle.vert";
 import { getModels } from "../../../assets/models";
 import { SerializedCollider } from "../../../common/messages";
 import { ShaderProgram } from "./ShaderProgram";
@@ -25,14 +23,6 @@ class GraphicsEngine extends WebGlUtils {
 		this.createProgram(
 			this.createShader("vertex", gltfVertexSource, "gltf.vert"),
 			this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
-		),
-	);
-	particleMaterial = new ShaderProgram(
-		this,
-		this.createProgram(
-			this.createShader("vertex", particleVertexSource, "particle.vert"),
-			this.createShader("fragment", particleFragmentSource, "particle.frag"),
-			["v_position", "v_velocity", "v_age", "v_life"],
 		),
 	);
 	models = getModels(this);
