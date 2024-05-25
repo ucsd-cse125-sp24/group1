@@ -82,11 +82,33 @@ void main() {
 
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
-    float shadow_dist = linearizeDepth(
-        textureCube(u_point_shadow_maps[i], -to_light / distance).r);
+    float bruh = textureCube(u_point_shadow_maps[i], -to_light / distance).r;
+    float shadow_dist = linearizeDepth(bruh);
     // https://stackoverflow.com/a/10789527
     vec3 abs_to_light = abs(to_light);
     float local_z = max(abs_to_light.x, max(abs_to_light.y, abs_to_light.z));
+    float local_depth =
+        (2.0 * FAR * NEAR / local_z - (FAR + NEAR)) / (FAR - NEAR);
+    float local_depth2 = ((FAR + NEAR) / (FAR - NEAR) -
+                          (2.0 * FAR * NEAR) / (FAR - NEAR) / local_z + 1.0) *
+                         0.5;
+    // gl_FragColor = vec4(vec3(mod(local_depth, 0.00001) / 0.00001,
+    //                          mod(local_depth, 0.000001) / 0.000001,
+    //                          mod(local_depth, 0.0000001) / 0.0000001),
+    //                     1.0);
+    // gl_FragColor = vec4(
+    //     vec3(shadow_dist < local_z ? 1.0 - (shadow_dist - local_z) / -10.0
+    //                                : 1.0,
+    //          shadow_dist > local_z ? 1.0 - (shadow_dist - local_z) / 10.0
+    //          : 1.0, mod(shadow_dist, 0.00001) / 0.00001),
+    //     1.0);
+    gl_FragColor =
+        vec4(bruh < local_depth2 ? (local_depth2 - bruh) * 100000.0 : 0.0, 0.0,
+             bruh > local_depth2 ? (bruh - local_depth2) * 100000.0 : 0.0, 1.0);
+    // gl_FragColor = vec4((local_depth - 1.0) * 1000.0, 0.0, 0.0, 1.0);
+    // gl_FragColor = vec4((1.0 - local_depth2) * 1000.0, 0.0, 0.0, 1.0);
+    // gl_FragColor = vec4((1.0 - bruh) * 1000.0, 0.0, 0.0, 1.0);
+    /*
     if (shadow_dist < local_z + W) {
       // occluded
       continue;
@@ -110,6 +132,7 @@ void main() {
     vec4 specular = base_specular * specular_factor;
 
     gl_FragColor += diffuse + (u_enable_tones == 1 ? specular : vec4(0.0));
+    //*/
   }
 
   if (base_color.a < u_alpha_cutoff) {
