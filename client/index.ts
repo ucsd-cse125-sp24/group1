@@ -291,7 +291,7 @@ const paint = () => {
 
 	pipeline.draw();
 
-	engine.checkError();
+	// engine.checkError();
 
 	window.requestAnimationFrame(paint);
 };

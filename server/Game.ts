@@ -140,7 +140,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.#registerEntity(mapEntity);
 
-		let plane = new PlaneEntity(this, [0, -5.5, 0], [-1, 0, 0, 1], []);
+		let plane = new PlaneEntity(this, [0, -10, 0], [-1, 0, 0, 1], []);
 		this.#registerEntity(plane);
 
 		let bigIron = new Item(this, "iron-ore", 0.5, [18, 0, 15], [{ modelId: "samplePlayer", scale: 0.5 }], "resource");
@@ -161,12 +161,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 
 		this.#registerEntity(tempCrafter);
-
-		let tempSphere = new SphereEntity(this, [1, 20, 1], 2);
-		this.#registerEntity(tempSphere);
-
-		let tempCylinder = new CylinderEntity(this, [1, 20, 5], 1.5, 5);
-		this.#registerEntity(tempCylinder);
 	}
 
 	updateGameState() {
@@ -225,14 +219,26 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
 				playerEntity = new HeroEntity(
 					this,
-					[20, 20, 20],
-					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
+					[20, -1, 20],
+					[
+						{
+							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
+							offset: [0, -1.5, 0],
+							scale: 0.4,
+						},
+					],
 				);
 			} else {
 				playerEntity = new BossEntity(
 					this,
-					[20, 20, 20],
-					[{ modelId: playerModels[Math.floor(Math.random() * playerModels.length)], offset: [0, 0.5, 0] }],
+					[20, -1, 20],
+					[
+						{
+							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
+							offset: [0, -0.75, 0],
+							scale: 0.2,
+						},
+					],
 				);
 			}
 			this.addToCreateQueue(playerEntity);
@@ -289,8 +295,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
 					this,
-					[20, 20, 20],
-					[playerModels[Math.floor(Math.random() * playerModels.length)]],
+					[20, -1, 20],
+					[
+						{
+							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
+							offset: [0, player.entity instanceof BossEntity ? -1.5 : -0.75, 0],
+							scale: player.entity instanceof BossEntity ? 0.4 : 0.2,
+						},
+					],
 				);
 				this.addToCreateQueue(newEntity);
 				player.entity = newEntity;
@@ -309,8 +321,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 						"iron-ore",
 						0.5,
 						// Max: (25, 20) Min: (-24, -17)
-						[Math.random() * 50 - 25, 10, Math.random() * 40 - 20],
-						[{ modelId, scale: 0.5 }],
+						[Math.random() * 50 - 25, 0, Math.random() * 40 - 20],
+						[{ modelId, offset: [0, -0.5, 0], scale: 0.5 }],
 						"resource",
 					),
 				);

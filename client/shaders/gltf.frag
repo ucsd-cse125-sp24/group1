@@ -37,6 +37,21 @@ uniform float u_tones;
 
 #define NEAR 0.001
 #define FAR 100.0
+float zToDepth(float z) {
+  // Convert distance from camera to depth value in [0, 1]
+  // https://stackoverflow.com/a/10789527
+  return ((FAR + NEAR) / (FAR - NEAR) - (2.0 * FAR * NEAR) / (FAR - NEAR) / z +
+          1.0) *
+         0.5;
+}
+float depthToZ(float depth) {
+  // Convert [0, 1] depth value to distance from camera. ChatGPT-generated
+  // inverse of `zToDepth`
+  float A = (FAR + NEAR) / (FAR - NEAR) + 1.0;
+  float B = 2.0 * FAR * NEAR / (FAR - NEAR);
+  float local_z = B / (A - 2.0 * depth);
+  return local_z;
+}
 float linearizeDepth(float depth) {
   // https://learnopengl.com/Advanced-OpenGL/Depth-testing
   // float z = depth * 2.0 - 1.0; // convert to normalized device coords [-1, 1]
@@ -82,17 +97,15 @@ void main() {
 
     vec3 to_light = u_point_lights[i] - v_position;
     float distance = length(to_light);
+
     // Accurately read depth values from shadow map
     // https://stackoverflow.com/a/10789527
-    float shadow_depth =
-        textureCube(u_point_shadow_maps[i], -to_light / distance).r;
     vec3 abs_to_light = abs(to_light);
     float local_z = max(abs_to_light.x, max(abs_to_light.y, abs_to_light.z));
-    float local_depth = ((FAR + NEAR) / (FAR - NEAR) -
-                         (2.0 * FAR * NEAR) / (FAR - NEAR) / local_z + 1.0) *
-                        0.5;
-    // TODO: Adjust this bias value
-    if (1.0 - shadow_depth / local_depth > 0.000001) {
+    float shadow_depth =
+        textureCube(u_point_shadow_maps[i], -to_light / distance).r;
+    // TODO: adjust bias value
+    if (1.0 - shadow_depth / zToDepth(local_z) > 0.000001) {
       // occluded
       continue;
     }

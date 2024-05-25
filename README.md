@@ -2,6 +2,10 @@
 
 This is our group's 3D multiplayer video game for [CSE 125](https://cse125.ucsd.edu/). Our team opted to use WebGL to allow the game to run on more devices.
 
+Potential optimizations:
+
+- Merge models into one mesh for fewer draw calls
+
 ## Usage
 
 Debug keybinds:

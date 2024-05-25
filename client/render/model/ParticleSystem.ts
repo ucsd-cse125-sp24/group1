@@ -20,7 +20,7 @@ export type ParticleOptions = {
 
 export class ParticleSystem implements Model {
 	/** Do not set this outside of `ParticleSystem` */
-	shader: ShaderProgram;
+	readonly shader: ShaderProgram;
 	#enabled: boolean;
 	#lastSpawnTime: number;
 	#lastFrameTime: number;
