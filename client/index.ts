@@ -102,7 +102,6 @@ type DebugInputs = {
 	cycleWireframe: boolean;
 	toggleRole: boolean;
 	toggleRoleKeepOld: boolean;
-	spawnItem: boolean;
 	toggleTones: boolean;
 };
 const defaultDebugInputs = {
@@ -116,7 +115,6 @@ const defaultDebugInputs = {
 	cycleWireframe: false,
 	toggleRole: false,
 	toggleRoleKeepOld: false,
-	spawnItem: false,
 	toggleTones: false,
 };
 let debugInputs: FreecamInputs & DebugInputs = { ...defaultDebugInputs };
@@ -136,13 +134,13 @@ const inputListener = new InputListener({
 		KeyE: "use", // Alias for trackpad users' convenience (may be temporary)
 		0: "attack", // Left mouse button
 		2: "use", // Right mouse button
-		KeyR: "emote",
+		KeyR: "use",
 		ShiftLeft: "freecamDown",
 		KeyP: "toggleFreecam",
 		KeyK: "cycleWireframe",
 		KeyB: "toggleRole",
 		KeyN: "toggleRoleKeepOld",
-		KeyX: "spawnItem",
+		KeyX: "emote",
 		KeyT: "toggleTones",
 	},
 	handleInputs: (inputs) => {
@@ -158,9 +156,6 @@ const inputListener = new InputListener({
 		}
 		if (inputs.toggleRoleKeepOld && !debugInputs.toggleRoleKeepOld) {
 			connection.send({ type: "--debug-switch-role", keepBody: true });
-		}
-		if (inputs.spawnItem && !debugInputs.spawnItem) {
-			connection.send({ type: "--debug-spawn-item" });
 		}
 		if (inputs.toggleTones && !debugInputs.toggleTones) {
 			tones = !tones;

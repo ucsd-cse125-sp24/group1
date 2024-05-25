@@ -187,6 +187,23 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (posedge.attack) {
 				player.entity.attack();
 			}
+			if (posedge.emote) {
+				// TEMP: using `emote` key (X) to spawn item above player
+				const modelId = itemModels[Math.floor(Math.random() * itemModels.length)];
+				this.addToCreateQueue(
+					// TODO: other parameters?
+					new Item(
+						this,
+						"iron-ore",
+						0.5,
+						// Max: (25, 20) Min: (-24, -17)
+						player.entity.body.position.vadd(new phys.Vec3(0, 2, 0)).toArray(),
+						[{ modelId, offset: [0, -0.5, 0], scale: 0.5 }],
+						"resource",
+					),
+				);
+				log(`Player ${player.id.slice(0, 6)} spawned ${modelId}`);
+			}
 		}
 		this.#nextTick();
 	}
@@ -311,22 +328,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					entityId: player.entity.id,
 					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
-				break;
-			case "--debug-spawn-item":
-				const modelId = itemModels[Math.floor(Math.random() * itemModels.length)];
-				this.addToCreateQueue(
-					// TODO: other parameters?
-					new Item(
-						this,
-						"iron-ore",
-						0.5,
-						// Max: (25, 20) Min: (-24, -17)
-						[Math.random() * 50 - 25, 0, Math.random() * 40 - 20],
-						[{ modelId, offset: [0, -0.5, 0], scale: 0.5 }],
-						"resource",
-					),
-				);
-				log(`Player ${conn.id.slice(0, 6)} spawned ${modelId}`);
 				break;
 			default:
 				console.warn(`Unhandled message '${data["type"]}'`);

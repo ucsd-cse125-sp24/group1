@@ -87,14 +87,10 @@ export type ClientInputMessage = {
 	type: "client-input";
 } & ClientInputs;
 
-export type DebugMessages =
-	| {
-			type: "--debug-switch-role";
-			keepBody: boolean;
-	  }
-	| {
-			type: "--debug-spawn-item";
-	  };
+export type DebugMessages = {
+	type: "--debug-switch-role";
+	keepBody: boolean;
+};
 
 export type EntityModelObject = {
 	modelId: ModelId;
