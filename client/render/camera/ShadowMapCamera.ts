@@ -2,6 +2,7 @@ import { mat4, vec3 } from "gl-matrix";
 import GraphicsEngine from "../engine/GraphicsEngine";
 import { ClientEntity } from "../ClientEntity";
 import { Camera } from "./Camera";
+import { drawModels } from "../model/draw";
 
 const CUBE_FORWARD_DIR = [
 	vec3.fromValues(1, 0, 0),
@@ -116,13 +117,10 @@ export class ShadowMapCamera extends Camera {
 			this._forwardDir = CUBE_FORWARD_DIR[side];
 			this._upDir = CUBE_UP_DIR[side];
 			const view = this.getViewProjectionMatrix();
-			for (const entity of entities) {
-				// Allow player to see their own shadow
-				const wasVisible = entity.visible;
-				entity.visible = true;
-				entity.draw(view);
-				entity.visible = wasVisible;
-			}
+			drawModels(
+				view,
+				entities.flatMap((entity) => entity.getModels(true)),
+			);
 		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	}

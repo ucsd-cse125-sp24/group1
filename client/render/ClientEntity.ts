@@ -4,11 +4,7 @@ import GraphicsEngine from "./engine/GraphicsEngine";
 import { Model } from "./model/Model";
 import { PointLight } from "./lights/PointLight";
 import { EntityId } from "../../server/entities/Entity";
-
-export type ModelWithTransform = {
-	model: Model;
-	transform: mat4;
-};
+import { ModelWithTransform } from "./model/draw";
 
 /**
  * An entity on the client. These entities are deserialized from the server and
@@ -36,22 +32,16 @@ export class ClientEntity {
 	}
 
 	/**
-	 * Draw the entity's models.
-	 * @param view The camera's view and projection matrix.
-	 *
-	 * TODO: We might want to split up rendering by material so we don't have to
-	 * keep switching between materials.
+	 * Get the entity's models.
 	 */
-	draw(view: mat4) {
-		if (!this.visible) {
-			return false;
+	getModels(ignoreInvisible = false): ModelWithTransform[] {
+		if (!ignoreInvisible && !this.visible) {
+			return [];
 		}
-		for (const { model, transform } of this.models) {
-			model.shader.use();
-			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_view"), false, view);
-			const modelTransform = mat4.mul(mat4.create(), this.transform, transform);
-			model.draw([modelTransform], view);
-		}
+		return this.models.map(({ model, transform }) => ({
+			model,
+			transform: mat4.mul(mat4.create(), this.transform, transform),
+		}));
 	}
 
 	/**

@@ -21,6 +21,7 @@ import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
 import { SoundManager } from "./SoundManager";
 import { sounds } from "../assets/sounds";
+import { drawModels } from "./render/model/draw";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -300,9 +301,10 @@ const paint = () => {
 
 	// Draw entities
 	const view = camera.getViewProjectionMatrix();
-	for (const entity of [...entities, ...tempEntities]) {
-		entity.draw(view);
-	}
+	drawModels(
+		view,
+		[...entities, ...tempEntities].flatMap((entity) => entity.getModels()),
+	);
 
 	// Draw wireframes
 	if (wireframe > 0) {
