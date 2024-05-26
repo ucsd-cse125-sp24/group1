@@ -1,4 +1,4 @@
-import { vec3 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
 import particleVertexSource from "../../shaders/particle.vert";
 import particleFragmentSource from "../../shaders/particle.frag";
@@ -290,7 +290,7 @@ export class ParticleSystem implements Model {
 		this.#lastSpawnTime = Date.now();
 	}
 
-	draw(): void {
+	draw(model: mat4, view: mat4): void {
 		if (!this.#enabled) {
 			return;
 		}
@@ -305,6 +305,8 @@ export class ParticleSystem implements Model {
 		gl.bindVertexArray(this.#VAOs[this.#currentVAOIndex]);
 		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, this.#transformFeedbacks[1 - this.#currentVAOIndex]);
 
+		gl.uniformMatrix4fv(this.shader.uniform("u_model"), false, model);
+		gl.uniformMatrix4fv(this.shader.uniform("u_view"), false, view);
 		gl.uniform1f(this.shader.uniform("u_size"), this.options.size);
 		gl.uniform3fv(this.shader.uniform("u_color"), this.options.color);
 		gl.uniform1f(this.shader.uniform("u_mass"), this.options.mass);
