@@ -92,7 +92,8 @@ export abstract class PlayerEntity extends Entity {
 			this.game.raycast(
 				this.body.position,
 				this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
-				{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+				{},
+				this,
 			).length > 0;
 
 		if (this.onGround) this.#coyoteCounter = COYOTE_FRAMES;
@@ -161,7 +162,8 @@ export abstract class PlayerEntity extends Entity {
 		const entities = this.game.raycast(
 			this.body.position,
 			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
-			{ collisionFilterMask: Entity.NONPLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+			{},
+			this,
 		);
 		if (entities[0] instanceof InteractableEntity) {
 			entities[0].interact(this);
@@ -172,17 +174,21 @@ export abstract class PlayerEntity extends Entity {
 
 	attack(): boolean {
 		const entities = this.game.raycast(
-			this.body.position.vadd(this.lookDir), // TODO: why won't it raycast more if it hits the current player?
+			this.body.position,
 			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
-			{ collisionFilterMask: Entity.PLAYER_COLLISION_GROUP, checkCollisionResponse: false },
+			{},
+			this,
 		);
 		for (const entity of entities) {
 			// Apply knockback to player when attacked
-			if (entity !== this && entity instanceof PlayerEntity) {
+			if (entity instanceof PlayerEntity) {
 				console.log("attack", entity.id);
 				entity.body.applyForce(this.lookDir.scale(2000));
 				entity.body.applyForce(new phys.Vec3(0, 2000, 0));
 				this.game.playSound("hit", entity.getPos());
+				return true;
+			} else if (entities[0] instanceof InteractableEntity) {
+				entities[0].hit(this);
 				return true;
 			}
 		}

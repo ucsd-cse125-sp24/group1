@@ -122,21 +122,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * Checks for objects intersecting a line segment (*not* a ray) from `start`
 	 * to `end`.
 	 *
-	 * TODO: Do we need to sort this? It's currently kind of hard to line items
-	 * up (they're all spheres), so I can't test this.
-	 *
 	 * IMPORTANT: `Ray.intersectWorld` does NOT return the closest object. Do not
 	 * use it.
+	 *
+	 * @param exclude - Use to prevent players from including themselves in the
+	 * raycast.
 	 */
-	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions): Entity[] {
-		return Array.from(
-			new Set(
-				this.#world.castRay(start, end, rayOptions).flatMap(({ body }) => {
-					const entity = body && this.#bodyToEntityMap.get(body);
-					return entity ? [entity] : [];
-				}),
-			),
-		);
+	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions, exclude?: Entity): Entity[] {
+		const entities = this.#world
+			.castRay(start, end, rayOptions)
+			.sort((a, b) => a.distance - b.distance)
+			.flatMap(({ body }) => {
+				const entity = body && this.#bodyToEntityMap.get(body);
+				return entity && entity !== exclude ? [entity] : [];
+			});
+		return Array.from(new Set(entities));
 	}
 
 	/**

@@ -63,19 +63,21 @@ export abstract class Entity {
 	 * Used for collisions and selecting items so that you can jump on both ramps
 	 * and crafting tables, as well as not pick up items through walls.
 	 */
-	static readonly PLAYER_COLLISION_GROUP = 2;
-	static readonly NONPLAYER_COLLISION_GROUP = 4;
 	static readonly EPSILON = 0.1;
 
 	getBitFlag(): number {
 		if (this.tags.size == 0) return -1;
 
 		let flag = 0;
-		if (this.isPlayer) flag |= Entity.PLAYER_COLLISION_GROUP;
-		else flag |= Entity.NONPLAYER_COLLISION_GROUP;
 
 		if (flag == 0) return -1;
 		return flag;
+	}
+
+	/** For logging entities to the console while debugging */
+	toString(tag = ""): string {
+		// Return class name
+		return `${this.constructor.name}${tag}(${this.getPos().map((n) => n.toFixed(0))})`;
 	}
 }
 

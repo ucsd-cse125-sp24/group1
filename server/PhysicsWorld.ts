@@ -24,6 +24,12 @@ export function q4(x: number, y: number, z: number, w: number) {
 	return new phys.Quaternion(x, y, z, w);
 }
 
+/**
+ * A properties-only, non-class version of `phys.RaycastResult` because Cannon
+ * writes into the same result object while it raycasts.
+ */
+export type RaycastResult = Omit<phys.RaycastResult, "reset" | "abort" | "set">;
+
 export class PhysicsWorld {
 	#world: phys.World;
 	#colliders: phys.Body[];
@@ -68,10 +74,12 @@ export class PhysicsWorld {
 		}*/
 	}
 
-	castRay(from: phys.Vec3, to: phys.Vec3, rayOptions: phys.RayOptions): phys.RaycastResult[] {
-		const results: phys.RaycastResult[] = [];
+	castRay(from: phys.Vec3, to: phys.Vec3, rayOptions: phys.RayOptions): RaycastResult[] {
+		const results: RaycastResult[] = [];
 		this.#world.raycastAll(from, to, rayOptions, (result) => {
-			results.push(result);
+			// Need to clone result because the physics engine will continue to modify
+			// it
+			results.push({ ...result });
 		});
 		return results;
 	}

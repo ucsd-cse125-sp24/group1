@@ -118,6 +118,10 @@ export class Item extends InteractableEntity {
 		//unlock it from the player's hands
 		let throwForce = direction;
 		throwForce.normalize();
-		this.body.applyForce(throwForce.scale(600));
+		this.body.applyImpulse(throwForce.scale(60));
+	}
+
+	toString(): string {
+		return super.toString(`[${this.type}]`);
 	}
 }
