@@ -86,4 +86,8 @@ export class Spawner extends InteractableEntity {
 			console.log("sptting");
 		} // if there's no items in the array do nothing ig
 	}
+
+	interact() {
+		
+	}
 }
