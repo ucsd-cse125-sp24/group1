@@ -66,6 +66,11 @@ export class Camera {
 		this._position = pos;
 	}
 
+	moveAudioListener(listener: AudioListener) {
+		[listener.positionX.value, listener.positionY.value, listener.positionZ.value] = this._position;
+		[listener.forwardX.value, listener.forwardY.value, listener.forwardZ.value] = this._forwardDir;
+	}
+
 	setAspectRatio(aspect: number) {
 		this._aspectRatio = aspect;
 	}

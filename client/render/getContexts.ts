@@ -1,6 +1,13 @@
 import { allowDomExceptions } from "../lib/allowDomExceptions";
 
-export function getGl(): WebGL2RenderingContext {
+export type Contexts = {
+	gl: WebGL2RenderingContext;
+	audioContext: AudioContext;
+};
+
+export function getContexts(): Contexts {
+	const audioContext = new AudioContext();
+
 	const canvas = document.getElementById("canvas");
 	if (!(canvas instanceof HTMLCanvasElement)) {
 		throw new Error("No <canvas> element present");
@@ -28,6 +35,7 @@ export function getGl(): WebGL2RenderingContext {
 	observer.observe(canvas, { box: "content-box" });
 
 	canvas.addEventListener("click", async () => {
+		audioContext.resume();
 		// Lock pointer to canvas
 		// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 		if (!document.pointerLockElement) {
@@ -63,5 +71,6 @@ export function getGl(): WebGL2RenderingContext {
 	}
 	gl.enable(gl.CULL_FACE);
 	gl.enable(gl.DEPTH_TEST);
-	return gl;
+
+	return { gl, audioContext };
 }

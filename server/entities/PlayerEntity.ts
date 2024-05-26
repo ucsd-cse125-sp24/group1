@@ -14,6 +14,7 @@ export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
 
 	onGround: boolean;
+	jumping = false;
 	lookDir: phys.Vec3;
 	interactionRange: number;
 	itemInHands: null | Item;
@@ -136,8 +137,14 @@ export abstract class PlayerEntity extends Entity {
 		}
 
 		if (movement.jump && this.#coyoteCounter > 0) {
+			if (!this.jumping) {
+				this.game.playSound("jump", this.getPos());
+				this.jumping = true;
+			}
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
 			this.body.applyImpulse(deltaVy.scale(this.body.mass));
+		} else if (this.jumping) {
+			this.jumping = false;
 		}
 	}
 

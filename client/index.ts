@@ -13,7 +13,7 @@ import { InputListener } from "./net/InputListener";
 import { FreecamInputs, PlayerCamera } from "./render/camera/PlayerCamera";
 import { ClientEntity } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
-import { getGl } from "./render/getGl";
+import { getContexts } from "./render/getContexts";
 import { RenderPipeline } from "./render/engine/RenderPipeline";
 import { ShaderProgram } from "./render/engine/ShaderProgram";
 import tempLightVertexSource from "./shaders/temp_light.vert";
@@ -80,8 +80,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			camera.canRotate = isFirstPerson;
 			break;
 		case "sound":
-			// TODO: use 3D audio
-			sound.play(sounds[data.sound]);
+			if (sounds[data.sound]) {
+				// TODO: use 3D audio
+				const { panner } = sound.play(sounds[data.sound]);
+				[panner.positionX.value, panner.positionY.value, panner.positionZ.value] = data.position;
+			}
 			break;
 		case "sabotage-hero":
 			pipeline.pushFilter(pipeline.sporeFilter);
@@ -93,8 +96,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 };
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
-const sound = new SoundManager();
-const engine = new GraphicsEngine(getGl());
+const { gl, audioContext } = getContexts();
+const sound = new SoundManager(audioContext);
+const engine = new GraphicsEngine(gl);
 const pipeline = new RenderPipeline(engine);
 pipeline.pushFilter(pipeline.outlineFilter);
 const camera = new PlayerCamera(
@@ -257,6 +261,8 @@ const paint = () => {
 	if (freecam) {
 		camera.updateFreecam(debugInputs);
 	}
+	// TODO: also call this when rotating camera?
+	camera.moveAudioListener(audioContext.listener);
 
 	engine.clear();
 

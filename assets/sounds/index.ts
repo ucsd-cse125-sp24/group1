@@ -8,6 +8,7 @@ import pickup from "./pickup.mp3";
 import popCraftingFail from "./pop-crafting-fail.mp3";
 import popCrafting from "./pop-crafting.mp3";
 import useFail from "./use-fail.mp3";
+import throwSound from "./throw.mp3";
 
 export const sounds = {
 	attackFail,
@@ -20,6 +21,7 @@ export const sounds = {
 	popCraftingFail,
 	popCrafting,
 	useFail,
+	throw: throwSound,
 };
 
 export type SoundId = keyof typeof sounds;

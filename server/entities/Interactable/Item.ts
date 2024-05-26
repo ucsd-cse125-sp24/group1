@@ -91,6 +91,7 @@ export class Item extends InteractableEntity {
 			// this.body.mass = 1.0;
 			if (heldBy == player) {
 				this.throw(player.lookDir);
+				this.game.playSound("throw", player.getPos());
 				return;
 			}
 		}

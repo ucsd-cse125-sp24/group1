@@ -21,7 +21,6 @@ const BOSS_JUMP_SPEED = 10;
 
 export class BossEntity extends PlayerEntity {
 	// Game properties
-	jumping: boolean;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
@@ -37,8 +36,6 @@ export class BossEntity extends PlayerEntity {
 			BOSS_JUMP_SPEED,
 			PLAYER_INTERACTION_RANGE,
 		);
-
-		this.jumping = false;
 	}
 
 	use(): boolean {

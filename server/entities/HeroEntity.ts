@@ -19,7 +19,6 @@ const HERO_JUMP_SPEED = 10;
 
 export class HeroEntity extends PlayerEntity {
 	// Game properties
-	jumping: boolean;
 	isSabotaged: boolean = false;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
@@ -36,8 +35,6 @@ export class HeroEntity extends PlayerEntity {
 			HERO_JUMP_SPEED,
 			PLAYER_INTERACTION_RANGE,
 		);
-
-		this.jumping = false;
 	}
 
 	sabotage(): void {
