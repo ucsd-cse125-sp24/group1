@@ -9,13 +9,31 @@ import { Item } from "./Item";
 
 export type Recipe = { ingredients: string[]; output: string };
 
+type RecipeCheckResult =
+	| {
+			/** A recipe has been satisfied */
+			type: "satisfied";
+			output: string;
+	  }
+	| {
+			/** There are recipes that can be satisfied with more items */
+			type: "need-more-items";
+	  }
+	| {
+			/** No recipes can be satisfied even with more items */ type: "unsatisfiable";
+	  };
+
 export class CraftingTable extends InteractableEntity {
 	body: phys.Body;
 	halfExtent: number;
 	model: EntityModel[];
 
+	/** Items stored in the crafting table */
 	itemList: Item[];
+	/** Recipes that the crafting table can perform */
 	recipes: Recipe[];
+	/** List of potential ingredients for recipes */
+	ingredients: string[];
 
 	// shape
 	box: phys.Box;
@@ -27,6 +45,7 @@ export class CraftingTable extends InteractableEntity {
 		this.model = model;
 		this.itemList = [];
 		this.recipes = recipes;
+		this.ingredients = recipes.flatMap((recipe) => recipe.ingredients);
 		this.halfExtent = 0.75;
 
 		this.body = new phys.Body({
@@ -41,14 +60,66 @@ export class CraftingTable extends InteractableEntity {
 		this.body.addShape(this.box);
 	}
 
+	/**
+	 * Checks `itemList` against the list of `recipes`. There are three cases:
+	 * - A recipe has been satisfied, so produce an output.
+	 * - There are some recipes that could be satisfied with more items, so keep
+	 *   waiting for items.
+	 * - The items cannot satisfy anything, so eject them all.
+	 */
+	#checkRecipes(): RecipeCheckResult {
+		const items = this.itemList.map((item) => item.type);
+		let potentiallySatisfiable = false;
+		for (const { ingredients, output } of this.recipes) {
+			const unused = [...items];
+			let missingIngredient = false;
+			for (const ingredient of ingredients) {
+				// Remove ingredient from `unused` if it could be used for the recipe
+				const index = unused.indexOf(ingredient);
+				if (index === -1) {
+					missingIngredient = true;
+					break;
+				}
+				unused.splice(index, 1);
+			}
+			// Extra items are prohibited
+			if (missingIngredient || unused.length > 0) {
+				// Extra items would prevent this recipe from ever being satisfied,
+				// even if more ingredients are added
+				if (unused.length === 0) {
+					potentiallySatisfiable = true;
+				}
+			} else {
+				return { type: "satisfied", output };
+			}
+		}
+		return potentiallySatisfiable ? { type: "need-more-items" } : { type: "unsatisfiable" };
+	}
+
+	/**
+	 * Launch an item out of the crafting table.
+	 *
+	 * NOTE: This method does not remove the item from `itemList`.
+	 */
+	#eject(item: Item) {
+		console.log("Ejecting", item.type);
+		// Prevent the item from being re-absorbed immediately
+		item.canBeAbsorbedByCraftingTable = false;
+		// Move the item to the top of the crafting table (its previous position was
+		// wherever it was before it got absorbed)
+		item.body.position = this.body.position.vadd(new phys.Vec3(0, 1, 0));
+		this.game.addToCreateQueue(item);
+		// TODO: randomize launch angle? or launch towards player?
+		item.throw(new phys.Vec3(-20, 100, -50));
+	}
+
 	interact(player: PlayerEntity) {
 		//should spawn the top item in the array!
-		console.log("ouch");
 
 		let item = this.itemList.pop();
 
 		if (item instanceof Item) {
-			item.throw(new phys.Vec3(0, 1, 1));
+			this.#eject(item);
 		} // if there's no items in the array do nothing ig
 	}
 
@@ -56,98 +127,28 @@ export class CraftingTable extends InteractableEntity {
 		let success = false;
 
 		if (otherEntity instanceof Item) {
-			//console.log("ItemList, then entity name, then recipes:");
-			//console.log("| itemList", this.itemList);
-			//console.log("| entity name", otherEntity.name);
-			//console.log("| recipes", this.recipes);
+			if (!otherEntity.canBeAbsorbedByCraftingTable) {
+				return;
+			}
+			if (!this.ingredients.includes(otherEntity.type)) {
+				return;
+			}
 
-			if (otherEntity.tags.has("resource")) {
-				//check if it's a possible recipe
-				let EntityType = otherEntity.type;
+			// Absorb the item
+			this.itemList.push(otherEntity);
+			this.game.addToDeleteQueue(otherEntity.id);
 
-				let currentResourceCount = 0;
-				let resourceCount = 0;
-
-				for (let i = 0; i < this.itemList.length; i++) {
-					if (this.itemList[i].type == EntityType) {
-						resourceCount++;
-					}
+			const result = this.#checkRecipes();
+			if (result.type === "satisfied") {
+				// Delete ingredients
+				this.itemList = [];
+				console.log("crafted ", result.output);
+				this.#eject(new Item(this.game, result.output, 0.5, this.getPos(), [{ modelId: "fish1" }], "resource"));
+			} else if (result.type === "unsatisfiable") {
+				for (const item of this.itemList) {
+					this.#eject(item);
 				}
-
-				console.log("itemList has " + resourceCount + " " + EntityType);
-
-				for (let i = 0; i < this.recipes.length; i++) {
-					//for each recipe
-
-					for (let j = 0; j < this.recipes[i].ingredients.length; j++) {
-						if (EntityType == this.recipes[i].ingredients[j]) {
-							currentResourceCount++;
-						}
-					}
-
-					console.log("recipe" + i + "has " + currentResourceCount + " " + EntityType);
-
-					if (currentResourceCount > resourceCount) {
-						//should be added
-						console.log("Item should be deleted!");
-
-						this.itemList.push(otherEntity);
-						this.game.addToDeleteQueue(otherEntity.id);
-
-						return;
-					}
-
-					currentResourceCount = 0;
-				}
-			} else if (otherEntity.tags.has("tool")) {
-				for (let i = 0; i < this.recipes.length; i++) {
-					if (this.itemList.length == this.recipes[i].ingredients.length) {
-						success = true;
-
-						for (let j = 0; j < this.recipes[i].ingredients.length; j++) {
-							if (this.itemList[j].type != this.recipes[i].ingredients[j]) {
-								success = false;
-							}
-						}
-
-						if (success) {
-							for (let j = 0; j < this.itemList.length; j++) {
-								//fully clear the item list
-								this.itemList.pop();
-							}
-							console.log("deleted all the items");
-
-							let result = new Item(
-								this.game,
-								this.recipes[i].output,
-								0.5,
-								this.getPos(),
-								[{ modelId: "fish1" }],
-								"resource",
-							);
-							this.game.addToCreateQueue(result);
-
-							console.log("Should spit out an item, NOT FINISHED");
-							return;
-						}
-					}
-				}
-
-				if (success) {
-					for (let i = 0; i < this.itemList.length; i++) {
-						//fully clear the item
-						let item = this.itemList.pop();
-
-						if (item) {
-							this.game.addToDeleteQueue(item.id);
-						}
-					}
-
-					console.log("deleted all the items");
-					console.log("should now spit out an upgraded item TODO");
-
-					//SHOOT OUT THE UPGRADED ITEM
-				}
+				this.itemList = [];
 			}
 		}
 	}

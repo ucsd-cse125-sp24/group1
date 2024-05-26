@@ -143,21 +143,24 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let plane = new PlaneEntity(this, [0, -10, 0], [-1, 0, 0, 1], []);
 		this.#registerEntity(plane);
 
-		let bigIron = new Item(this, "iron-ore", 0.5, [18, 0, 15], [{ modelId: "samplePlayer", scale: 0.5 }], "resource");
+		let bigIron = new Item(this, "iron-ore", 0.5, [18, 0, 15], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
 		this.#registerEntity(bigIron);
 
-		let smallIron = new Item(this, "iron-ore", 0.5, [10, 0, 10], [{ modelId: "samplePlayer", scale: 0.5 }], "resource");
+		let smallIron = new Item(this, "iron-ore", 0.5, [10, 0, 10], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
 
 		this.#registerEntity(smallIron);
 
-		let Pick = new Item(this, "pickaxe", 0.5, [15, 0, 15], [{ modelId: "fish1", scale: 0.75 }], "tool");
+		let Pick = new Item(this, "pickaxe", 0.5, [15, 0, 15], [{ modelId: "pickaxe", scale: 0.75 }], "tool");
 		this.#registerEntity(Pick);
 
 		let tempCrafter = new CraftingTable(
 			this,
 			[18, 0, 18],
-			[{ modelId: "fish1", scale: 10 }],
-			[{ ingredients: ["iron-ore", "iron-ore"], output: "debug" }],
+			[{ modelId: "fish1", scale: 7 }],
+			[
+				{ ingredients: ["iron-ore", "iron-ore"], output: "debug" },
+				{ ingredients: ["pickaxe"], output: "pickaxe" },
+			],
 		);
 
 		this.#registerEntity(tempCrafter);
@@ -346,49 +349,52 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	addToCreateQueue(entity: Entity) {
+		// If entity was in delete queue, remove it from there instead (can happen
+		// if an entity is deleted then re-added in the same tick)
+		const index = this.#toDeleteQueue.indexOf(entity.id);
+		if (index !== -1) {
+			this.#toDeleteQueue.splice(index, 1);
+			return;
+		}
+
 		this.#toCreateQueue.push(entity);
 	}
 
 	/**
-	 * This is a string at the moment, but can be changed into not that!
 	 * @param sussyAndRemovable
 	 */
 	addToDeleteQueue(sussyAndRemovable: number) {
+		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
+		if (index !== -1) {
+			this.#toCreateQueue.splice(index, 1);
+			return;
+		}
+
 		this.#toDeleteQueue.push(sussyAndRemovable);
 	}
 
 	clearEntityQueues() {
-		for (let i = 0; i < this.#toCreateQueue.length; i++) {
-			let entity = this.#toCreateQueue.pop();
+		for (const entity of this.#toCreateQueue) {
+			this.#entities.set(entity.id, entity);
+			this.#bodyToEntityMap.set(entity.body, entity);
+			entity.addToWorld(this.#world);
+		}
+		this.#toCreateQueue = [];
+
+		for (const entityId of this.#toDeleteQueue) {
+			let entity = this.#entities.get(entityId);
+
+			console.log("delete", entityId);
 
 			if (entity) {
-				this.#entities.set(entity.id, entity);
-				this.#bodyToEntityMap.set(entity.body, entity);
-				entity.addToWorld(this.#world);
+				this.#bodyToEntityMap.delete(entity.body);
+				this.#entities.delete(entity.id);
+				entity.removeFromWorld(this.#world);
 			} else {
-				console.log("Someone added a fake ass object to the creation queue");
+				console.log("Bug Detected! Tried to delete an entity that didn't exist");
 			}
 		}
-
-		for (let i = 0; i < this.#toDeleteQueue.length; i++) {
-			let entityName = this.#toDeleteQueue.pop();
-
-			if (entityName) {
-				let entity = this.#entities.get(entityName);
-
-				console.log(entityName);
-
-				if (entity) {
-					this.#bodyToEntityMap.delete(entity.body);
-					this.#entities.delete(entity.id);
-					entity.removeFromWorld(this.#world);
-				} else {
-					console.log("Bug Detected! Tried to delete an entity that didn't exist");
-				}
-			} else {
-				console.log("what have you done. you sent in a fake ass name");
-			}
-		}
+		this.#toDeleteQueue = [];
 	}
 
 	serialize(): SerializedEntity[] {

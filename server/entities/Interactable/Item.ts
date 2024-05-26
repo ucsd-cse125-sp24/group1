@@ -13,6 +13,11 @@ export class Item extends InteractableEntity {
 	model: EntityModel[];
 	radius: number;
 	heldBy: PlayerEntity | null;
+	/**
+	 * This is to prevent items ejected by a crafting table from immediately being
+	 * reabsorbed.
+	 */
+	canBeAbsorbedByCraftingTable = false;
 
 	// shape
 	sphere: phys.Sphere;
@@ -48,6 +53,9 @@ export class Item extends InteractableEntity {
 		this.body.position = new phys.Vec3(...pos);
 	}
 
+	/**
+	 * Attach an object to the player's hands.
+	 */
 	bind(player: PlayerEntity) {
 		this.heldBy = player;
 		this.heldBy.itemInHands = this;
@@ -76,6 +84,8 @@ export class Item extends InteractableEntity {
 		if (player.type === "player-hero") {
 			console.log("touched an item, scandalous");
 			this.bind(player);
+			// Should this be moved to `bind`?
+			this.canBeAbsorbedByCraftingTable = true;
 			// this.body.mass = 0;
 		} else if (player.type === "player-boss") {
 		}
