@@ -13,13 +13,12 @@ import { ClientMessage, SerializedBody, SerializedEntity, ServerMessage } from "
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { ModelId } from "../assets/models";
+import { SoundId } from "../assets/sounds";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
 import { BossEntity } from "./entities/BossEntity";
 import { Entity, EntityId } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
-import { SphereEntity } from "./entities/SphereEntity";
-import { CylinderEntity } from "./entities/CylinderEntity";
 import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
 import { getColliders } from "./entities/map/colliders";
@@ -29,8 +28,8 @@ import { CraftingTable } from "./entities/Interactable/CraftingTable";
 import { log } from "./net/_tempDebugLog";
 import { PhysicsWorld } from "./PhysicsWorld";
 import { WsServer } from "./net/WsServer";
-import { SoundId } from "../assets/sounds";
 import { Spawner } from "./entities/Interactable/Spawner";
+import { TrapEntity } from "./entities/Interactable/TrapEntity";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -174,26 +173,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(tempCrafter);
 
-
-		let woodSpawner = new Spawner(
-			this,
-			[-18, 6, -18],
-			"wood",
-			"axe",
-			[{modelId: "fish1", scale: 7}],
-		);
+		let woodSpawner = new Spawner(this, [-18, 6, -18], "wood", "axe", [{ modelId: "fish1", scale: 7 }]);
 		this.#registerEntity(woodSpawner);
 
-
-		let oreSpawner = new Spawner(
-			this,
-			[18, 6, -18],
-			"raw_iron",
-			"pickaxe",
-			[{modelId: "raw_iron", scale: 3}],
-		);
+		let oreSpawner = new Spawner(this, [18, 6, -18], "raw_iron", "pickaxe", [{ modelId: "raw_iron", scale: 3 }]);
 		this.#registerEntity(oreSpawner);
-
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
@@ -262,8 +246,24 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
+	placeTrap(position: phys.Vec3) {
+		this.#registerEntity(new TrapEntity(this, position));
+	}
+
+	trapHero(id: EntityId, position: phys.Vec3) {
+		const target = this.#entities.get(id) as HeroEntity;
+		target.isTrapped = true;
+		target.body.position = position;
+	}
+
+	freeHero(heroId: EntityId, trapId: EntityId) {
+		const hero = this.#entities.get(heroId) as HeroEntity;
+		hero.isTrapped = false;
+		this.addToDeleteQueue(trapId);
+	}
+
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
-		for (const [_, player] of this.#players) {
+		for (const player of this.#players.values()) {
 			if (player.entity.id === id) {
 				return player;
 			}
@@ -381,7 +381,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	#nextTick() {
-		this.#currentTick ++;
+		this.#currentTick++;
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
@@ -411,7 +411,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * @param sussyAndRemovable
 	 */
-	addToDeleteQueue(sussyAndRemovable: number) {
+	addToDeleteQueue(sussyAndRemovable: EntityId) {
 		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
 		if (index !== -1) {
 			this.#toCreateQueue.splice(index, 1);

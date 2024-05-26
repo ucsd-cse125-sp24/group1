@@ -21,6 +21,7 @@ const BOSS_JUMP_SPEED = 10;
 
 export class BossEntity extends PlayerEntity {
 	// Game properties
+	canPlaceTrap: boolean = true;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
@@ -50,6 +51,13 @@ export class BossEntity extends PlayerEntity {
 		);
 		if (entities[0] instanceof HeroEntity && !entities[0].isSabotaged) {
 			this.game.sabotageHero(entities[0].id);
+			return true;
+		} else if (this.canPlaceTrap) {
+			this.game.placeTrap(this.body.position.vadd(this.lookDir));
+			this.canPlaceTrap = false;
+			setTimeout(() => {
+				this.canPlaceTrap = true;
+			}, 5000);
 		}
 		return false;
 	}

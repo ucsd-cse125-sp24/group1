@@ -1,4 +1,4 @@
-import { Vector3 } from "../../common/commontypes";
+import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel } from "../../common/messages";
 import { Game } from "../Game";
 import { PlayerEntity } from "./PlayerEntity";
@@ -20,6 +20,7 @@ const HERO_JUMP_SPEED = 10;
 export class HeroEntity extends PlayerEntity {
 	// Game properties
 	isSabotaged: boolean = false;
+	isTrapped: boolean = false;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
@@ -35,6 +36,13 @@ export class HeroEntity extends PlayerEntity {
 			HERO_JUMP_SPEED,
 			PLAYER_INTERACTION_RANGE,
 		);
+	}
+
+	move(movement: MovementInfo): void {
+		super.move(movement);
+		if (this.isTrapped) {
+			this.body.applyImpulse(this.body.velocity.scale(-this.body.mass));
+		}
 	}
 
 	sabotage(): void {
