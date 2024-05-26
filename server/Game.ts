@@ -243,23 +243,27 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (target && target.entity instanceof HeroEntity) {
 			target.conn.send({ type: "sabotage-hero", time: 5000 });
 			target.entity.sabotage();
+			this.playSound("spore", target.entity.getPos());
 		}
 	}
 
 	placeTrap(position: phys.Vec3) {
 		this.#registerEntity(new TrapEntity(this, position));
+		this.playSound("trapPlace", position);
 	}
 
 	trapHero(id: EntityId, position: phys.Vec3) {
 		const target = this.#entities.get(id) as HeroEntity;
 		target.isTrapped = true;
 		target.body.position = position;
+		this.playSound("trapTriggered", position);
 	}
 
 	freeHero(heroId: EntityId, trapId: EntityId) {
 		const hero = this.#entities.get(heroId) as HeroEntity;
 		hero.isTrapped = false;
 		this.addToDeleteQueue(trapId);
+		this.playSound("trapEscape", hero.getPos());
 	}
 
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {

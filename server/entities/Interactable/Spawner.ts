@@ -61,6 +61,7 @@ export class Spawner extends InteractableEntity {
 
 		if(otherEntity instanceof Item){
 			if(otherEntity.type != this.toolToHarvest) {
+				this.game.playSound('spawnerReject',this.getPos())
 				return;
 			}
 		}
@@ -76,7 +77,6 @@ export class Spawner extends InteractableEntity {
         );
 
 
-		if (item instanceof Item) {
 
 			item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));	
 			item.canBeAbsorbedByCraftingTable = false;
@@ -84,7 +84,7 @@ export class Spawner extends InteractableEntity {
 			item.throw(new phys.Vec3(...[0, 100, 0]));
 			this.previousTick = this.game.getCurrentTick();
 			console.log("sptting");
-		} // if there's no items in the array do nothing ig
+			this.game.playSound('spawnerHarvest',this.getPos())
 	}
 
 	interact() {

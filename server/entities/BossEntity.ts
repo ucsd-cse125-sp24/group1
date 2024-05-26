@@ -44,11 +44,12 @@ export class BossEntity extends PlayerEntity {
 		if (interacted) {
 			return true;
 		}
-		const entities = this.game.raycast(
-			this.body.position,
-			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
-			{ collisionFilterMask: Entity.PLAYER_COLLISION_GROUP, checkCollisionResponse: false },
-		);
+		const entities = this.game
+			.raycast(this.body.position, this.body.position.vadd(this.lookDir.scale(this.interactionRange)), {
+				collisionFilterMask: Entity.PLAYER_COLLISION_GROUP,
+				checkCollisionResponse: false,
+			})
+			.filter((entity) => entity !== this);
 		if (entities[0] instanceof HeroEntity && !entities[0].isSabotaged) {
 			this.game.sabotageHero(entities[0].id);
 			return true;
@@ -58,6 +59,7 @@ export class BossEntity extends PlayerEntity {
 			setTimeout(() => {
 				this.canPlaceTrap = true;
 			}, 5000);
+			return true;
 		}
 		return false;
 	}

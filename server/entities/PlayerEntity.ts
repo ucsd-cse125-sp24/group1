@@ -137,7 +137,7 @@ export abstract class PlayerEntity extends Entity {
 		}
 
 		if (movement.jump && this.#coyoteCounter > 0) {
-			if (!this.jumping) {
+			if (!this.jumping && this.onGround) {
 				this.game.playSound("jump", this.getPos());
 				this.jumping = true;
 			}

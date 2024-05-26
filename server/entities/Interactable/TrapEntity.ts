@@ -35,14 +35,17 @@ export class TrapEntity extends InteractableEntity {
 	interact(player: PlayerEntity): void | Item {
 		if (this.trappedPlayerId === null) {
 			this.game.addToDeleteQueue(this.id);
+			this.game.playSound("trapDestroy", this.getPos());
 			return;
 		} else if (player.id === this.trappedPlayerId) {
 			this.durability -= 1;
+			this.game.playSound("trapHit", this.getPos());
 		} else {
 			this.durability = 0;
 		}
 		if (this.durability <= 0) {
 			this.game.freeHero(this.trappedPlayerId, this.id);
+			this.game.playSound("trapEscape", this.getPos());
 		}
 	}
 }

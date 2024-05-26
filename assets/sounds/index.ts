@@ -7,8 +7,16 @@ import jump from "./jump.mp3";
 import pickup from "./pickup.mp3";
 import popCraftingFail from "./pop-crafting-fail.mp3";
 import popCrafting from "./pop-crafting.mp3";
-import useFail from "./use-fail.mp3";
+import spawnerHarvest from "./spawner-harvest.mp3";
+import spawnerReject from "./spawner-reject.mp3";
+import spore from "./spore.mp3";
 import throwSound from "./throw.mp3";
+import trapDestroy from "./trap-destroy.mp3";
+import trapEscape from "./trap-escape.mp3";
+import trapHit from "./trap-hit.mp3";
+import trapPlace from "./trap-place.mp3";
+import trapTriggered from "./trap-triggered.mp3";
+import useFail from "./use-fail.mp3";
 
 export const sounds = {
 	attackFail,
@@ -20,8 +28,16 @@ export const sounds = {
 	pickup,
 	popCraftingFail,
 	popCrafting,
-	useFail,
+	spawnerHarvest,
+	spawnerReject,
+	spore,
 	throw: throwSound,
+	trapDestroy, // unused
+	trapEscape,
+	trapHit,
+	trapPlace,
+	trapTriggered,
+	useFail,
 };
 
 export type SoundId = keyof typeof sounds;
