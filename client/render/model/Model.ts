@@ -10,11 +10,13 @@ export interface Model {
 	shader: ShaderProgram;
 
 	/**
-	 * Draw the model.
+	 * Draw the models. If instancing is supported, you can do that here, but if
+	 * not, you can just loop over each matrix in `models` and draw each
+	 * individually.
 	 *
 	 * Preconditions:
 	 * - The shader program is in use.
-	 * - `u_view` and `u_model` are set. There's no need to use set them yourself.
+	 * - `u_view` is set.
 	 */
-	draw(model: mat4, view: mat4): void;
+	draw(models: mat4[], view: mat4): void;
 }

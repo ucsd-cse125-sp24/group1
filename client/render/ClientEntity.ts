@@ -50,8 +50,7 @@ export class ClientEntity {
 			model.shader.use();
 			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_view"), false, view);
 			const modelTransform = mat4.mul(mat4.create(), this.transform, transform);
-			this.engine.gl.uniformMatrix4fv(model.shader.uniform("u_model"), false, modelTransform);
-			model.draw(modelTransform, view);
+			model.draw([modelTransform], view);
 		}
 	}
 

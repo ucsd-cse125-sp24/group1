@@ -73,7 +73,7 @@ export class Camera {
 			[listener.forwardX.value, listener.forwardY.value, listener.forwardZ.value] = this._forwardDir;
 		} else {
 			listener.setPosition(this._position[0], this._position[1], this._position[2]);
-			listener.setOrientation(this._forwardDir[0], this._forwardDir[1], this._forwardDir[2], 0, 0, 1);
+			listener.setOrientation(this._forwardDir[0], this._forwardDir[1], this._forwardDir[2], 0, 1, 0);
 		}
 	}
 

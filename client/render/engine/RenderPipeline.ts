@@ -160,7 +160,7 @@ export class RenderPipeline {
 		this.#reticle.shader.use();
 		gl.uniformMatrix4fv(this.#reticle.shader.uniform("u_view"), false, mat4.create());
 		gl.uniformMatrix4fv(this.#reticle.shader.uniform("u_model"), false, mat4.create());
-		this.#reticle.draw(mat4.create(), mat4.create());
+		this.#reticle.draw([mat4.create()]);
 	}
 
 	#drawToPlane(filterIndex: number): void {

@@ -22,16 +22,16 @@ type ModelMesh = {
 	mode?: GltfMode;
 };
 
-export class GltfModel {
+export class GltfModel implements Model {
 	name: string;
-	#material: ShaderProgram;
+	shader: ShaderProgram;
 	#meshes: ModelMesh[];
 
-	constructor(material: ShaderProgram, { root, buffers, images, meshes }: GltfParser) {
+	constructor(shader: ShaderProgram, { root, buffers, images, meshes }: GltfParser) {
 		this.name = root.buffers[0].uri;
-		this.#material = material;
+		this.shader = shader;
 
-		const gl = material.engine.gl;
+		const gl = shader.engine.gl;
 
 		const glBuffers = root.accessors.map((accessor): Accessor => {
 			const bufferView = root.bufferViews[accessor.bufferView];
@@ -88,7 +88,7 @@ export class GltfModel {
 				};
 
 				gl.bindTexture(gl.TEXTURE_2D, texture);
-				if (image.width > material.engine.maxTextureSize || image.height > material.engine.maxTextureSize) {
+				if (image.width > shader.engine.maxTextureSize || image.height > shader.engine.maxTextureSize) {
 					// Temporarily use blue pixel while image loads
 					gl.texImage2D(
 						gl.TEXTURE_2D,
@@ -105,12 +105,12 @@ export class GltfModel {
 					console.time(`resizing texture ${source} (${this.name})`);
 					createImageBitmap(image, {
 						resizeWidth: Math.min(
-							material.engine.maxTextureSize,
-							(material.engine.maxTextureSize / image.height) * image.width,
+							shader.engine.maxTextureSize,
+							(shader.engine.maxTextureSize / image.height) * image.width,
 						),
 						resizeHeight: Math.min(
-							material.engine.maxTextureSize,
-							(material.engine.maxTextureSize / image.width) * image.height,
+							shader.engine.maxTextureSize,
+							(shader.engine.maxTextureSize / image.width) * image.height,
 						),
 					}).then((resized) => {
 						console.timeEnd(`resizing texture ${source} (${this.name})`);
@@ -154,8 +154,8 @@ export class GltfModel {
 			let count = Infinity;
 			for (const vbo of vbos) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, vbo.buffer);
-				gl.enableVertexAttribArray(material.attrib(vbo.attribName));
-				gl.vertexAttribPointer(material.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
+				gl.enableVertexAttribArray(shader.attrib(vbo.attribName));
+				gl.vertexAttribPointer(shader.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
 				if (vbo.count < count) {
 					count = vbo.count;
 				}
@@ -211,8 +211,8 @@ export class GltfModel {
 		});
 	}
 
-	draw(model: mat4, view: mat4) {
-		const material = this.#material;
+	draw(models: mat4[], view: mat4) {
+		const material = this.shader;
 		const gl = material.engine.gl;
 
 		for (const { vao, materialOptions, meshTextures, indices, count, transform, mode } of this.#meshes) {
@@ -232,14 +232,6 @@ export class GltfModel {
 					gl.uniform1i(material.uniform(`u_has_${name}`), 0);
 				}
 			}
-			const partTransform = mat4.mul(mat4.create(), model, transform);
-			gl.uniformMatrix4fv(material.uniform("u_model"), false, partTransform);
-			// https://stackoverflow.com/a/13654666
-			gl.uniformMatrix4fv(
-				material.uniform("u_normal_transform"),
-				false,
-				mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform)),
-			);
 			gl.uniform1f(
 				material.uniform("u_alpha_cutoff"),
 				materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
@@ -254,10 +246,20 @@ export class GltfModel {
 			// Default vertex color is white (since the base color is multiplied by it)
 			gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
 			gl.bindVertexArray(vao);
-			if (indices) {
-				gl.drawElements(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
-			} else {
-				gl.drawArrays(mode ?? gl.TRIANGLES, 0, count);
+			for (const model of models) {
+				const partTransform = mat4.mul(mat4.create(), model, transform);
+				gl.uniformMatrix4fv(material.uniform("u_model"), false, partTransform);
+				// https://stackoverflow.com/a/13654666
+				gl.uniformMatrix4fv(
+					material.uniform("u_normal_transform"),
+					false,
+					mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform)),
+				);
+				if (indices) {
+					gl.drawElements(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
+				} else {
+					gl.drawArrays(mode ?? gl.TRIANGLES, 0, count);
+				}
 			}
 			gl.bindVertexArray(null);
 			if (materialOptions.doubleSided) {
@@ -278,8 +280,8 @@ export class GltfModelWrapper implements Model {
 		});
 	}
 
-	draw(model: mat4, view: mat4) {
-		this.#model?.draw(model, view);
+	draw(models: mat4[], view: mat4) {
+		this.#model?.draw(models, view);
 	}
 
 	static from(shader: ShaderProgram, promise: Promise<GltfParser>): GltfModelWrapper {
