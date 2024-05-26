@@ -72,6 +72,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#toCreateQueue: Entity[];
 	#toDeleteQueue: EntityId[];
 
+	#currentTick: number;
 	constructor() {
 		this.#createdInputs = [];
 		this.#players = new Map();
@@ -80,6 +81,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#toCreateQueue = [];
 		this.#toDeleteQueue = [];
+
+		this.#currentTick = 0;
 	}
 
 	/**
@@ -150,9 +153,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let bigIron = new Item(this, "raw_iron", 0.5, [18, 0, 15], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
 		this.#registerEntity(bigIron);
 
-		let smallIron = new Item(this, "raw_iron", 0.5, [10, 0, 10], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
-
+		let smallIron = new Item(this, "raw_iron", 0.5, [18, 0, 13], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
 		this.#registerEntity(smallIron);
+
+		let string = new Item(this, "string", 0.5, [17, 0, 15], [{ modelId: "string", scale: 0.5 }], "resource");
+		this.#registerEntity(string);
 
 		let Pick = new Item(this, "pickaxe", 0.5, [15, 0, 15], [{ modelId: "pickaxe", scale: 0.75 }], "tool");
 		this.#registerEntity(Pick);
@@ -163,7 +168,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[{ modelId: "fish1", scale: 7 }],
 			[
 				{ ingredients: ["raw_iron", "raw_iron"], output: "iron" },
-				{ ingredients: ["pickaxe"], output: "pickaxe" },
+				{ ingredients: ["pickaxe", "string"], output: "pickaxe" },
 			],
 		);
 
@@ -355,6 +360,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	#nextTick() {
+		this.#currentTick ++;
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
@@ -363,6 +369,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
 			this.clearEntityQueues();
 		}
+	}
+
+	getCurrentTick() {
+		return this.#currentTick;
 	}
 
 	addToCreateQueue(entity: Entity) {
