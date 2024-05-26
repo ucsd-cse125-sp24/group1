@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix";
 import { ShaderProgram } from "../engine/ShaderProgram";
 
 export interface Model {
@@ -13,7 +14,7 @@ export interface Model {
 	 *
 	 * Preconditions:
 	 * - The shader program is in use.
-	 * - `u_view` and `u_model` are set.
+	 * - `u_view` and `u_model` are set. There's no need to use set them yourself.
 	 */
-	draw(): void;
+	draw(model: mat4, view: mat4): void;
 }

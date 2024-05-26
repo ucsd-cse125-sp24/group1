@@ -8,7 +8,7 @@ attribute vec4 a_color0;
 
 uniform mat4 u_view;
 uniform mat4 u_model;
-uniform mat4 u_model_part;
+uniform mat4 u_normal_transform;
 
 varying vec3 v_position;
 varying vec3 v_normal;
@@ -19,8 +19,8 @@ varying vec2 v_texcoord2;
 varying vec4 v_color0;
 
 void main() {
-  v_position = vec3(u_model * u_model_part * vec4(a_position, 1));
-  v_normal = normalize(vec3(u_model * u_model_part * vec4(a_normal, 0)));
+  v_position = vec3(u_model * vec4(a_position, 1));
+  v_normal = normalize((u_normal_transform * vec4(a_normal, 0)).xyz);
   v_tangent = a_tangent;
   v_texcoord0 = a_texcoord0;
   v_texcoord1 = a_texcoord1;

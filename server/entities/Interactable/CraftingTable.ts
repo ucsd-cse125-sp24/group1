@@ -20,8 +20,6 @@ export class CraftingTable extends InteractableEntity {
 	// shape
 	box: phys.Box;
 
-	static nameCounter: 0;
-
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = [], recipes: Recipe[]) {
 		super(game, model);
 
@@ -56,7 +54,6 @@ export class CraftingTable extends InteractableEntity {
 
 	onCollide(otherEntity: Entity): void {
 		let success = false;
-		CraftingTable.nameCounter++;
 
 		if (otherEntity instanceof Item) {
 			//console.log("ItemList, then entity name, then recipes:");
@@ -120,7 +117,6 @@ export class CraftingTable extends InteractableEntity {
 							}
 							console.log("deleted all the items");
 
-							let name = this.recipes[i].output + CraftingTable.nameCounter;
 							let result = new Item(
 								this.game,
 								this.recipes[i].output,

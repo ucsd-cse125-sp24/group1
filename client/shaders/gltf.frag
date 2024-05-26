@@ -104,8 +104,8 @@ void main() {
     float local_z = max(abs_to_light.x, max(abs_to_light.y, abs_to_light.z));
     float shadow_depth =
         textureCube(u_point_shadow_maps[i], -to_light / distance).r;
-    // TODO: adjust bias value
-    if (1.0 - shadow_depth / zToDepth(local_z) > 0.000001) {
+    if (1.0 - shadow_depth / zToDepth(local_z) > 0.00001 ||
+        dot(v_normal, to_light / distance) < -0.05) {
       // occluded
       continue;
     }

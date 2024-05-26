@@ -211,7 +211,7 @@ export class GltfModel {
 		});
 	}
 
-	draw() {
+	draw(model: mat4, view: mat4) {
 		const material = this.#material;
 		const gl = material.engine.gl;
 
@@ -232,7 +232,14 @@ export class GltfModel {
 					gl.uniform1i(material.uniform(`u_has_${name}`), 0);
 				}
 			}
-			gl.uniformMatrix4fv(material.uniform("u_model_part"), false, transform);
+			const partTransform = mat4.mul(mat4.create(), model, transform);
+			gl.uniformMatrix4fv(material.uniform("u_model"), false, partTransform);
+			// https://stackoverflow.com/a/13654666
+			gl.uniformMatrix4fv(
+				material.uniform("u_normal_transform"),
+				false,
+				mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform)),
+			);
 			gl.uniform1f(
 				material.uniform("u_alpha_cutoff"),
 				materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
@@ -271,8 +278,8 @@ export class GltfModelWrapper implements Model {
 		});
 	}
 
-	draw() {
-		this.#model?.draw();
+	draw(model: mat4, view: mat4) {
+		this.#model?.draw(model, view);
 	}
 
 	static from(shader: ShaderProgram, promise: Promise<GltfParser>): GltfModelWrapper {
