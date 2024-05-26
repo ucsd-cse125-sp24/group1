@@ -66,9 +66,15 @@ export class Camera {
 		this._position = pos;
 	}
 
-	moveAudioListener(listener: AudioListener) {
-		[listener.positionX.value, listener.positionY.value, listener.positionZ.value] = this._position;
-		[listener.forwardX.value, listener.forwardY.value, listener.forwardZ.value] = this._forwardDir;
+	// HACK: Firefox doesn't support positionX/Y/Z
+	moveAudioListener(listener: AudioListener | Omit<AudioListener, "positionX">) {
+		if ("positionX" in listener) {
+			[listener.positionX.value, listener.positionY.value, listener.positionZ.value] = this._position;
+			[listener.forwardX.value, listener.forwardY.value, listener.forwardZ.value] = this._forwardDir;
+		} else {
+			listener.setPosition(this._position[0], this._position[1], this._position[2]);
+			listener.setOrientation(this._forwardDir[0], this._forwardDir[1], this._forwardDir[2], 0, 0, 1);
+		}
 	}
 
 	setAspectRatio(aspect: number) {
