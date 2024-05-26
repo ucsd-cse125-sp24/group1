@@ -10,7 +10,7 @@
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import { ClientMessage, SerializedBody, SerializedEntity, ServerMessage } from "../common/messages";
-import { MovementInfo } from "../common/commontypes";
+import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { ModelId } from "../assets/models";
 import { PlayerInput } from "./net/PlayerInput";
@@ -28,6 +28,8 @@ import { Item, ItemType } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 import { log } from "./net/_tempDebugLog";
 import { PhysicsWorld } from "./PhysicsWorld";
+import { WsServer } from "./net/WsServer";
+import { SoundId } from "../assets/sounds";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -58,6 +60,7 @@ interface NetworkedPlayer {
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#world = new PhysicsWorld({ gravity: [0, -60, 0] });
+	server = new WsServer(this);
 
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
@@ -167,6 +170,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(tempCrafter);
 	}
 
+	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
+		if (position instanceof phys.Vec3) {
+			position = position.toArray();
+		}
+		this.server.broadcast({ type: "sound", sound, position });
+	}
+
 	updateGameState() {
 		for (let [id, player] of this.#players.entries()) {
 			let inputs = player.input.getInputs();
@@ -186,10 +196,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.entity.move(movement);
 
 			if (posedge.use) {
-				player.entity.use();
+				const used = player.entity.use();
+				if (!used) {
+					this.playSound("useFail", player.entity.getPos());
+				}
 			}
 			if (posedge.attack) {
-				player.entity.attack();
+				const attacked = player.entity.attack();
+				if (!attacked) {
+					this.playSound("attackFail", player.entity.getPos());
+				}
 			}
 			if (posedge.emote) {
 				// TEMP: using `emote` key (X) to spawn item above player

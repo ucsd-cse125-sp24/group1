@@ -119,7 +119,11 @@ export class CraftingTable extends InteractableEntity {
 
 		if (item instanceof Item) {
 			this.#eject(item);
-		} // if there's no items in the array do nothing ig
+			this.game.playSound("popCrafting", this.getPos());
+		} else {
+			// if there's no items in the array do nothing ig
+			this.game.playSound("popCraftingFail", this.getPos());
+		}
 	}
 
 	onCollide(otherEntity: Entity): void {
@@ -143,11 +147,15 @@ export class CraftingTable extends InteractableEntity {
 				this.itemList = [];
 				console.log("crafted ", result.output);
 				this.#eject(new Item(this.game, result.output, 0.5, this.getPos(), [{ modelId: result.output }], "resource"));
+				this.game.playSound("craftingSuccess", this.getPos());
 			} else if (result.type === "unsatisfiable") {
 				for (const item of this.itemList) {
 					this.#eject(item);
 				}
 				this.itemList = [];
+				this.game.playSound("craftingEjectAll", this.getPos());
+			} else {
+				this.game.playSound("craftingPickup", this.getPos());
 			}
 		}
 	}

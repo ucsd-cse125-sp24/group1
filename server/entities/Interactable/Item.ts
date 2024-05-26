@@ -102,6 +102,7 @@ export class Item extends InteractableEntity {
 		if (player instanceof HeroEntity) {
 			console.log("touched an item, scandalous");
 			this.bind(player);
+			this.game.playSound("pickup", player.getPos());
 			// Should this be moved to `bind`?
 			this.canBeAbsorbedByCraftingTable = true;
 			// this.body.mass = 0;

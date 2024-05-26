@@ -163,7 +163,7 @@ export abstract class PlayerEntity extends Entity {
 		return false;
 	}
 
-	attack(): void {
+	attack(): boolean {
 		const entities = this.game.raycast(
 			this.body.position.vadd(this.lookDir), // TODO: why won't it raycast more if it hits the current player?
 			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
@@ -175,8 +175,11 @@ export abstract class PlayerEntity extends Entity {
 				console.log("attack", entity.id);
 				entity.body.applyForce(this.lookDir.scale(2000));
 				entity.body.applyForce(new phys.Vec3(0, 2000, 0));
+				this.game.playSound("hit", entity.getPos());
+				return true;
 			}
 		}
+		return false;
 	}
 
 	serialize(): SerializedEntity {

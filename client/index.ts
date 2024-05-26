@@ -19,6 +19,8 @@ import { ShaderProgram } from "./render/engine/ShaderProgram";
 import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
+import { SoundManager } from "./SoundManager";
+import { sounds } from "../assets/sounds";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -77,6 +79,10 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			isFirstPerson = data.pov === "first-person";
 			camera.canRotate = isFirstPerson;
 			break;
+		case "sound":
+			// TODO: use 3D audio
+			sound.play(sounds[data.sound]);
+			break;
 		case "sabotage-hero":
 			pipeline.pushFilter(pipeline.sporeFilter);
 			setTimeout(() => pipeline.popFilter(), data.time);
@@ -87,6 +93,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 };
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
+const sound = new SoundManager();
 const engine = new GraphicsEngine(getGl());
 const pipeline = new RenderPipeline(engine);
 pipeline.pushFilter(pipeline.outlineFilter);

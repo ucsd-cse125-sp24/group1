@@ -20,6 +20,10 @@ declare module "*.png" {
 	const path: string;
 	export default path;
 }
+declare module "*.mp3" {
+	const path: string;
+	export default path;
+}
 
 interface Element {
 	// lib.dom.d.ts is missing options parameter and Promise return type

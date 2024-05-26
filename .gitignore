@@ -5,8 +5,9 @@ node_modules/
 public/index.css
 public/index.js
 public/*.map
-public/*.png
 public/*.bin
+public/*.png
+public/*.mp3
 public/worker/
 public/log.txt
 dist/

@@ -1,8 +1,15 @@
 import { ModelId } from "../assets/models";
+import { SoundId } from "../assets/sounds";
 import { EntityId } from "../server/entities/Entity";
 import { Vector2, Vector3, Quaternion } from "./commontypes";
 
-export type ServerMessage = { type: "ping" } | { type: "pong" } | EntireGameState | CameraLock | SabotageHero;
+export type ServerMessage =
+	| { type: "ping" }
+	| { type: "pong" }
+	| EntireGameState
+	| CameraLock
+	| PlaySound
+	| SabotageHero;
 
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage | DebugMessages;
 
@@ -57,6 +64,12 @@ export type CameraLock = {
 	 * locks to a point above the entity and has fixed rotation looking downward.
 	 */
 	pov: "first-person" | "top-down";
+};
+
+export type PlaySound = {
+	type: "sound";
+	sound: SoundId;
+	position: Vector3;
 };
 
 /**

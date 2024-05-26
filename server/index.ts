@@ -12,8 +12,6 @@ declare var BROWSER: boolean;
 
 const game = new Game();
 
-const server = new WsServer(game);
-
 let ticks = 0;
 let totalDelta = 0;
 
@@ -23,7 +21,7 @@ let totalDelta = 0;
 	await game.setup();
 	while (true) {
 		// If there is no one connected, wait until someone connects
-		await server.hasConnection;
+		await game.server.hasConnection;
 
 		//check time at beginning of gamestep
 		let startTimeCheck = Date.now();
@@ -32,7 +30,7 @@ let totalDelta = 0;
 		game.updateGameState();
 
 		// send updated state to all clients
-		server.broadcast({
+		game.server.broadcast({
 			type: "entire-game-state",
 			entities: game.serialize(), //the game instead!
 			physicsBodies: game.serializePhysicsBodies(),
@@ -49,7 +47,7 @@ let totalDelta = 0;
 		totalDelta += delta;
 		if (ticks >= 2000) {
 			log(
-				`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${server._debugGetConnectionCount()} connection(s), ${server._debugGetActivePlayerCount()} of ${server._debugGetPlayerCount()} player(s) online`,
+				`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${game.server._debugGetConnectionCount()} connection(s), ${game.server._debugGetActivePlayerCount()} of ${game.server._debugGetPlayerCount()} player(s) online`,
 			);
 			ticks = 0;
 			totalDelta = 0;
@@ -63,4 +61,4 @@ let totalDelta = 0;
 	}
 })();
 
-server.listen(2345);
+game.server.listen(2345);
