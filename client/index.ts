@@ -1,3 +1,7 @@
+import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
+import gltfDebugLightFragmentSource from "./shaders/gltf_debug_light.frag";
+import gltfDebugUniqueShadowFragmentSource from "./shaders/gltf_debug_unique_shadow.frag";
+import gltfVertexSource from "./shaders/gltf.vert";
 import { mat4, vec3 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
@@ -103,6 +107,7 @@ type DebugInputs = {
 	toggleRole: boolean;
 	toggleRoleKeepOld: boolean;
 	toggleTones: boolean;
+	cycleDebugGltf: boolean;
 };
 const defaultDebugInputs = {
 	forward: false,
@@ -116,6 +121,7 @@ const defaultDebugInputs = {
 	toggleRole: false,
 	toggleRoleKeepOld: false,
 	toggleTones: false,
+	cycleDebugGltf: false,
 };
 let debugInputs: FreecamInputs & DebugInputs = { ...defaultDebugInputs };
 const inputListener = new InputListener({
@@ -142,6 +148,7 @@ const inputListener = new InputListener({
 		KeyN: "toggleRoleKeepOld",
 		KeyX: "emote",
 		KeyT: "toggleTones",
+		KeyL: "cycleDebugGltf",
 	},
 	handleInputs: (inputs) => {
 		if (inputs.toggleFreecam && !debugInputs.toggleFreecam) {
@@ -159,6 +166,10 @@ const inputListener = new InputListener({
 		}
 		if (inputs.toggleTones && !debugInputs.toggleTones) {
 			tones = !tones;
+		}
+		if (inputs.cycleDebugGltf && !debugInputs.cycleDebugGltf) {
+			engine.gltfMaterial._debugProgram =
+				debugGltfShaders[(debugGltfShaders.indexOf(engine.gltfMaterial._debugProgram) + 1) % debugGltfShaders.length];
 		}
 
 		debugInputs = { ...inputs };
@@ -187,7 +198,23 @@ const tempLightShader = new ShaderProgram(
 const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
 const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30));
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5));
-const tempEntities: ClientEntity[] = [warmLight, whiteLight, coolLight];
+const tempEntities: ClientEntity[] = [coolLight, warmLight, whiteLight];
+
+const debugGltfShaders = [
+	engine.gltfMaterial._debugProgram,
+	engine.createProgram(
+		engine.createShader("vertex", gltfVertexSource, "gltf.vert"),
+		engine.createShader("fragment", gltfDebugDepthFragmentSource, "gltf_debug.frag"),
+	),
+	engine.createProgram(
+		engine.createShader("vertex", gltfVertexSource, "gltf.vert"),
+		engine.createShader("fragment", gltfDebugLightFragmentSource, "gltf_debug.frag"),
+	),
+	engine.createProgram(
+		engine.createShader("vertex", gltfVertexSource, "gltf.vert"),
+		engine.createShader("fragment", gltfDebugUniqueShadowFragmentSource, "gltf_debug.frag"),
+	),
+];
 
 const ambientLight = [0.2, 0.2, 0.2] as const;
 

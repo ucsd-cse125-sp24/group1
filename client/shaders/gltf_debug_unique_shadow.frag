@@ -52,6 +52,11 @@ float depthToZ(float depth) {
   float local_z = B / (A - 2.0 * depth);
   return local_z;
 }
+float linearizeDepth(float depth) {
+  // https://learnopengl.com/Advanced-OpenGL/Depth-testing
+  // float z = depth * 2.0 - 1.0; // convert to normalized device coords [-1, 1]
+  return (2.0 * NEAR * FAR) / (FAR + NEAR - depth * (FAR - NEAR));
+}
 
 // All components are in the range [0…1], including hue.
 // https://stackoverflow.com/a/17897228
@@ -84,46 +89,19 @@ void main() {
   vec4 base_specular = vec4(0.5, 0.5, 0.5, 1.0);
   float shininess = 4.0;
 
-  gl_FragColor = u_ambient_light * base_color;
-  for (int i = 0; i < MAX_LIGHTS; i++) {
-    if (i >= u_num_lights) {
-      break;
-    }
+  vec3 to_light = u_point_lights[0] - v_position;
+  float distance = length(to_light);
 
-    vec3 to_light = u_point_lights[i] - v_position;
-    float distance = length(to_light);
+  // Accurately read depth values from shadow map
+  // https://stackoverflow.com/a/10789527
+  vec3 abs_to_light = abs(to_light);
+  float local_z = max(abs_to_light.x, max(abs_to_light.y, abs_to_light.z));
+  float shadow_depth =
+      textureCube(u_point_shadow_maps[0], -to_light / distance).r;
 
-    // Accurately read depth values from shadow map
-    // https://stackoverflow.com/a/10789527
-    vec3 abs_to_light = abs(to_light);
-    float local_z = max(abs_to_light.x, max(abs_to_light.y, abs_to_light.z));
-    float shadow_depth =
-        textureCube(u_point_shadow_maps[i], -to_light / distance).r;
-    if (1.0 - shadow_depth / zToDepth(local_z) > 0.00001 ||
-        dot(v_normal, to_light / distance) < -0.05) {
-      // occluded
-      continue;
-    }
-
-    vec3 half_vector = normalize(to_light + to_eye);
-    // Only adjust value (darkness) for HSV light color to avoid changing hue,
-    // then convert to RGB
-    if (u_enable_tones == 1) {
-      distance = ceil(distance / u_tones) * u_tones;
-    }
-    vec4 light_color =
-        vec4(hsv2rgb(vec3(u_point_colors[i].xy,
-                          u_point_colors[i].z / (distance * distance))),
-             1.0);
-    vec4 diffuse_factor = light_color;
-    vec4 diffuse = base_color * diffuse_factor;
-    vec4 specular_factor =
-        step(0.875, pow(max(dot(half_vector, v_normal), 0.0), shininess) *
-                        light_color);
-    vec4 specular = base_specular * specular_factor;
-
-    gl_FragColor += diffuse + (u_enable_tones == 1 ? specular : vec4(0.0));
-  }
+  gl_FragColor = vec4(mod(shadow_depth, 0.0000005) / 0.0000005,
+                      mod(shadow_depth, 0.00000005) / 0.00000005,
+                      mod(shadow_depth, 0.000000005) / 0.000000005, 1.0);
 
   if (base_color.a < u_alpha_cutoff) {
     discard;

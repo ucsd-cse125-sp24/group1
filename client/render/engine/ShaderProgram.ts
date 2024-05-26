@@ -14,6 +14,16 @@ export class ShaderProgram {
 		this.#program = program;
 	}
 
+	get _debugProgram(): WebGLProgram {
+		return this.#program;
+	}
+
+	set _debugProgram(program: WebGLProgram) {
+		this.#program = program;
+		this.#uniformLocations = {};
+		this.#attribLocations = {};
+	}
+
 	use() {
 		this.engine.gl.useProgram(this.#program);
 	}
