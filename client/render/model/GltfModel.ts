@@ -5,6 +5,7 @@ import { ShaderProgram } from "../engine/ShaderProgram";
 import { ComponentType, GltfMaterial, GltfMode, componentSizes, componentTypes } from "../../../common/gltf/gltf-types";
 import { GltfParser } from "../../../common/gltf/gltf-parser";
 import { Model } from "./Model";
+import { mergeMatrices } from "../../lib/mergeMatrices";
 
 type Accessor = {
 	buffer: WebGLBuffer;
@@ -283,18 +284,16 @@ export class GltfModel implements Model {
 
 			const partTransforms = models.map((model) => mat4.mul(mat4.create(), model, transform));
 			gl.bindBuffer(gl.ARRAY_BUFFER, modelTransformBuffer);
-			gl.bufferData(
-				gl.ARRAY_BUFFER,
-				new Float32Array(partTransforms.flatMap((matrix) => Array.from(matrix))),
-				gl.DYNAMIC_DRAW,
-			);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mergeMatrices(partTransforms)), gl.DYNAMIC_DRAW);
 			gl.bindBuffer(gl.ARRAY_BUFFER, normalTransformBuffer);
 			gl.bufferData(
 				gl.ARRAY_BUFFER,
 				new Float32Array(
-					partTransforms.flatMap((partTransform) =>
-						// https://stackoverflow.com/a/13654666
-						Array.from(mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform))),
+					mergeMatrices(
+						partTransforms.map((partTransform) =>
+							// https://stackoverflow.com/a/13654666
+							mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform)),
+						),
 					),
 				),
 				gl.DYNAMIC_DRAW,
