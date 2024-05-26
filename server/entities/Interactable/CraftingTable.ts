@@ -127,7 +127,6 @@ export class CraftingTable extends InteractableEntity {
 	}
 
 	onCollide(otherEntity: Entity): void {
-
 		if (otherEntity instanceof Item) {
 			if (!otherEntity.canBeAbsorbedByCraftingTable) {
 				return;
@@ -157,5 +156,12 @@ export class CraftingTable extends InteractableEntity {
 				this.game.playSound("craftingPickup", this.getPos());
 			}
 		}
+	}
+
+	serialize(): SerializedEntity {
+		return {
+			...super.serialize(),
+			model: [...this.model, ...this.itemList.flatMap((item) => item.model)],
+		};
 	}
 }

@@ -168,7 +168,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[{ modelId: "fish1", scale: 7 }],
 			[
 				{ ingredients: ["raw_iron", "raw_iron"], output: "iron" },
-				{ ingredients: ["pickaxe", "string"], output: "pickaxe" },
+				{ ingredients: ["wood", "string"], output: "pickaxe" },
 			],
 		);
 		this.#registerEntity(tempCrafter);
