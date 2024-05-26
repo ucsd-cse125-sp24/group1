@@ -14,6 +14,7 @@ export abstract class InteractableEntity extends Entity {
 	hit(player: PlayerEntity) {
 		// By default, just hit the object back a bit
 		this.body.applyImpulse(new Vec3(player.lookDir.x * 5, Math.abs(player.lookDir.y) * 5 + 5, player.lookDir.z * 5));
+		this.game.playSound("defaultHit", this.getPos());
 	}
 
 	abstract interact(player: PlayerEntity): void;

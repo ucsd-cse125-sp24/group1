@@ -82,8 +82,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			break;
 		case "sound":
 			if (sounds[data.sound]) {
-				// TODO: use 3D audio
-				const { panner } = sound.play(sounds[data.sound]);
+				let source = sounds[data.sound];
+				if (Array.isArray(source)) {
+					source = source[Math.floor(Math.random() * source.length)];
+				}
+				const { panner } = sound.play(source);
 				[panner.positionX.value, panner.positionY.value, panner.positionZ.value] = data.position;
 			}
 			break;
