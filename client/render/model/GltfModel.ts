@@ -14,6 +14,8 @@ type Accessor = {
 
 type ModelMesh = {
 	vao: WebGLVertexArrayObject;
+	modelTransformBuffer: WebGLBuffer;
+	normalTransformBuffer: WebGLBuffer;
 	materialOptions: GltfMaterial;
 	meshTextures: { texture: WebGLTexture | null; name: string }[];
 	indices: Accessor | null;
@@ -130,6 +132,23 @@ export class GltfModel implements Model {
 			const vao = gl.createVertexArray() ?? expect("Failed to create VAO");
 			gl.bindVertexArray(vao);
 
+			// https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html
+			// https://stackoverflow.com/a/38853623
+			const modelTransformBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
+			gl.bindBuffer(gl.ARRAY_BUFFER, modelTransformBuffer);
+			for (let i = 0; i < 4; i++) {
+				gl.enableVertexAttribArray(shader.attrib("a_model") + i);
+				gl.vertexAttribPointer(shader.attrib("a_model") + i, 4, gl.FLOAT, false, 64, i * 16);
+				gl.vertexAttribDivisor(shader.attrib("a_model") + i, 1);
+			}
+			const normalTransformBuffer = gl.createBuffer() ?? expect("Failed to create buffer");
+			gl.bindBuffer(gl.ARRAY_BUFFER, normalTransformBuffer);
+			for (let i = 0; i < 4; i++) {
+				gl.enableVertexAttribArray(shader.attrib("a_normal_transform") + i);
+				gl.vertexAttribPointer(shader.attrib("a_normal_transform") + i, 4, gl.FLOAT, false, 64, i * 16);
+				gl.vertexAttribDivisor(shader.attrib("a_normal_transform") + i, 1);
+			}
+
 			const vbos = [
 				mesh.attributes.POSITION !== undefined
 					? { ...glBuffers[mesh.attributes.POSITION], attribName: "a_position" }
@@ -201,6 +220,8 @@ export class GltfModel implements Model {
 
 			return {
 				vao,
+				modelTransformBuffer,
+				normalTransformBuffer,
 				materialOptions,
 				meshTextures,
 				indices,
@@ -215,11 +236,25 @@ export class GltfModel implements Model {
 		const material = this.shader;
 		const gl = material.engine.gl;
 
-		for (const { vao, materialOptions, meshTextures, indices, count, transform, mode } of this.#meshes) {
+		// Default vertex color is white (since the base color is multiplied by it)
+		gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
+
+		for (const {
+			vao,
+			modelTransformBuffer,
+			normalTransformBuffer,
+			materialOptions,
+			meshTextures,
+			indices,
+			count,
+			transform,
+			mode,
+		} of this.#meshes) {
 			// Assumes `u_model` uniform is already set
 			if (materialOptions.doubleSided) {
 				gl.disable(gl.CULL_FACE);
 			}
+
 			let textureIndex = 0;
 			for (const { name, texture } of meshTextures) {
 				if (texture) {
@@ -232,6 +267,7 @@ export class GltfModel implements Model {
 					gl.uniform1i(material.uniform(`u_has_${name}`), 0);
 				}
 			}
+
 			gl.uniform1f(
 				material.uniform("u_alpha_cutoff"),
 				materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
@@ -243,24 +279,33 @@ export class GltfModel implements Model {
 			gl.uniform1f(material.uniform("u_metallic"), materialOptions.pbrMetallicRoughness?.metallicFactor ?? 1);
 			gl.uniform1f(material.uniform("u_roughness"), materialOptions.pbrMetallicRoughness?.roughnessFactor ?? 1);
 			gl.uniform3fv(material.uniform("u_emissive"), materialOptions.emissiveFactor ?? [0, 0, 0]);
-			// Default vertex color is white (since the base color is multiplied by it)
-			gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
 			gl.bindVertexArray(vao);
-			for (const model of models) {
-				const partTransform = mat4.mul(mat4.create(), model, transform);
-				gl.uniformMatrix4fv(material.uniform("u_model"), false, partTransform);
-				// https://stackoverflow.com/a/13654666
-				gl.uniformMatrix4fv(
-					material.uniform("u_normal_transform"),
-					false,
-					mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform)),
-				);
-				if (indices) {
-					gl.drawElements(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0);
-				} else {
-					gl.drawArrays(mode ?? gl.TRIANGLES, 0, count);
-				}
+
+			const partTransforms = models.map((model) => mat4.mul(mat4.create(), model, transform));
+			gl.bindBuffer(gl.ARRAY_BUFFER, modelTransformBuffer);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(partTransforms.flatMap((matrix) => Array.from(matrix))),
+				gl.DYNAMIC_DRAW,
+			);
+			gl.bindBuffer(gl.ARRAY_BUFFER, normalTransformBuffer);
+			gl.bufferData(
+				gl.ARRAY_BUFFER,
+				new Float32Array(
+					partTransforms.flatMap((partTransform) =>
+						// https://stackoverflow.com/a/13654666
+						Array.from(mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform))),
+					),
+				),
+				gl.DYNAMIC_DRAW,
+			);
+
+			if (indices) {
+				gl.drawElementsInstanced(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0, models.length);
+			} else {
+				gl.drawArraysInstanced(mode ?? gl.TRIANGLES, 0, count, models.length);
 			}
+
 			gl.bindVertexArray(null);
 			if (materialOptions.doubleSided) {
 				gl.enable(gl.CULL_FACE);
