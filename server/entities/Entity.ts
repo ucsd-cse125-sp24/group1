@@ -16,7 +16,6 @@ export abstract class Entity {
 	 */
 	id: EntityId = nextId++;
 	game: Game;
-	type: string;
 	body: phys.Body;
 	model: EntityModel[];
 	// tags system is very helpful for scalablilities and is also used in Unity
@@ -27,7 +26,6 @@ export abstract class Entity {
 
 	constructor(game: Game, model: EntityModel[] = [], tags: Tag[] = []) {
 		this.game = game;
-		this.type = "entity";
 		this.model = model;
 		this.tags = new Set(tags);
 		this.body = new phys.Body({

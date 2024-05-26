@@ -24,14 +24,15 @@ import { Connection, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
 import { getColliders } from "./entities/map/colliders";
 import { MapEntity } from "./entities/map/MapEntity";
-import { Item } from "./entities/Interactable/Item";
+import { Item, ItemType } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 import { log } from "./net/_tempDebugLog";
 import { PhysicsWorld } from "./PhysicsWorld";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
-const itemModels: ModelId[] = [
+// Note: this only works because ItemType happens to be a subset of ModelId
+const itemModels: ItemType[] = [
 	"axe",
 	"bow",
 	"gamer_bow",
@@ -143,10 +144,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let plane = new PlaneEntity(this, [0, -10, 0], [-1, 0, 0, 1], []);
 		this.#registerEntity(plane);
 
-		let bigIron = new Item(this, "iron-ore", 0.5, [18, 0, 15], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
+		let bigIron = new Item(this, "raw_iron", 0.5, [18, 0, 15], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
 		this.#registerEntity(bigIron);
 
-		let smallIron = new Item(this, "iron-ore", 0.5, [10, 0, 10], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
+		let smallIron = new Item(this, "raw_iron", 0.5, [10, 0, 10], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
 
 		this.#registerEntity(smallIron);
 
@@ -158,7 +159,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[18, 0, 18],
 			[{ modelId: "fish1", scale: 7 }],
 			[
-				{ ingredients: ["iron-ore", "iron-ore"], output: "debug" },
+				{ ingredients: ["raw_iron", "raw_iron"], output: "iron" },
 				{ ingredients: ["pickaxe"], output: "pickaxe" },
 			],
 		);
@@ -197,7 +198,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					// TODO: other parameters?
 					new Item(
 						this,
-						"iron-ore",
+						modelId,
 						0.5,
 						// Max: (25, 20) Min: (-24, -17)
 						player.entity.body.position.vadd(new phys.Vec3(0, 2, 0)).toArray(),

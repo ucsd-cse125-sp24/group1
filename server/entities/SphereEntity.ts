@@ -14,7 +14,6 @@ export class SphereEntity extends Entity {
 
 	constructor(game: Game, pos: Vector3, radius: number, model: EntityModel[] = []) {
 		super(game, model);
-		this.type = "sphere";
 		this.model = model;
 
 		this.body = new phys.Body({

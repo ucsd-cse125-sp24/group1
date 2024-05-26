@@ -15,7 +15,6 @@ export class CylinderEntity extends Entity {
 
 	constructor(game: Game, pos: Vector3, radius: number, height: number, model: EntityModel[] = []) {
 		super(game, model);
-		this.type = "cylinder";
 		this.model = model;
 
 		this.body = new phys.Body({

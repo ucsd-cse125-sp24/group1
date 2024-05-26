@@ -37,7 +37,6 @@ export class HeroEntity extends PlayerEntity {
 			PLAYER_INTERACTION_RANGE,
 		);
 
-		this.type = "player-hero";
 		this.jumping = false;
 	}
 

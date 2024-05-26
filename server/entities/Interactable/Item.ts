@@ -6,9 +6,27 @@ import { Tag } from "../Entity";
 import { ItemMaterial } from "../../materials/SourceMaterials";
 import { InteractableEntity } from "./InteractableEntity";
 import { Game } from "../../Game";
+import { HeroEntity } from "../HeroEntity";
+import { BossEntity } from "../BossEntity";
+
+export type ItemType =
+	| "axe"
+	| "bow"
+	| "gamer_bow"
+	| "gamer_sword"
+	| "iron"
+	| "knife"
+	| "magic_sauce"
+	| "mushroom"
+	| "pickaxe"
+	| "raw_iron"
+	| "shears"
+	| "string"
+	| "sword"
+	| "wood";
 
 export class Item extends InteractableEntity {
-	type: string;
+	type: ItemType;
 	body: phys.Body;
 	model: EntityModel[];
 	radius: number;
@@ -25,7 +43,7 @@ export class Item extends InteractableEntity {
 	/**
 	 * Tag should be a Tag type! For creating an item, it should only realistically be a resource or a tool!
 	 */
-	constructor(game: Game, type: string, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
+	constructor(game: Game, type: ItemType, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
 		super(game, model, [tag]);
 
 		//TODO: ADD A MATERIAL FOR COLLISION
@@ -81,13 +99,13 @@ export class Item extends InteractableEntity {
 		//if a hero, then makes the item's position locked into the player's hands
 		//turns collider off, possibly
 
-		if (player.type === "player-hero") {
+		if (player instanceof HeroEntity) {
 			console.log("touched an item, scandalous");
 			this.bind(player);
 			// Should this be moved to `bind`?
 			this.canBeAbsorbedByCraftingTable = true;
 			// this.body.mass = 0;
-		} else if (player.type === "player-boss") {
+		} else if (player instanceof BossEntity) {
 		}
 
 		//if a boss, do some sabotage!

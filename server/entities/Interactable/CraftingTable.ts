@@ -5,15 +5,15 @@ import { PlayerEntity } from "../PlayerEntity";
 import { Entity } from "../Entity";
 import { Game } from "../../Game";
 import { InteractableEntity } from "./InteractableEntity";
-import { Item } from "./Item";
+import { Item, ItemType } from "./Item";
 
-export type Recipe = { ingredients: string[]; output: string };
+export type Recipe = { ingredients: ItemType[]; output: ItemType };
 
 type RecipeCheckResult =
 	| {
 			/** A recipe has been satisfied */
 			type: "satisfied";
-			output: string;
+			output: ItemType;
 	  }
 	| {
 			/** There are recipes that can be satisfied with more items */
@@ -33,7 +33,7 @@ export class CraftingTable extends InteractableEntity {
 	/** Recipes that the crafting table can perform */
 	recipes: Recipe[];
 	/** List of potential ingredients for recipes */
-	ingredients: string[];
+	ingredients: ItemType[];
 
 	// shape
 	box: phys.Box;
@@ -41,7 +41,6 @@ export class CraftingTable extends InteractableEntity {
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = [], recipes: Recipe[]) {
 		super(game, model);
 
-		this.type = "crafting-table";
 		this.model = model;
 		this.itemList = [];
 		this.recipes = recipes;
@@ -143,7 +142,7 @@ export class CraftingTable extends InteractableEntity {
 				// Delete ingredients
 				this.itemList = [];
 				console.log("crafted ", result.output);
-				this.#eject(new Item(this.game, result.output, 0.5, this.getPos(), [{ modelId: "fish1" }], "resource"));
+				this.#eject(new Item(this.game, result.output, 0.5, this.getPos(), [{ modelId: result.output }], "resource"));
 			} else if (result.type === "unsatisfiable") {
 				for (const item of this.itemList) {
 					this.#eject(item);

@@ -14,7 +14,6 @@ export class CubeEntity extends Entity {
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(game, model);
-		this.type = "cube";
 		this.model = model;
 
 		this.body = new phys.Body({

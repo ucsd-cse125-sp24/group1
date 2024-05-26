@@ -14,7 +14,6 @@ export class PlaneEntity extends Entity {
 
 	constructor(game: Game, pos: Vector3, rotation: Quaternion, model: EntityModel[] = []) {
 		super(game, model, ["environment"]);
-		this.type = "plane";
 		this.model = model;
 
 		this.body = new phys.Body({

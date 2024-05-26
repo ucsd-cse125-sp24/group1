@@ -38,7 +38,6 @@ export class BossEntity extends PlayerEntity {
 			PLAYER_INTERACTION_RANGE,
 		);
 
-		this.type = "player-boss";
 		this.jumping = false;
 	}
 

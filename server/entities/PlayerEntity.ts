@@ -50,7 +50,6 @@ export abstract class PlayerEntity extends Entity {
 	) {
 		super(game, model, ["player"]);
 
-		this.type = "player";
 		this.isPlayer = true;
 
 		this.itemInHands = null;
