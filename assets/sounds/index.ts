@@ -11,7 +11,7 @@ import spawnerHarvest from "./spawner-harvest.mp3";
 import spawnerReject from "./spawner-reject.mp3";
 import spore from "./spore.mp3";
 import throwSound from "./throw.mp3";
-import trapDestroy from "./trap-destroy.mp3";
+import trapDisarm from "./trap-destroy.mp3";
 import trapEscape from "./trap-escape.mp3";
 import trapHit from "./trap-hit.mp3";
 import trapPlace from "./trap-place.mp3";
@@ -32,7 +32,7 @@ export const sounds = {
 	spawnerReject,
 	spore,
 	throw: throwSound,
-	trapDestroy, // unused
+	trapDisarm,
 	trapEscape,
 	trapHit,
 	trapPlace,

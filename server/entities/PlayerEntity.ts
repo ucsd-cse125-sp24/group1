@@ -183,8 +183,9 @@ export abstract class PlayerEntity extends Entity {
 			// Apply knockback to player when attacked
 			if (entity instanceof PlayerEntity) {
 				console.log("attack", entity.id);
-				entity.body.applyForce(this.lookDir.scale(2000));
-				entity.body.applyForce(new phys.Vec3(0, 2000, 0));
+				entity.body.applyImpulse(
+					new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
+				);
 				this.game.playSound("hit", entity.getPos());
 				return true;
 			} else if (entities[0] instanceof InteractableEntity) {

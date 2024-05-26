@@ -32,10 +32,10 @@ export class TrapEntity extends InteractableEntity {
 		}
 	}
 
-	interact(player: PlayerEntity): void | Item {
+	hit(player: PlayerEntity): void {
 		if (this.trappedPlayerId === null) {
 			this.game.addToDeleteQueue(this.id);
-			this.game.playSound("trapDestroy", this.getPos());
+			this.game.playSound("trapDisarm", this.getPos());
 			return;
 		} else if (player.id === this.trappedPlayerId) {
 			this.durability -= 1;
@@ -48,4 +48,6 @@ export class TrapEntity extends InteractableEntity {
 			this.game.playSound("trapEscape", this.getPos());
 		}
 	}
+
+	interact(player: PlayerEntity): void {}
 }
