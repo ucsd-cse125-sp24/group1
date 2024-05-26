@@ -16,15 +16,16 @@ export class Spawner extends InteractableEntity {
 	model: EntityModel[];
 
     toSpawn: ItemType;
-    itemsSpawnedCounter: number;    
 
 	// shape
 	box: phys.Box;
 
 	game: Game;
-	previousTick: number;
 
-	constructor(pos: Vector3, toSpawn: ItemType, model: EntityModel[] = [], game: Game) {
+	previousTick: number;
+	toolToHarvest: string;
+
+	constructor(game: Game, pos: Vector3, toSpawn: ItemType, toolToHarvest: string, model: EntityModel[] = []) {
 		super(game, model);
 		this.previousTick = 0;
 		this.game = game; //TEMPORARY
@@ -32,7 +33,7 @@ export class Spawner extends InteractableEntity {
 		this.model = model;
 
         this.toSpawn = toSpawn;
-        this.itemsSpawnedCounter = 0;
+		this.toolToHarvest = toolToHarvest;
 
         this.halfExtent = 0.75;
 
@@ -48,22 +49,28 @@ export class Spawner extends InteractableEntity {
 		this.body.addShape(this.box);
 	}
 
-	interact(player: PlayerEntity) {
+	onCollide(otherEntity: Entity) {
+
 		let currentTick = this.game.getCurrentTick();
-		
 
 		//have to wait 50 ticks
 		if(currentTick - this.previousTick < 50){
 			return;
 		}
 
-        this.itemsSpawnedCounter ++;
+
+		if(otherEntity instanceof Item){
+			if(otherEntity.type != this.toolToHarvest) {
+				return;
+			}
+		}
+		
 
 		let item = new Item(
 			this.game,
             this.toSpawn,
             0.5,
-            [this.getPos()[0] + 2, this.getPos()[1], this.getPos()[2]],
+            [...this.getPos()],
             [{modelId: this.toSpawn, offset: [0, -.5, 0]}], 
             "resource"
         );
@@ -74,9 +81,9 @@ export class Spawner extends InteractableEntity {
 			item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));	
 			item.canBeAbsorbedByCraftingTable = false;
 			this.game.addToCreateQueue(item);
-
+			item.throw(new phys.Vec3(...[0, 100, 0]));
 			this.previousTick = this.game.getCurrentTick();
-
+			console.log("sptting");
 		} // if there's no items in the array do nothing ig
 	}
 }

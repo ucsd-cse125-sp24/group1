@@ -30,6 +30,7 @@ import { log } from "./net/_tempDebugLog";
 import { PhysicsWorld } from "./PhysicsWorld";
 import { WsServer } from "./net/WsServer";
 import { SoundId } from "../assets/sounds";
+import { Spawner } from "./entities/Interactable/Spawner";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -159,8 +160,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let string = new Item(this, "string", 0.5, [17, 0, 15], [{ modelId: "string", scale: 0.5 }], "resource");
 		this.#registerEntity(string);
 
-		let Pick = new Item(this, "pickaxe", 0.5, [15, 0, 15], [{ modelId: "pickaxe", scale: 0.75 }], "tool");
-		this.#registerEntity(Pick);
+		let axe = new Item(this, "axe", 0.5, [15, 0, 15], [{ modelId: "axe", scale: 0.75 }], "tool");
+		this.#registerEntity(axe);
 
 		let tempCrafter = new CraftingTable(
 			this,
@@ -171,8 +172,28 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				{ ingredients: ["pickaxe", "string"], output: "pickaxe" },
 			],
 		);
-
 		this.#registerEntity(tempCrafter);
+
+
+		let woodSpawner = new Spawner(
+			this,
+			[-18, 6, -18],
+			"wood",
+			"axe",
+			[{modelId: "fish1", scale: 7}],
+		);
+		this.#registerEntity(woodSpawner);
+
+
+		let oreSpawner = new Spawner(
+			this,
+			[18, 6, -18],
+			"raw_iron",
+			"pickaxe",
+			[{modelId: "raw_iron", scale: 3}],
+		);
+		this.#registerEntity(oreSpawner);
+
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
