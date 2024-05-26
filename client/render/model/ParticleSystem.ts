@@ -13,11 +13,29 @@ export type ParticleOptions = {
 	mass: number;
 	initialPosition: vec3;
 	initialVelocity: vec3;
+	/**
+	 * If this property is set, then new particles will spawn with a random
+	 * initial velocity - each component i will be sampled from a uniform
+	 * distribution centered on initialVelocity[i].
+	 */
 	initialVelocityRange?: vec3;
 	/** Remaining time to live in seconds */
 	ttl: number;
 };
 
+/**
+ * Creates and draws particles using the particle shader. Several options can be
+ * specified in the constructor to determine what the particles look like and
+ * how often/many to spawn. The shader itself applies basic physics to each
+ * particle so they move naturally.
+ *
+ * Usage: Construct a `ParticleSystem` with desired options. It is initially
+ * disabled, so call `enable()` on it to spawn the first batch of particles and
+ * start drawing them. While the `ParticleSystem` is enabled, it will
+ * periodically spawn new particle batches as specified by its parameters. Call
+ * `disable()` on the `ParticleSystem` to stop spawning and drawing particles.
+ * Then call `enable()` and `disable()` again, etc.
+ */
 export class ParticleSystem implements Model {
 	/** Do not set this outside of `ParticleSystem` */
 	readonly shader: ShaderProgram;
@@ -126,6 +144,7 @@ export class ParticleSystem implements Model {
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
+			// transformFeedbacks[i] writes to buffers in VAOs[i]
 			gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, this.#transformFeedbacks[i]);
 			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, VBO_position);
 			gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 1, VBO_velocity);
@@ -137,6 +156,9 @@ export class ParticleSystem implements Model {
 		this.#currentVAOIndex = 0;
 	}
 
+	/**
+	 * Zero out all buffers in both VAOs.
+	 */
 	#clearBuffers(): void {
 		const gl = this.shader.engine.gl;
 		const zeros = Float32Array.from(new Array(this.#maxParticles * 3).fill(0));
@@ -171,6 +193,10 @@ export class ParticleSystem implements Model {
 		this.#nextParticleIndex = 0;
 	}
 
+	/**
+	 * Enable particle drawing, spawn a new batch of particles, and reset the
+	 * spawn timer.
+	 */
 	enable(): void {
 		this.#enabled = true;
 		this.#clearBuffers();
@@ -178,10 +204,18 @@ export class ParticleSystem implements Model {
 		this.#lastFrameTime = Date.now();
 	}
 
+	/**
+	 * Disable particle drawing and spawning.
+	 */
 	disable(): void {
 		this.#enabled = false;
 	}
 
+	/**
+	 * Write new particle data into the attribute buffers of the current VAO. We
+	 * only need to write the current VAO because the transform feedback will
+	 * update the other VAO with new data after the next draw.
+	 */
 	#spawnBatch(): void {
 		const gl = this.shader.engine.gl;
 		const numToSpawn = Math.min(this.spawnCount, this.#maxParticles);
@@ -256,7 +290,7 @@ export class ParticleSystem implements Model {
 		this.#lastSpawnTime = Date.now();
 	}
 
-	draw(models: mat4[]): void {
+	draw(models: mat4[], view: mat4): void {
 		if (!this.#enabled) {
 			return;
 		}
@@ -271,6 +305,7 @@ export class ParticleSystem implements Model {
 		gl.bindVertexArray(this.#VAOs[this.#currentVAOIndex]);
 		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, this.#transformFeedbacks[1 - this.#currentVAOIndex]);
 
+		gl.uniformMatrix4fv(this.shader.uniform("u_view"), false, view);
 		gl.uniform1f(this.shader.uniform("u_size"), this.options.size);
 		gl.uniform3fv(this.shader.uniform("u_color"), this.options.color);
 		gl.uniform1f(this.shader.uniform("u_mass"), this.options.mass);

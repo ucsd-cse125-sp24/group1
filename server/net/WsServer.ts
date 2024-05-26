@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { WebSocket, WebSocketServer } from "ws";
 import express from "express";
 import { Game } from "../Game";
+import { getRandomValues } from "crypto";
 import { ClientControlMessage, ClientMessage, ServerControlMessage, ServerMessage } from "../../common/messages";
 import { Connection } from "./Server";
 import { log } from "./_tempDebugLog";
@@ -174,7 +175,7 @@ export class WsServer {
 				} else {
 					// New player (or they reconnected with an invalid ID; we treat them like a new player)
 					// Generate a new ID
-					id = [...crypto.getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
+					id = [...getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
 					log(`New player ${id.slice(0, 6)}`);
 				}
 

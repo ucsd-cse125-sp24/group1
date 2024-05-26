@@ -127,7 +127,6 @@ export class CraftingTable extends InteractableEntity {
 	}
 
 	onCollide(otherEntity: Entity): void {
-		let success = false;
 
 		if (otherEntity instanceof Item) {
 			if (!otherEntity.canBeAbsorbedByCraftingTable) {
