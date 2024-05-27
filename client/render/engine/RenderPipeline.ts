@@ -1,12 +1,20 @@
 import { mat4 } from "gl-matrix";
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
-import outlineFilterFragmentSource from "../../shaders/outlineFilter.frag";
-import antiAliasFilterFragmentSource from "../../shaders/antiAliasFilter.frag";
-import sporeFilterFragmentSource from "../../shaders/sporeFilter.frag";
 import { ParticleSystem } from "../model/ParticleSystem";
 import GraphicsEngine from "./GraphicsEngine";
 import { ShaderProgram } from "./ShaderProgram";
+
+export type Filter = {
+	shader: ShaderProgram;
+	/** Default: true */
+	enabled?: boolean;
+	/**
+	 * Strength of the filter. Some filters may use this. If 0, the filter is
+	 * skipped. Default: 1
+	 */
+	strength?: number;
+};
 
 export class RenderPipeline {
 	#engine: GraphicsEngine;
@@ -19,16 +27,13 @@ export class RenderPipeline {
 	#textureHeight: number;
 	#imagePlanePositions: WebGLBuffer | null;
 	#imagePlaneTexCoords: WebGLBuffer | null;
-	#filters: ShaderProgram[];
+	filters: Filter[];
 
 	#reticle: ParticleSystem;
 
 	noOpFilter: ShaderProgram;
-	outlineFilter: ShaderProgram;
-	antiAliasFilter: ShaderProgram;
-	sporeFilter: ShaderProgram;
 
-	constructor(engine: GraphicsEngine) {
+	constructor(engine: GraphicsEngine, filters: Filter[] = []) {
 		this.#engine = engine;
 		const gl = engine.gl;
 
@@ -63,34 +68,13 @@ export class RenderPipeline {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		this.#framebuffer = gl.createFramebuffer();
 
-		this.#filters = [];
+		this.filters = filters;
 
 		this.noOpFilter = new ShaderProgram(
 			engine,
 			engine.createProgram(
 				engine.createShader("vertex", filterVertexSource, "filter.vert"),
 				engine.createShader("fragment", noOpFilterFragmentSource, "filterNoOp.frag"),
-			),
-		);
-		this.outlineFilter = new ShaderProgram(
-			engine,
-			engine.createProgram(
-				engine.createShader("vertex", filterVertexSource, "filter.vert"),
-				engine.createShader("fragment", outlineFilterFragmentSource, "outlineFilter.frag"),
-			),
-		);
-		this.antiAliasFilter = new ShaderProgram(
-			engine,
-			engine.createProgram(
-				engine.createShader("vertex", filterVertexSource, "filter.vert"),
-				engine.createShader("fragment", antiAliasFilterFragmentSource, "antiAliasFilter.frag"),
-			),
-		);
-		this.sporeFilter = new ShaderProgram(
-			engine,
-			engine.createProgram(
-				engine.createShader("vertex", filterVertexSource, "filter.vert"),
-				engine.createShader("fragment", sporeFilterFragmentSource, "sporeFilter.frag"),
 			),
 		);
 
@@ -105,12 +89,9 @@ export class RenderPipeline {
 		this.#reticle.enable();
 	}
 
-	pushFilter(filter: ShaderProgram): void {
-		this.#filters.push(filter);
-	}
-
-	popFilter(): void {
-		this.#filters.pop();
+	#getFilters(): Filter[] {
+		const filters = this.filters.filter((filter) => (filter.enabled ?? true) && filter.strength !== 0);
+		return filters.length > 0 ? filters : [{ shader: this.noOpFilter }];
 	}
 
 	startRender(): void {
@@ -145,19 +126,16 @@ export class RenderPipeline {
 	}
 
 	draw(): void {
-		if (this.#filters.length === 0) {
-			throw new Error("Trying to use RenderPipeline with no shader steps.");
-		}
-
 		const gl = this.#engine.gl;
+		const filters = this.#getFilters();
 
 		// Use the framebuffer to apply each filter in succession, drawing from
 		// colorTexture to filteredTexture then swapping the two textures
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.#framebuffer);
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, null, 0);
-		for (let i = 0; i < this.#filters.length - 1; i++) {
+		for (const filter of filters) {
 			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#filteredTexture, 0);
-			this.#drawToPlane(i);
+			this.#drawToPlane(filter);
 			const temp = this.#colorTexture;
 			this.#colorTexture = this.#filteredTexture;
 			this.#filteredTexture = temp;
@@ -165,28 +143,30 @@ export class RenderPipeline {
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 		// Final draw to canvas
-		this.#drawToPlane(this.#filters.length - 1);
+		this.#drawToPlane(filters[filters.length - 1]);
 		this.#reticle.shader.use();
 		this.#reticle.draw([mat4.create()], mat4.create());
 	}
 
-	#drawToPlane(filterIndex: number): void {
+	#drawToPlane({ shader, strength }: Filter): void {
 		const gl = this.#engine.gl;
-		const filter = this.#filters[filterIndex];
 		this.#engine.clear();
-		filter.use();
+		shader.use();
 		// Set uniforms
 		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.#colorTexture);
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, this.#depthTexture);
 		const { width, height } = this.#engine.gl.canvas;
-		gl.uniform2f(filter.uniform("u_resolution"), width, height);
-		gl.uniform1i(filter.uniform("u_texture_color"), 0);
-		gl.uniform1i(filter.uniform("u_texture_depth"), 1);
+		gl.uniform2f(shader.uniform("u_resolution"), width, height);
+		gl.uniform1i(shader.uniform("u_texture_color"), 0);
+		gl.uniform1i(shader.uniform("u_texture_depth"), 1);
+		if (strength) {
+			gl.uniform1f(shader.uniform("u_strength"), strength);
+		}
 		// Set up screen-filling plane
-		const positionAttribLoc = filter.attrib("a_position");
-		const texCoordAttribLoc = filter.attrib("a_texcoord");
+		const positionAttribLoc = shader.attrib("a_position");
+		const texCoordAttribLoc = shader.attrib("a_texcoord");
 		gl.enableVertexAttribArray(positionAttribLoc);
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.#imagePlanePositions);
 		gl.vertexAttribPointer(positionAttribLoc, 2, gl.FLOAT, false, 0, 0);

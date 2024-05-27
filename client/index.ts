@@ -22,7 +22,9 @@ import { TempLightEntity } from "./render/lights/TempLightEntity";
 import { SoundManager } from "./SoundManager";
 import { sounds } from "../assets/sounds";
 import { drawModels } from "./render/model/draw";
-import { ParticleSystem } from "./render/model/ParticleSystem";
+import filterVertexSource from "./shaders/filter.vert";
+import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
+import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -92,8 +94,8 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			}
 			break;
 		case "sabotage-hero":
-			pipeline.pushFilter(pipeline.sporeFilter);
-			setTimeout(() => pipeline.popFilter(), data.time);
+			sporeFilter.strength = 1;
+			setTimeout(() => (sporeFilter.strength = 0), data.time);
 			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
@@ -104,8 +106,28 @@ const connection = new Connection(wsUrl, handleMessage, document.getElementById(
 const { gl, audioContext } = getContexts();
 const sound = new SoundManager(audioContext);
 const engine = new GraphicsEngine(gl);
-const pipeline = new RenderPipeline(engine);
-pipeline.pushFilter(pipeline.outlineFilter);
+const sporeFilter = {
+	shader: new ShaderProgram(
+		engine,
+		engine.createProgram(
+			engine.createShader("vertex", filterVertexSource, "filter.vert"),
+			engine.createShader("fragment", sporeFilterFragmentSource, "sporeFilter.frag"),
+		),
+	),
+	strength: 0,
+};
+const pipeline = new RenderPipeline(engine, [
+	{
+		shader: new ShaderProgram(
+			engine,
+			engine.createProgram(
+				engine.createShader("vertex", filterVertexSource, "filter.vert"),
+				engine.createShader("fragment", outlineFilterFragmentSource, "outlineFilter.frag"),
+			),
+		),
+	},
+	sporeFilter,
+]);
 const camera = new PlayerCamera(
 	vec3.fromValues(5, 5, 5),
 	vec3.fromValues(0, Math.PI, 0),
