@@ -1,5 +1,5 @@
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import { EntityModel } from "../../common/messages";
+import { EntityModel, SerializedEntity } from "../../common/messages";
 import { Game } from "../Game";
 import { PlayerEntity } from "./PlayerEntity";
 
@@ -53,5 +53,13 @@ export class HeroEntity extends PlayerEntity {
 			this.isSabotaged = false;
 			this.setSpeed(HERO_WALK_SPEED);
 		}, 5000);
+	}
+
+	serialize(): SerializedEntity {
+		return {
+			...super.serialize(),
+			isSabotaged: this.isSabotaged,
+			isTrapped: this.isTrapped,
+		};
 	}
 }

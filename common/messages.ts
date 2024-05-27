@@ -120,6 +120,10 @@ export type SerializedEntity = {
 	quaternion: Quaternion;
 	position: Vector3;
 	// for future reference we need to include velocity for movement prediction
+
+	// Client uses this state on camera locked entity to determine visual effects
+	isSabotaged?: boolean;
+	isTrapped?: boolean;
 };
 
 export type SerializedBody = {

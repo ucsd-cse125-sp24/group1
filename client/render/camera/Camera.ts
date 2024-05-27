@@ -81,6 +81,10 @@ export class Camera {
 		this._aspectRatio = aspect;
 	}
 
+	setFovY(fovY: number) {
+		this._fovY = fovY;
+	}
+
 	setOrientation(xRot: number, yRot: number): void {
 		xRot = clamp(xRot, -Math.PI / 2 + 0.1, Math.PI / 2 - 0.1);
 		yRot = modulo(yRot, 2 * Math.PI);

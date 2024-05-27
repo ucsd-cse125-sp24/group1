@@ -15,7 +15,7 @@ import { ModelWithTransform } from "./model/draw";
 export class ClientEntity {
 	engine: GraphicsEngine;
 	models: ModelWithTransform[];
-	id?: EntityId;
+	data?: SerializedEntity;
 	/**
 	 * A transformation to apply to all the models in the entity. You can think of
 	 * it like the anchor position and rotation of the entity.
@@ -24,11 +24,16 @@ export class ClientEntity {
 	visible = true;
 	light?: PointLight;
 
-	constructor(engine: GraphicsEngine, models: ModelWithTransform[], id?: EntityId, transform = mat4.create()) {
+	constructor(
+		engine: GraphicsEngine,
+		models: ModelWithTransform[],
+		transform = mat4.create(),
+		data?: SerializedEntity,
+	) {
 		this.engine = engine;
 		this.models = models;
-		this.id = id;
 		this.transform = transform;
+		this.data = data;
 	}
 
 	/**
@@ -67,8 +72,8 @@ export class ClientEntity {
 					transform: mat4.fromRotationTranslationScale(mat4.create(), rotation, offset, [scale, scale, scale]),
 				};
 			}),
-			entity.id,
 			transform,
+			entity,
 		);
 	}
 }

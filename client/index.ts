@@ -140,6 +140,7 @@ const camera = new PlayerCamera(
 	100,
 	engine,
 );
+const fov = new Transition(Math.PI / 3);
 
 type DebugInputs = {
 	toggleFreecam: boolean;
@@ -259,25 +260,25 @@ const debugGltfShaders = [
 const ambientLight = [0.2, 0.2, 0.2] as const;
 
 const paint = () => {
-	camera.setAspectRatio(window.innerWidth / window.innerHeight);
 	warmLight.color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
 	warmLight.position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
 	whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
-	sporeFilter.strength = sporeFilterStrength.getValue();
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
 		for (const entity of entities) {
-			entity.visible = entity.id !== cameraLockTarget;
+			entity.visible = entity.data?.id !== cameraLockTarget;
 		}
 	}
 
-	const cameraTarget = entities.find((entity) => entity.id === cameraLockTarget);
+	const cameraTarget = entities.find((entity) => entity.data?.id === cameraLockTarget);
 	if (cameraTarget) {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
 		coolLight.position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
+		sporeFilterStrength.setTarget(cameraTarget.data?.isSabotaged ? 1 : 0);
+		fov.setTarget(cameraTarget.data?.isTrapped ? Math.PI / 6 : Math.PI / 3);
 		if (!freecam) {
 			if (isFirstPerson) {
 				camera.setPosition(position);
@@ -293,6 +294,10 @@ const paint = () => {
 	}
 	// TODO: also call this when rotating camera?
 	camera.moveAudioListener(audioContext.listener);
+
+	camera.setAspectRatio(window.innerWidth / window.innerHeight);
+	camera.setFovY(fov.getValue());
+	sporeFilter.strength = sporeFilterStrength.getValue();
 
 	engine.clear();
 
