@@ -2,6 +2,7 @@ import { mat4 } from "gl-matrix";
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
 import outlineFilterFragmentSource from "../../shaders/outlineFilter.frag";
+import antiAliasFilterFragmentSource from "../../shaders/antiAliasFilter.frag";
 import sporeFilterFragmentSource from "../../shaders/sporeFilter.frag";
 import { ParticleSystem } from "../model/ParticleSystem";
 import GraphicsEngine from "./GraphicsEngine";
@@ -24,6 +25,7 @@ export class RenderPipeline {
 
 	noOpFilter: ShaderProgram;
 	outlineFilter: ShaderProgram;
+	antiAliasFilter: ShaderProgram;
 	sporeFilter: ShaderProgram;
 
 	constructor(engine: GraphicsEngine) {
@@ -75,6 +77,13 @@ export class RenderPipeline {
 			engine.createProgram(
 				engine.createShader("vertex", filterVertexSource, "filter.vert"),
 				engine.createShader("fragment", outlineFilterFragmentSource, "outlineFilter.frag"),
+			),
+		);
+		this.antiAliasFilter = new ShaderProgram(
+			engine,
+			engine.createProgram(
+				engine.createShader("vertex", filterVertexSource, "filter.vert"),
+				engine.createShader("fragment", antiAliasFilterFragmentSource, "antiAliasFilter.frag"),
 			),
 		);
 		this.sporeFilter = new ShaderProgram(
@@ -171,6 +180,8 @@ export class RenderPipeline {
 		gl.bindTexture(gl.TEXTURE_2D, this.#colorTexture);
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_2D, this.#depthTexture);
+		const { width, height } = this.#engine.gl.canvas;
+		gl.uniform2f(filter.uniform("u_resolution"), width, height);
 		gl.uniform1i(filter.uniform("u_texture_color"), 0);
 		gl.uniform1i(filter.uniform("u_texture_depth"), 1);
 		// Set up screen-filling plane

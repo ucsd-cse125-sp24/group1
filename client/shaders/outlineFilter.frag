@@ -4,6 +4,7 @@ varying vec2 v_texcoord;
 
 uniform sampler2D u_texture_color;
 uniform sampler2D u_texture_depth;
+uniform vec2 u_resolution;
 
 float near = 0.001;
 float far = 100.0;
@@ -16,7 +17,7 @@ float getDepth(vec2 texcoord) {
 
 void main() {
   float depth = getDepth(v_texcoord);
-  // TODO: use a vec2 uniform to pass in image size so we can access texels
+  // TODO: use `u_resolution` (image size) so we can access texels
   float depth_x0 = getDepth(vec2(v_texcoord.x - 0.001, v_texcoord.y));
   float depth_x1 = getDepth(vec2(v_texcoord.x + 0.001, v_texcoord.y));
   float depth_y0 = getDepth(vec2(v_texcoord.x, v_texcoord.y - 0.001));

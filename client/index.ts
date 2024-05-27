@@ -214,12 +214,7 @@ const tempLightShader = new ShaderProgram(
 const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
 const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30));
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5));
-const tempEntities: ClientEntity[] = [
-	coolLight,
-	warmLight,
-	whiteLight,
-	new ClientEntity(engine, [{ model: new ParticleSystem(engine), transform: mat4.create() }]),
-];
+const tempEntities: ClientEntity[] = [coolLight, warmLight, whiteLight];
 
 const debugGltfShaders = [
 	engine.gltfMaterial._debugProgram,
