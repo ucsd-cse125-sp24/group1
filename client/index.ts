@@ -25,6 +25,7 @@ import { drawModels } from "./render/model/draw";
 import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
+import { Transition } from "./lib/transition";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -94,8 +95,8 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			}
 			break;
 		case "sabotage-hero":
-			sporeFilter.strength = 1;
-			setTimeout(() => (sporeFilter.strength = 0), data.time);
+			sporeFilterStrength.setTarget(1);
+			setTimeout(() => sporeFilterStrength.setTarget(0), data.time);
 			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
@@ -116,6 +117,7 @@ const sporeFilter = {
 	),
 	strength: 0,
 };
+const sporeFilterStrength = new Transition(0);
 const pipeline = new RenderPipeline(engine, [
 	{
 		shader: new ShaderProgram(
@@ -261,6 +263,7 @@ const paint = () => {
 	warmLight.color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
 	warmLight.position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
 	whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
+	sporeFilter.strength = sporeFilterStrength.getValue();
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
