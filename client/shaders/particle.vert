@@ -12,7 +12,7 @@ in float a_ttl;
 
 out vec3 v_position;
 out vec3 v_velocity;
-out float v_ttl;
+flat out float v_ttl;
 
 vec3 gravity = vec3(0, -5, 0);
 

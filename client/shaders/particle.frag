@@ -3,7 +3,7 @@ precision mediump float;
 
 uniform vec3 u_color;
 
-in float v_ttl;
+flat in float v_ttl;
 
 out vec4 outColor;
 

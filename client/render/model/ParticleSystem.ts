@@ -7,11 +7,15 @@ import { ShaderProgram } from "../engine/ShaderProgram";
 import { Model } from "./Model";
 
 export type ParticleOptions = {
+	/** Default: 16 */
 	size: number;
+	/** Default: `[1, 1, 1]` (white) */
 	color: vec3;
-	/** Can be positive, 0, or negative */
+	/** Can be positive, 0, or negative. Default: 1 */
 	mass: number;
+	/** Default: `[0, 0, 0]` */
 	initialPosition: vec3;
+	/** Default: `[0, 1, 0]` */
 	initialVelocity: vec3;
 	/**
 	 * If this property is set, then new particles will spawn with a random
@@ -19,7 +23,7 @@ export type ParticleOptions = {
 	 * distribution centered on initialVelocity[i].
 	 */
 	initialVelocityRange?: vec3;
-	/** Remaining time to live in seconds */
+	/** Remaining time to live in seconds. Default: 5 */
 	ttl: number;
 };
 
@@ -75,6 +79,17 @@ export class ParticleSystem implements Model {
 	 */
 	options: ParticleOptions;
 
+	/**
+	 * @param maxParticles Maximum number of particles from this `ParticleSystem`
+	 * that can exist at once. This determines the size of the internal buffers
+	 * used to store particle attributes. Default: 10
+	 * @param spawnPeriod Length of time between particle spawns in milliseconds.
+	 * Set to +inf to only spawn particles one time when the `ParticleSystem` is
+	 * (re-)enabled. Default: 1000
+	 * @param spawnCount Number of particles to create in each spawn batch.
+	 * Default: 5
+	 * @param options Parameters to give to each particle.
+	 */
 	constructor(
 		engine: GraphicsEngine,
 		maxParticles = 10,
@@ -90,6 +105,7 @@ export class ParticleSystem implements Model {
 			ttl = 5,
 		}: Partial<ParticleOptions> = {},
 	) {
+		console.log(this);
 		const gl = engine.gl;
 
 		this.shader = new ShaderProgram(
@@ -161,7 +177,7 @@ export class ParticleSystem implements Model {
 	 */
 	#clearBuffers(): void {
 		const gl = this.shader.engine.gl;
-		const zeros = Float32Array.from(new Array(this.#maxParticles * 3).fill(0));
+		const zeros = new Float32Array(this.#maxParticles * 3);
 		for (let i = 0; i < this.#VAOs.length; i++) {
 			gl.bindVertexArray(this.#VAOs[i]);
 
@@ -325,7 +341,7 @@ export class ParticleSystem implements Model {
 		this.#currentVAOIndex = (1 - this.#currentVAOIndex) as 0 | 1;
 	}
 
-	#print() {
+	print() {
 		const gl = this.shader.engine.gl;
 		console.log(`current index: ${this.#currentVAOIndex}`);
 		const debugArray = new Float32Array(this.#maxParticles * 3);
