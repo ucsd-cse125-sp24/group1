@@ -23,9 +23,9 @@ export class Spawner extends InteractableEntity {
 	game: Game;
 
 	previousTick: number;
-	toolToHarvest: string;
+	toolToHarvest: ItemType;
 
-	constructor(game: Game, pos: Vector3, toSpawn: ItemType, toolToHarvest: string, model: EntityModel[] = []) {
+	constructor(game: Game, pos: Vector3, toSpawn: ItemType, toolToHarvest: ItemType, model: EntityModel[] = []) {
 		super(game, model);
 		this.previousTick = 0;
 		this.game = game; //TEMPORARY
@@ -64,19 +64,19 @@ export class Spawner extends InteractableEntity {
 				this.game.playSound('spawnerReject',this.getPos())
 				return;
 			}
+		} else {
+			//if it's not an item, then it definitely shouldn't spawn anything
+			return;
 		}
 		
 
 		let item = new Item(
 			this.game,
             this.toSpawn,
-            0.5,
             [...this.getPos()],
             [{modelId: this.toSpawn, offset: [0, -.5, 0]}], 
             "resource"
         );
-
-
 
 			item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));	
 			item.canBeAbsorbedByCraftingTable = false;
@@ -88,6 +88,6 @@ export class Spawner extends InteractableEntity {
 	}
 
 	interact() {
-		
+
 	}
 }
