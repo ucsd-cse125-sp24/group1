@@ -25,11 +25,14 @@ export type ItemType =
 	| "sword"
 	| "wood";
 
+
+
+
+	
 export class Item extends InteractableEntity {
 	type: ItemType;
 	body: phys.Body;
 	model: EntityModel[];
-	radius: number;
 	heldBy: PlayerEntity | null;
 	/**
 	 * This is to prevent items ejected by a crafting table from immediately being
@@ -37,25 +40,25 @@ export class Item extends InteractableEntity {
 	 */
 	canBeAbsorbedByCraftingTable = false;
 
-	// shape
-	sphere: phys.Sphere;
+	radius: number;
 
 	/**
 	 * Tag should be a Tag type! For creating an item, it should only realistically be a resource or a tool!
 	 */
-	constructor(game: Game, type: ItemType, radius: number, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
+	constructor(game: Game, type: ItemType, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
 		super(game, model, [tag]);
 
 		//TODO: ADD A MATERIAL FOR COLLISION
 
 		this.type = type;
 		this.model = model;
-		this.radius = radius;
 		this.heldBy = null;
 
-		this.tags.add("item");
+		this.radius = 0.5;
 
+		this.tags.add("item");
 		this.tags.add(tag);
+
 
 		this.body = new phys.Body({
 			mass: 1.0,
@@ -64,9 +67,60 @@ export class Item extends InteractableEntity {
 			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
 
-		this.sphere = new phys.Sphere(this.radius);
 
-		this.body.addShape(this.sphere);
+		let shape = new phys.Shape();
+
+		const hasFlatCollider: Record<ItemType, boolean | undefined> = {
+			axe: true, 
+			knife: true,
+			pickaxe: true,
+			shears: true,
+			sword: true, 
+
+			bow: false,
+			gamer_bow: false,
+			gamer_sword: false,
+			iron: false,
+			magic_sauce: false,
+			mushroom: false,
+			raw_iron: false,
+			string: false,
+			wood: false
+		} 
+
+		const hasSphereCollider: Record<ItemType, boolean | undefined> = {
+			raw_iron: true,
+			string: true,
+			magic_sauce: true,
+			mushroom: true,
+
+			axe: false, 
+			knife: false,
+			pickaxe: false,
+			shears: false,
+			sword: false, 
+
+			bow: false,
+			gamer_bow: false,
+			gamer_sword: false,
+			iron: false,
+			wood: false
+		} 
+
+		//everything else will have a cylindrical collider
+	
+		let rot = new phys.Quaternion(0, 0, 0, 1);
+
+		if(hasFlatCollider[type]) {
+			shape = new phys.Box(new phys.Vec3(.3, 1.0, .1));
+		} else if(hasSphereCollider[type]) {
+			shape = new phys.Sphere(0.5);
+		} else {
+			shape = new phys.Cylinder(0.5, 0.5, 1.0, 12);
+			rot.setFromEuler(0, 0, 1.5707);
+		}
+
+		this.body.addShape(shape, new phys.Vec3(0, .5, 0), rot);
 
 		this.body.position = new phys.Vec3(...pos);
 	}
