@@ -488,29 +488,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		return this.#currentTick;
 	}
 
-	addToCreateQueue(entity: Entity) {
-		// If entity was in delete queue, remove it from there instead (can happen
-		// if an entity is deleted then re-added in the same tick)
-		const index = this.#toDeleteQueue.indexOf(entity.id);
-		if (index !== -1) {
-			this.#toDeleteQueue.splice(index, 1);
-			return;
-		}
-
-		this.#toCreateQueue.push(entity);
-	}
-
-	/**
-	 * @param sussyAndRemovable
-	 */
-	addToDeleteQueue(sussyAndRemovable: EntityId) {
-		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
-		if (index !== -1) {
-			this.#toCreateQueue.splice(index, 1);
-			return;
-		}
-
-		this.#toDeleteQueue.push(sussyAndRemovable);
+	logTicks(ticks: number, totalDelta: number) {
+		log(
+			`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${this.#server._debugGetConnectionCount()} connection(s), ${this.#server._debugGetActivePlayerCount()} of ${this.#server._debugGetPlayerCount()} player(s) online`,
+		);
 	}
 
 	broadcastState() {
@@ -521,10 +502,26 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		});
 	}
 
-	logTicks(ticks: number, totalDelta: number) {
-		log(
-			`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${this.#server._debugGetConnectionCount()} connection(s), ${this.#server._debugGetActivePlayerCount()} of ${this.#server._debugGetPlayerCount()} player(s) online`,
-		);
+	addToDeleteQueue(sussyAndRemovable: EntityId) {
+		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
+		if (index !== -1) {
+			this.#toCreateQueue.splice(index, 1);
+			return;
+		}
+
+		this.#toDeleteQueue.push(sussyAndRemovable);
+	}
+
+	addToCreateQueue(entity: Entity) {
+		// If entity was in delete queue, remove it from there instead (can happen
+		// if an entity is deleted then re-added in the same tick)
+		const index = this.#toDeleteQueue.indexOf(entity.id);
+		if (index !== -1) {
+			this.#toDeleteQueue.splice(index, 1);
+			return;
+		}
+
+		this.#toCreateQueue.push(entity);
 	}
 
 	clearEntityQueues() {
