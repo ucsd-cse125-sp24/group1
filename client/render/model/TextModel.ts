@@ -11,9 +11,16 @@ export class TextModel implements Model {
 	#scale: number;
 	#color: Vector3;
 
-	constructor(engine: GraphicsEngine, content: string, height: number, resolution: number, color: Vector3 = [1, 1, 1]) {
+	constructor(
+		engine: GraphicsEngine,
+		content: string,
+		height: number,
+		resolution: number,
+		color: Vector3 = [1, 1, 1],
+		font?: string,
+	) {
 		this.shader = engine.textMaterial;
-		this.#texture = createTextTexture(engine, content, resolution);
+		this.#texture = createTextTexture(engine, content, resolution, font);
 		this.#scale = height / resolution;
 		this.#color = color;
 	}

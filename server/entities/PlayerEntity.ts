@@ -208,6 +208,16 @@ export abstract class PlayerEntity extends Entity {
 					.unit()
 					.toArray(),
 			),
+			model: [
+				...this.model,
+				{
+					text: `Player ${this.id}`,
+					height: 0.2,
+					offset: [0, 0.5, 0],
+					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
+					font: '"Comic Sans MS"',
+				},
+			],
 		};
 	}
 

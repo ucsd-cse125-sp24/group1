@@ -11,7 +11,7 @@ import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/InputListener";
 import { FreecamInputs, PlayerCamera } from "./render/camera/PlayerCamera";
-import { ClientEntity } from "./render/ClientEntity";
+import { ClientEntity, deserialize } from "./render/ClientEntity";
 import GraphicsEngine from "./render/engine/GraphicsEngine";
 import { getContexts } from "./render/getContexts";
 import { RenderPipeline } from "./render/engine/RenderPipeline";
@@ -63,7 +63,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 				type: "ping",
 			};
 		case "entire-game-state":
-			entities = data.entities.map((entity) => ClientEntity.from(engine, entity));
+			entities = data.entities.map((entity) => deserialize(engine, entity));
 			colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
 				const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
 				return colliders.map((collider) => ({
@@ -245,17 +245,17 @@ const tempEntities: ClientEntity[] = [
 	warmLight,
 	whiteLight,
 	new ClientEntity(engine, [
-		{ model: new TextModel(engine, "hey 羊 Â", 1, 64, [1, 0, 0.1]), transform: mat4.create() },
+		{ model: new TextModel(engine, "hey 羊 Â", 1, 64, [1, 0, 0.1], '"Comic Sans MS"'), transform: mat4.create() },
 	]),
 	new ClientEntity(engine, [
 		{
-			model: new TextModel(engine, "bleh", 1.5, 64, [1, 0, 0.1]),
-			transform: mat4.fromTranslation(mat4.create(), [1, -1, 0]),
+			model: new TextModel(engine, "bleh 😜", 1.5, 64, [1, 0, 0.1]),
+			transform: mat4.fromTranslation(mat4.create(), [0, -1, 1]),
 		},
 	]),
 	new ClientEntity(engine, [
 		{
-			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, [1, 0, 0.1]),
+			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, [1, 0, 0.1], "serif"),
 			transform: mat4.fromYRotation(mat4.create(), Math.PI / 4),
 		},
 	]),

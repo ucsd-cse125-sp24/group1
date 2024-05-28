@@ -112,7 +112,16 @@ export type EntityModelObject = {
 	/** Scales evenly in all directions */
 	scale?: number;
 };
-export type EntityModel = ModelId | EntityModelObject;
+export type TextModelObject = {
+	text: string;
+	offset?: Vector3;
+	rotation?: Quaternion;
+	height?: number;
+	resolution?: number;
+	color?: Vector3;
+	font?: string;
+};
+export type EntityModel = ModelId | EntityModelObject | TextModelObject;
 
 export type SerializedEntity = {
 	id: EntityId;
