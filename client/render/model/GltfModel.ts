@@ -271,7 +271,7 @@ export class GltfModel implements Model {
 
 			gl.uniform1f(
 				material.uniform("u_alpha_cutoff"),
-				materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 1,
+				materialOptions.alphaMode === "MASK" ? materialOptions.alphaCutoff : 0,
 			);
 			gl.uniform4fv(
 				material.uniform("u_base_color"),
