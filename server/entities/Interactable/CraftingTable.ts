@@ -106,7 +106,7 @@ export class CraftingTable extends InteractableEntity {
 		item.canBeAbsorbedByCraftingTable = false;
 		// Move the item to the top of the crafting table (its previous position was
 		// wherever it was before it got absorbed)
-		item.body.position = this.body.position.vadd(new phys.Vec3(0, 5, 0));
+		item.body.position = this.body.position.vadd(new phys.Vec3(0, 1, 0));
 		this.game.addToCreateQueue(item);
 		// TODO: randomize launch angle? or launch towards player?
 		item.throw(new phys.Vec3(-20, 100, -50));
@@ -144,7 +144,7 @@ export class CraftingTable extends InteractableEntity {
 				// Delete ingredients
 				this.itemList = [];
 				console.log("crafted ", result.output);
-				this.#eject(new Item(this.game, result.output, "sphere", this.getPos(), [{ modelId: result.output }], "resource"));
+				this.#eject(new Item(this.game, result.output, this.getPos(), [{ modelId: result.output }], "resource"));
 				this.game.playSound("craftingSuccess", this.getPos());
 			} else if (result.type === "unsatisfiable") {
 				for (const item of this.itemList) {
