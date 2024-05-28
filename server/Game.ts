@@ -63,9 +63,9 @@ const startingStationLocations: Vector3[] = [
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
-	[-20, 0, -1], 
+	[-20, 0, -1],
 	[-3, 0, 17],
-	[20, 0, 1]
+	[20, 0, 1],
 ];
 
 interface NetworkedPlayer {
@@ -77,7 +77,7 @@ interface NetworkedPlayer {
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#world = new PhysicsWorld({ gravity: [0, -60, 0] });
-	server = new WsServer(this);
+	#server;
 
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
@@ -100,6 +100,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
+
+		this.#server = new WsServer(this);
+		this.#server.listen(2345);
 	}
 
 	/**
@@ -171,14 +174,26 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.75 }], "tool");
 		this.#registerEntity(axe);
 
-		(posIndex == 3) ? posIndex = 0 : posIndex ++;
+		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let pick = new Item(this, "pickaxe",startingToolLocations[posIndex], [{ modelId: "pickaxe", scale: 0.75 }], "tool");
+		let pick = new Item(
+			this,
+			"pickaxe",
+			startingToolLocations[posIndex],
+			[{ modelId: "pickaxe", scale: 0.75 }],
+			"tool",
+		);
 		this.#registerEntity(pick);
 
-		(posIndex == 3) ? posIndex = 0 : posIndex ++;
+		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let shears = new Item(this, "shears", startingToolLocations[posIndex], [{ modelId: "shears", scale: 0.75 }], "tool");
+		let shears = new Item(
+			this,
+			"shears",
+			startingToolLocations[posIndex],
+			[{ modelId: "shears", scale: 0.75 }],
+			"tool",
+		);
 		this.#registerEntity(shears);
 
 		posIndex = Math.floor(Math.random() * 7);
@@ -194,7 +209,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(Furnace);
 
-		(posIndex == 6) ? posIndex = 0 : posIndex ++;
+		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
 		let WeaponCrafter = new CraftingTable(
 			this,
@@ -205,14 +220,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				{ ingredients: ["iron", "wood"], output: "knife" },
 				{ ingredients: ["iron", "iron", "string", "string"], output: "mushroom" }, //ARMOR
 				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "magic_sauce" },//GAMER_ARMOR
-			
+				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "magic_sauce" }, //GAMER_ARMOR
 			],
 		);
 		this.#registerEntity(WeaponCrafter);
 
-
-		(posIndex == 6) ? posIndex = 0 : posIndex ++;
+		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
 		let FletchingTable = new CraftingTable(
 			this,
@@ -226,48 +239,32 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(FletchingTable);
 
-		(posIndex == 6) ? posIndex = 0 : posIndex ++;
+		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let woodSpawner = new Spawner(
-			this,
-			startingStationLocations[posIndex],
- 			"wood", 
-			"axe", 
-			[{ modelId: "wood", scale: 1.5 }]
-		);
+		let woodSpawner = new Spawner(this, startingStationLocations[posIndex], "wood", "axe", [
+			{ modelId: "wood", scale: 1.5 },
+		]);
 		this.#registerEntity(woodSpawner);
 
-		(posIndex == 6) ? posIndex = 0 : posIndex ++;
+		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let oreSpawner = new Spawner(
-			this,
-			startingStationLocations[posIndex],
- 			"raw_iron", 
-			"pickaxe", 
-			[{ modelId: "raw_iron", scale: 1.5 }]
-		);
+		let oreSpawner = new Spawner(this, startingStationLocations[posIndex], "raw_iron", "pickaxe", [
+			{ modelId: "raw_iron", scale: 1.5 },
+		]);
 		this.#registerEntity(oreSpawner);
 
-		(posIndex == 6) ? posIndex = 0 : posIndex ++;
+		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let stringSpawner = new Spawner(
-			this,
-			startingStationLocations[posIndex],
- 			"string", 
-			"shears", 
-			[{ modelId: "string", scale: 1.5 }]
-		);
+		let stringSpawner = new Spawner(this, startingStationLocations[posIndex], "string", "shears", [
+			{ modelId: "string", scale: 1.5 },
+		]);
 		this.#registerEntity(stringSpawner);
 
-		(posIndex == 6) ? posIndex = 0 : posIndex ++;
+		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let mushroomSpawner =new Spawner(
-			this,
-			startingStationLocations[posIndex],
- 			"mushroom", 
-			"knife", 
-			[{ modelId: "mushroom", scale: 1.5 }]
-		);
+		let mushroomSpawner = new Spawner(this, startingStationLocations[posIndex], "mushroom", "knife", [
+			{ modelId: "mushroom", scale: 1.5 },
+		]);
 		this.#registerEntity(mushroomSpawner);
 	}
 
@@ -275,7 +272,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (position instanceof phys.Vec3) {
 			position = position.toArray();
 		}
-		this.server.broadcast({ type: "sound", sound, position });
+		this.#server.broadcast({ type: "sound", sound, position });
 	}
 
 	updateGameState() {
@@ -514,6 +511,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 
 		this.#toDeleteQueue.push(sussyAndRemovable);
+	}
+
+	broadcastState() {
+		this.#server.broadcast({
+			type: "entire-game-state",
+			entities: this.serialize(),
+			physicsBodies: this.serializePhysicsBodies(),
+		});
+	}
+
+	logTicks(ticks: number, totalDelta: number) {
+		log(
+			`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${this.#server._debugGetConnectionCount()} connection(s), ${this.#server._debugGetActivePlayerCount()} of ${this.#server._debugGetPlayerCount()} player(s) online`,
+		);
 	}
 
 	clearEntityQueues() {

@@ -20,9 +20,6 @@ let totalDelta = 0;
 	log("Server started");
 	await game.setup();
 	while (true) {
-		// If there is no one connected, wait until someone connects
-		await game.server.hasConnection;
-
 		//check time at beginning of gamestep
 		let startTimeCheck = Date.now();
 
@@ -30,12 +27,7 @@ let totalDelta = 0;
 		game.updateGameState();
 
 		// send updated state to all clients
-		game.server.broadcast({
-			type: "entire-game-state",
-			entities: game.serialize(), //the game instead!
-			physicsBodies: game.serializePhysicsBodies(),
-			// ... other game data
-		});
+		game.broadcastState();
 		// wait until end of tick
 		// broadcast(wss, )
 
@@ -46,9 +38,7 @@ let totalDelta = 0;
 		ticks++;
 		totalDelta += delta;
 		if (ticks >= 2000) {
-			log(
-				`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${game.server._debugGetConnectionCount()} connection(s), ${game.server._debugGetActivePlayerCount()} of ${game.server._debugGetPlayerCount()} player(s) online`,
-			);
+			game.logTicks(ticks, totalDelta);
 			ticks = 0;
 			totalDelta = 0;
 		}
@@ -60,5 +50,3 @@ let totalDelta = 0;
 		}
 	}
 })();
-
-game.server.listen(2345);

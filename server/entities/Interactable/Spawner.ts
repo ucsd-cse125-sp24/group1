@@ -9,13 +9,12 @@ import { Item, ItemType } from "./Item";
 import { ModelId } from "../../../assets/models";
 import { SourceTextModule } from "vm";
 
-
 export class Spawner extends InteractableEntity {
 	body: phys.Body;
 	halfExtent: number;
 	model: EntityModel[];
 
-    toSpawn: ItemType;
+	toSpawn: ItemType;
 
 	// shape
 	box: phys.Box;
@@ -32,10 +31,10 @@ export class Spawner extends InteractableEntity {
 
 		this.model = model;
 
-        this.toSpawn = toSpawn;
+		this.toSpawn = toSpawn;
 		this.toolToHarvest = toolToHarvest;
 
-        this.halfExtent = 0.75;
+		this.halfExtent = 0.75;
 
 		this.body = new phys.Body({
 			mass: 1000.0,
@@ -50,44 +49,39 @@ export class Spawner extends InteractableEntity {
 	}
 
 	onCollide(otherEntity: Entity) {
-
 		let currentTick = this.game.getCurrentTick();
 
 		//have to wait 50 ticks
-		if(currentTick - this.previousTick < 50){
+		if (currentTick - this.previousTick < 50) {
 			return;
 		}
 
-
-		if(otherEntity instanceof Item){
-			if(otherEntity.type != this.toolToHarvest) {
-				this.game.playSound('spawnerReject',this.getPos())
+		if (otherEntity instanceof Item) {
+			if (otherEntity.type != this.toolToHarvest) {
+				this.game.playSound("spawnerReject", this.getPos());
 				return;
 			}
 		} else {
 			//if it's not an item, then it definitely shouldn't spawn anything
 			return;
 		}
-		
 
 		let item = new Item(
 			this.game,
-            this.toSpawn,
-            [...this.getPos()],
-            [{modelId: this.toSpawn, offset: [0, -.5, 0]}], 
-            "resource"
-        );
+			this.toSpawn,
+			[...this.getPos()],
+			[{ modelId: this.toSpawn, offset: [0, -0.5, 0] }],
+			"resource",
+		);
 
-			item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));	
-			item.canBeAbsorbedByCraftingTable = false;
-			this.game.addToCreateQueue(item);
-			item.throw(new phys.Vec3(...[0, 100, 0]));
-			this.previousTick = this.game.getCurrentTick();
-			console.log("sptting");
-			this.game.playSound('spawnerHarvest',this.getPos())
+		item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));
+		item.canBeAbsorbedByCraftingTable = false;
+		this.game.addToCreateQueue(item);
+		item.throw(new phys.Vec3(...[0, 100, 0]));
+		this.previousTick = this.game.getCurrentTick();
+		console.log("sptting");
+		this.game.playSound("spawnerHarvest", this.getPos());
 	}
 
-	interact() {
-
-	}
+	interact() {}
 }

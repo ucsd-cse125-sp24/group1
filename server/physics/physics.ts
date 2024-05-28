@@ -52,9 +52,7 @@ export class TheWorld {
 		this.#world.addBody(this.#colliders.box);
 	}
 
-	createEntity() {
-		
-	}
+	createEntity() {}
 
 	nextTick() {
 		console.log("box is at:", this.#colliders.box.position, "velocity:", this.#colliders.box.velocity);

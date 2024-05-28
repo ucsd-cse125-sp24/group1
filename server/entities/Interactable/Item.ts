@@ -25,10 +25,6 @@ export type ItemType =
 	| "sword"
 	| "wood";
 
-
-
-
-	
 export class Item extends InteractableEntity {
 	type: ItemType;
 	body: phys.Body;
@@ -59,7 +55,6 @@ export class Item extends InteractableEntity {
 		this.tags.add("item");
 		this.tags.add(tag);
 
-
 		this.body = new phys.Body({
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
@@ -67,15 +62,14 @@ export class Item extends InteractableEntity {
 			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
 
-
 		let shape = new phys.Shape();
 
 		const hasFlatCollider: Record<ItemType, boolean | undefined> = {
-			axe: true, 
+			axe: true,
 			knife: true,
 			pickaxe: true,
 			shears: true,
-			sword: true, 
+			sword: true,
 
 			bow: false,
 			gamer_bow: false,
@@ -85,8 +79,8 @@ export class Item extends InteractableEntity {
 			mushroom: false,
 			raw_iron: false,
 			string: false,
-			wood: false
-		} 
+			wood: false,
+		};
 
 		const hasSphereCollider: Record<ItemType, boolean | undefined> = {
 			raw_iron: true,
@@ -94,33 +88,33 @@ export class Item extends InteractableEntity {
 			magic_sauce: true,
 			mushroom: true,
 
-			axe: false, 
+			axe: false,
 			knife: false,
 			pickaxe: false,
 			shears: false,
-			sword: false, 
+			sword: false,
 
 			bow: false,
 			gamer_bow: false,
 			gamer_sword: false,
 			iron: false,
-			wood: false
-		} 
+			wood: false,
+		};
 
 		//everything else will have a cylindrical collider
-	
+
 		let rot = new phys.Quaternion(0, 0, 0, 1);
 
-		if(hasFlatCollider[type]) {
-			shape = new phys.Box(new phys.Vec3(.3, 1.0, .1));
-		} else if(hasSphereCollider[type]) {
+		if (hasFlatCollider[type]) {
+			shape = new phys.Box(new phys.Vec3(0.3, 1.0, 0.1));
+		} else if (hasSphereCollider[type]) {
 			shape = new phys.Sphere(0.5);
 		} else {
 			shape = new phys.Cylinder(0.5, 0.5, 1.0, 12);
 			rot.setFromEuler(0, 0, 1.5707);
 		}
 
-		this.body.addShape(shape, new phys.Vec3(0, .5, 0), rot);
+		this.body.addShape(shape, new phys.Vec3(0, 0.5, 0), rot);
 
 		this.body.position = new phys.Vec3(...pos);
 	}
