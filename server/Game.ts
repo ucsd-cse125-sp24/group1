@@ -298,8 +298,42 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * State transition from "crafting" to "combat"
 	 */
-	transitionToCombat() {
-		//
+	#transitionToCombat() {
+		this.#currentStage = "combat";
+		this.#timeRemaining = 60 * 1000; // 1 minute
+
+		// TODO: Big old QTE or actual combat
+	}
+
+	/**
+	 * Check whether either side has met their win condition
+	 */
+	#checkGameOver() {
+		// TEMP: just count the number of weapons crafted
+		let weaponCount = 0;
+		for (const entity of this.#entities.values()) {
+			if (!(entity instanceof Item)) {
+				continue;
+			}
+			switch (entity.type) {
+				case "gamer_bow":
+				case "gamer_sword":
+					weaponCount += 2;
+					break;
+				case "bow":
+				case "knife":
+				case "sword":
+					weaponCount += 1;
+					break;
+			}
+		}
+		if (weaponCount >= 10) {
+			// Heroes win
+			this.#server.broadcast({ type: "game-over", winner: "heroes" });
+		} else if (this.#timeRemaining <= 0) {
+			// Boss wins
+			this.#server.broadcast({ type: "game-over", winner: "boss" });
+		}
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
@@ -517,10 +551,28 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.clearEntityQueues();
 		}
 
+		if (this.#currentStage === "combat") {
+			this.#checkGameOver();
+		}
+
 		const now = Date.now();
 		const dt = now - this.#previousTickTimestamp;
 		this.#timeRemaining -= dt;
 		this.#previousTickTimestamp = now;
+
+		if (this.#timeRemaining <= 0) {
+			switch (this.#currentStage) {
+				case "lobby":
+					this.#transitionToCrafting();
+					break;
+				case "crafting":
+					this.#transitionToCombat();
+					break;
+				case "combat":
+					this.#checkGameOver();
+					break;
+			}
+		}
 	}
 
 	getCurrentTick() {

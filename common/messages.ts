@@ -9,7 +9,8 @@ export type ServerMessage =
 	| EntireGameState
 	| CameraLock
 	| PlaySound
-	| SabotageHero;
+	| SabotageHero
+	| GameOver;
 
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage | DebugMessages;
 
@@ -51,6 +52,11 @@ export type EntireGameState = {
 	 * predict positions on these bodies.
 	 */
 	physicsBodies: SerializedBody[];
+};
+
+export type GameOver = {
+	type: "game-over";
+	winner: "heroes" | "boss";
 };
 
 /**
