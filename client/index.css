@@ -54,6 +54,15 @@ canvas {
 	height: 100%;
 }
 
+#timer {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	text-align: center;
+	font-size: 4rem;
+}
+
 #temporary-mobile-controls {
 	& h2,
 	& p {

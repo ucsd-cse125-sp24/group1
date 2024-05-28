@@ -334,6 +334,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 		}
+		// TODO: stop game if someone won
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {

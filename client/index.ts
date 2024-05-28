@@ -1,11 +1,12 @@
-import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
-import gltfDebugLightFragmentSource from "./shaders/gltf_debug_light.frag";
-import gltfDebugUniqueShadowFragmentSource from "./shaders/gltf_debug_unique_shadow.frag";
-import gltfVertexSource from "./shaders/gltf.vert";
 import { mat4, vec3 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
 import { EntityId } from "../server/entities/Entity";
+import { sounds } from "../assets/sounds";
+import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
+import gltfDebugLightFragmentSource from "./shaders/gltf_debug_light.frag";
+import gltfDebugUniqueShadowFragmentSource from "./shaders/gltf_debug_unique_shadow.frag";
+import gltfVertexSource from "./shaders/gltf.vert";
 import "./index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
@@ -20,7 +21,6 @@ import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
 import { SoundManager } from "./SoundManager";
-import { sounds } from "../assets/sounds";
 import { drawModels } from "./render/model/draw";
 import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
@@ -79,6 +79,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 					),
 				}));
 			});
+			setTimer(data.timeRemaining);
 			break;
 		case "camera-lock":
 			cameraLockTarget = data.entityId;
@@ -99,11 +100,25 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			sporeFilterStrength.setTarget(1);
 			setTimeout(() => sporeFilterStrength.setTarget(0), data.time);
 			break;
+		case "game-over":
+			// TEMP
+			throw new Error(`TEMP: GAME OVER - ${data.winner} win(s)`);
+			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
 	}
 };
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
+
+const timer = document.getElementById("timer");
+const setTimer = (ms: number) => {
+	const t = Math.floor(ms / 1000);
+	const minutes = Math.floor(t / 60);
+	const seconds = t % 60;
+	if (timer) {
+		timer.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+	}
+};
 
 const { gl, audioContext } = getContexts();
 const sound = new SoundManager(audioContext);
