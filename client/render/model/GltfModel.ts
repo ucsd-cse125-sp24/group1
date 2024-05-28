@@ -251,7 +251,6 @@ export class GltfModel implements Model {
 			transform,
 			mode,
 		} of this.#meshes) {
-			// Assumes `u_model` uniform is already set
 			if (materialOptions.doubleSided) {
 				gl.disable(gl.CULL_FACE);
 			}

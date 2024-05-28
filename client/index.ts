@@ -26,6 +26,7 @@ import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
 import { Transition } from "./lib/transition";
+import { TextModel } from "./render/model/TextModel";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -239,7 +240,27 @@ const tempLightShader = new ShaderProgram(
 const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
 const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30));
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5));
-const tempEntities: ClientEntity[] = [coolLight, warmLight, whiteLight];
+const tempEntities: ClientEntity[] = [
+	coolLight,
+	warmLight,
+	whiteLight,
+	new ClientEntity(engine, [
+		{ model: new TextModel(engine, "hey 羊 Â", 1, 64, [1, 0, 0.1]), transform: mat4.create() },
+	]),
+	new ClientEntity(engine, [
+		{
+			model: new TextModel(engine, "bleh", 1.5, 64, [1, 0, 0.1]),
+			transform: mat4.fromTranslation(mat4.create(), [1, -1, 0]),
+		},
+	]),
+	new ClientEntity(engine, [
+		{
+			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, [1, 0, 0.1]),
+			transform: mat4.fromYRotation(mat4.create(), Math.PI / 4),
+		},
+	]),
+];
+console.log(tempEntities[3]);
 
 const debugGltfShaders = [
 	engine.gltfMaterial._debugProgram,

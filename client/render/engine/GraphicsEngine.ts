@@ -1,5 +1,7 @@
 import gltfFragmentSource from "../../shaders/gltf.frag";
 import gltfVertexSource from "../../shaders/gltf.vert";
+import textFragmentSource from "../../shaders/text.frag";
+import textVertexSource from "../../shaders/text.vert";
 import wireframeFragmentSource from "../../shaders/wireframe.frag";
 import wireframeVertexSource from "../../shaders/wireframe.vert";
 import { getModels } from "../../../assets/models";
@@ -23,6 +25,13 @@ class GraphicsEngine extends WebGlUtils {
 		this.createProgram(
 			this.createShader("vertex", gltfVertexSource, "gltf.vert"),
 			this.createShader("fragment", gltfFragmentSource, "gltf.frag"),
+		),
+	);
+	textMaterial = new ShaderProgram(
+		this,
+		this.createProgram(
+			this.createShader("vertex", textVertexSource, "text.vert"),
+			this.createShader("fragment", textFragmentSource, "text.frag"),
 		),
 	);
 	models = getModels(this);
