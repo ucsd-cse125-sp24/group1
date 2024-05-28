@@ -9,7 +9,7 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ClientMessage, SerializedBody, SerializedEntity, ServerMessage } from "../common/messages";
+import { ClientMessage, GameStage, SerializedBody, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { ModelId } from "../assets/models";
@@ -90,6 +90,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#toDeleteQueue: EntityId[];
 
 	#currentTick: number;
+	/**
+	 * Timestamp of previous tick's completion in milliseconds, as would be
+	 * returned by `Date.now()`
+	 */
+	#previousTickTimestamp: number;
+	/**
+	 * Treat this as a state machine:
+	 * "lobby" -> "crafting" -> "combat"
+	 */
+	#currentStage: GameStage;
+	#timeRemaining: number;
+
 	constructor() {
 		this.#createdInputs = [];
 		this.#players = new Map();
@@ -100,6 +112,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
+		this.#previousTickTimestamp = 0;
+		this.#currentStage = "lobby";
+		this.#timeRemaining = Number.POSITIVE_INFINITY;
 
 		this.#server = new WsServer(this);
 		this.#server.listen(2345);
@@ -163,6 +178,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	async setup() {
+		this.#previousTickTimestamp = Date.now();
+		// TEMP: immediately transition to "crafting" state until lobby implemented
+		await this.#transitionToCrafting();
+	}
+
+	/**
+	 * State transition from "lobby" to "crafting"
+	 */
+	async #transitionToCrafting() {
+		this.#currentStage = "crafting";
+		this.#timeRemaining = 60 * 1000; // 1 minute
+
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.#registerEntity(mapEntity);
@@ -266,6 +293,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			{ modelId: "mushroom", scale: 1.5 },
 		]);
 		this.#registerEntity(mushroomSpawner);
+	}
+
+	/**
+	 * State transition from "crafting" to "combat"
+	 */
+	transitionToCombat() {
+		//
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
@@ -482,6 +516,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
 			this.clearEntityQueues();
 		}
+
+		const now = Date.now();
+		const dt = now - this.#previousTickTimestamp;
+		this.#timeRemaining -= dt;
+		this.#previousTickTimestamp = now;
 	}
 
 	getCurrentTick() {
@@ -494,9 +533,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 	}
 
+	getCurrentStage() {
+		return this.#currentStage;
+	}
+
 	broadcastState() {
 		this.#server.broadcast({
 			type: "entire-game-state",
+			stage: this.#currentStage,
+			timeRemaining: this.#timeRemaining,
 			entities: this.serialize(),
 			physicsBodies: this.serializePhysicsBodies(),
 		});

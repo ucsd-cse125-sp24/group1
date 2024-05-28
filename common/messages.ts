@@ -35,8 +35,15 @@ export type ServerControlMessage = {
 	id: string;
 };
 
+export type GameStage = "lobby" | "crafting" | "combat";
+
 export type EntireGameState = {
 	type: "entire-game-state";
+	stage: GameStage;
+	/**
+	 * Amount of time left in the current stage, in milliseconds
+	 */
+	timeRemaining: number;
 	entities: SerializedEntity[];
 	/**
 	 * All physics engine colliders to draw wireframes around for debug purposes.
