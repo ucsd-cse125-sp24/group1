@@ -26,15 +26,10 @@ export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendTy
 
 	listen(_port: number): void {
 		const connection: Connection<SendType> = {
+			id: 0,
 			send(message) {
 				self.postMessage(JSON.stringify(message));
 			},
 		};
-
-		this.handleOpen(connection);
-
-		self.addEventListener("message", (e) => {
-			this.handleMessage(e.data, connection);
-		});
 	}
 }

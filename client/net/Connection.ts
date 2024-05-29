@@ -32,14 +32,11 @@ export class Connection {
 
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
 		this.#retryBtn.addEventListener("click", () => this.connect(true));
-		document.addEventListener(
-			"keydown",
-			((e: any) => {
-				if (e.key === "h") {
-					this.#ws?.close();
-				}
-			}).bind(this),
-		);
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "h") {
+				this.#ws?.close();
+			}
+		});
 	}
 
 	connect(reconnecting = false) {

@@ -102,7 +102,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			break;
 		case "game-over":
 			// TEMP
-			throw new Error(`TEMP: GAME OVER - ${data.winner} win(s)`);
+			alert(`TEMP: GAME OVER - ${data.winner} win(s)`);
 			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
