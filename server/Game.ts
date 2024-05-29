@@ -19,7 +19,7 @@ import { PlayerEntity } from "./entities/PlayerEntity";
 import { BossEntity } from "./entities/BossEntity";
 import { Entity, EntityId } from "./entities/Entity";
 import { PlaneEntity } from "./entities/PlaneEntity";
-import { Connection, ServerHandlers } from "./net/Server";
+import { Connection, Server, ServerHandlers } from "./net/Server";
 import { HeroEntity } from "./entities/HeroEntity";
 import { getColliders } from "./entities/map/colliders";
 import { MapEntity } from "./entities/map/MapEntity";
@@ -27,9 +27,9 @@ import { Item, ItemType } from "./entities/Interactable/Item";
 import { CraftingTable } from "./entities/Interactable/CraftingTable";
 import { log } from "./net/_tempDebugLog";
 import { PhysicsWorld } from "./PhysicsWorld";
-import { WsServer } from "./net/WsServer";
 import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
+import { WebWorker } from "./net/WebWorker";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -77,7 +77,7 @@ interface NetworkedPlayer {
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#world = new PhysicsWorld({ gravity: [0, -60, 0] });
-	#server;
+	#server: Server<ClientMessage, ServerMessage>;
 
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
@@ -116,7 +116,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#currentStage = "lobby";
 		this.#timeRemaining = Number.POSITIVE_INFINITY;
 
-		this.#server = new WsServer(this);
+		this.#server = BROWSER ? new WebWorker(this) : new (require("./net/WsServer").WsServer)(this);
 		this.#server.listen(2345);
 	}
 
@@ -581,9 +581,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	logTicks(ticks: number, totalDelta: number) {
-		log(
-			`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${this.#server._debugGetConnectionCount()} connection(s), ${this.#server._debugGetActivePlayerCount()} of ${this.#server._debugGetPlayerCount()} player(s) online`,
-		);
+		if ("_debugGetActivePlayerCount" in this.#server) {
+			const server = this.#server as any;
+			log(
+				`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${server._debugGetConnectionCount()} connection(s), ${server._debugGetActivePlayerCount()} of ${server._debugGetPlayerCount()} player(s) online`,
+			);
+		}
 	}
 
 	getCurrentStage() {
@@ -660,3 +663,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		return this.#world.serialize();
 	}
 }
+
+/**
+ * Whether the server is being compiled for the browser. This is set by the
+ * `esbuild` bundle options in `package.json`.
+ */
+declare var BROWSER: boolean;

@@ -7,12 +7,12 @@ export type ServerHandlers<ReceiveType, SendType> = {
 	/**
 	 * Handle a new connection and decide what messages to send to it.
 	 */
-	handleOpen?: (conn: Connection<SendType>) => void;
+	handlePlayerJoin: (conn: Connection<SendType>) => void;
 	/**
 	 * Handles a message sent from the client, and decides what to reply with. It
 	 * can return `undefined` to not send back anything.
 	 */
-	handleMessage?: (data: ReceiveType, conn: Connection<SendType>) => void;
+	handleMessage: (data: ReceiveType, conn: Connection<SendType>) => void;
 };
 
 /**
