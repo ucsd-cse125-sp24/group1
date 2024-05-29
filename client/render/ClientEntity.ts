@@ -1,9 +1,7 @@
 import { mat4 } from "gl-matrix";
 import { EntityModelObject, SerializedEntity } from "../../common/messages";
 import GraphicsEngine from "./engine/GraphicsEngine";
-import { Model } from "./model/Model";
 import { PointLight } from "./lights/PointLight";
-import { EntityId } from "../../server/entities/Entity";
 import { ModelWithTransform } from "./model/draw";
 import { TextModel } from "./model/TextModel";
 

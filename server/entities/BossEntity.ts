@@ -1,7 +1,6 @@
 import { Vector3 } from "../../common/commontypes";
 import { EntityModel } from "../../common/messages";
 import { Game } from "../Game";
-import { Entity } from "./Entity";
 import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
 

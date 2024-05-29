@@ -4,8 +4,8 @@ import { expect } from "../../../common/lib/expect";
 import { ShaderProgram } from "../engine/ShaderProgram";
 import { ComponentType, GltfMaterial, GltfMode, componentSizes, componentTypes } from "../../../common/gltf/gltf-types";
 import { GltfParser } from "../../../common/gltf/gltf-parser";
-import { Model } from "./Model";
 import { mergeMatrices } from "../../lib/mergeMatrices";
+import { Model } from "./Model";
 
 type Accessor = {
 	buffer: WebGLBuffer;

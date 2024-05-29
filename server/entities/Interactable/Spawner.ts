@@ -1,13 +1,10 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel, SerializedEntity } from "../../../common/messages";
-import { PlayerEntity } from "../PlayerEntity";
+import { EntityModel } from "../../../common/messages";
 import { Entity } from "../Entity";
 import { Game } from "../../Game";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item, ItemType } from "./Item";
-import { ModelId } from "../../../assets/models";
-import { SourceTextModule } from "vm";
 
 export class Spawner extends InteractableEntity {
 	body: phys.Body;

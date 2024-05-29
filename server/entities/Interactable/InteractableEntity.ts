@@ -1,10 +1,9 @@
+import { Vec3 } from "cannon-es";
 import { Entity, Tag } from "../Entity";
-import { EntityModel, SerializedEntity } from "../../../common/messages";
+import { EntityModel } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 
-import { Item } from "./Item";
 import { Game } from "../../Game";
-import { Vec3 } from "cannon-es";
 
 export abstract class InteractableEntity extends Entity {
 	constructor(game: Game, model: EntityModel[] = [], tags: Tag[] = []) {

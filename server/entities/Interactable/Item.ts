@@ -1,13 +1,13 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel, SerializedEntity } from "../../../common/messages";
+import { EntityModel } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Tag } from "../Entity";
 import { ItemMaterial } from "../../materials/SourceMaterials";
-import { InteractableEntity } from "./InteractableEntity";
 import { Game } from "../../Game";
 import { HeroEntity } from "../HeroEntity";
 import { BossEntity } from "../BossEntity";
+import { InteractableEntity } from "./InteractableEntity";
 
 export type ItemType =
 	| "axe"

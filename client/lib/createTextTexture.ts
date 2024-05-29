@@ -1,4 +1,3 @@
-import GraphicsEngine from "../render/engine/GraphicsEngine";
 import { WebGlUtils } from "../render/engine/WebGlUtils";
 
 const canvas = document.createElement("canvas");

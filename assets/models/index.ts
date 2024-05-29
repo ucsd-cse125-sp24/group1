@@ -1,4 +1,3 @@
-import { vec3 } from "gl-matrix";
 import GraphicsEngine from "../../client/render/engine/GraphicsEngine";
 import { Model } from "../../client/render/model/Model";
 import { GltfModelWrapper } from "../../client/render/model/GltfModel";
