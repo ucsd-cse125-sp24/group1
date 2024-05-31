@@ -68,6 +68,9 @@ const startingToolLocations: Vector3[] = [
 	[20, 0, 1],
 ];
 
+const CRAFTING_STAGE_TIME = 30 * 1000;
+const COMBAT_STAGE_TIME = 120 * 1000;
+
 interface NetworkedPlayer {
 	input: PlayerInput;
 	entity: PlayerEntity;
@@ -81,6 +84,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
+	#boss: BossEntity | null = null;
+	#heroes: HeroEntity[] = [];
 
 	#entities: Map<EntityId, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
@@ -188,7 +193,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	async #transitionToCrafting() {
 		this.#currentStage = "crafting";
-		this.#timeRemaining = 60 * 1000; // 1 minute
+		this.#timeRemaining = CRAFTING_STAGE_TIME;
 
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
@@ -300,7 +305,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	#transitionToCombat() {
 		this.#currentStage = "combat";
-		this.#timeRemaining = 60 * 1000; // 1 minute
+		this.#timeRemaining = COMBAT_STAGE_TIME;
+
+		for (const player of this.#players.values()) {
+			if (this.#boss === null && player.entity.isBoss) {
+				this.#boss = player.entity as BossEntity;
+			} else if (!player.entity.isBoss) {
+				this.#heroes.push(player.entity as HeroEntity);
+			}
+		}
 
 		// TODO: Big old QTE or actual combat
 	}
@@ -309,28 +322,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * Check whether either side has met their win condition
 	 */
 	#checkGameOver() {
-		// TEMP: just count the number of weapons crafted
-		let weaponCount = 0;
-		for (const entity of this.#entities.values()) {
-			if (!(entity instanceof Item)) {
-				continue;
-			}
-			switch (entity.type) {
-				case "gamer_bow":
-				case "gamer_sword":
-					weaponCount += 2;
-					break;
-				case "bow":
-				case "knife":
-				case "sword":
-					weaponCount += 1;
-					break;
+		let isAnyHeroAlive = false;
+		for (const hero of this.#heroes) {
+			if (hero.health > 0) {
+				isAnyHeroAlive = true;
+				break;
 			}
 		}
-		if (weaponCount >= 10) {
+		if (this.#boss !== null && this.#boss.health <= 0) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
-		} else if (this.#timeRemaining <= 0) {
+		} else if (this.#timeRemaining <= 0 || !isAnyHeroAlive) {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 		}
@@ -568,9 +570,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					break;
 				case "crafting":
 					this.#transitionToCombat();
-					break;
-				case "combat":
-					this.#checkGameOver();
 					break;
 			}
 		}

@@ -12,6 +12,12 @@ const COYOTE_FRAMES = 10;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
+	isBoss: boolean = false;
+	health: number = 0;
+	/** Timestamp of previous attack in milliseconds */
+	#previousAttackTime: number = 0;
+	/** Minimum time between attacks in milliseconds */
+	attackCooldown: number = 500;
 
 	onGround: boolean;
 	jumping = false;
@@ -50,8 +56,6 @@ export abstract class PlayerEntity extends Entity {
 		interactionRange: number,
 	) {
 		super(game, model, ["player"]);
-
-		this.isPlayer = true;
 
 		this.itemInHands = null;
 		this.interactionRange = interactionRange;
@@ -132,7 +136,7 @@ export abstract class PlayerEntity extends Entity {
 		if (this.itemInHands instanceof Item) {
 			//this is a little janky ngl
 			this.itemInHands.body.position = this.body.position.vadd(
-				new phys.Vec3(this.lookDir.x, 0, this.lookDir.z).unit().scale(this.#capsuleRadius + this.itemInHands.radius),
+				this.lookDir.unit().scale(this.#capsuleRadius + this.itemInHands.radius),
 			);
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
 		}
@@ -173,6 +177,9 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	attack(): boolean {
+		if (Date.now() - this.#previousAttackTime < this.attackCooldown) {
+			return false;
+		}
 		const entities = this.game.raycast(
 			this.body.position,
 			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
@@ -180,20 +187,45 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 		for (const entity of entities) {
-			// Apply knockback to player when attacked
 			if (entity instanceof PlayerEntity) {
 				console.log("attack", entity.id);
+				if (this.game.getCurrentStage() === "combat") {
+					if (this.isBoss !== entity.isBoss) {
+						entity.takeDamage(this.itemInHands);
+					}
+				}
+				// Apply knockback to player when attacked
 				entity.body.applyImpulse(
 					new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
 				);
 				this.game.playSound("hit", entity.getPos());
+				this.#previousAttackTime = Date.now();
 				return true;
 			} else if (entities[0] instanceof InteractableEntity) {
 				entities[0].hit(this);
+				this.#previousAttackTime = Date.now();
 				return true;
 			}
 		}
 		return false;
+	}
+
+	takeDamage(weapon: Item | null): void {
+		if (weapon === null) {
+			return;
+		}
+		let damage = 0;
+		switch (weapon.type) {
+			case "gamer_bow":
+			case "gamer_sword":
+				damage = 2;
+				break;
+			case "bow":
+			case "sword":
+				damage = 1;
+				break;
+		}
+		this.health -= damage;
 	}
 
 	serialize(): SerializedEntity {
@@ -213,11 +245,19 @@ export abstract class PlayerEntity extends Entity {
 				{
 					text: `Player ${this.id}`,
 					height: 0.2,
+					offset: [0, 0.8, 0],
+					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
+					font: '"Comic Sans MS"',
+				},
+				{
+					text: `${this.health.toFixed(1)} HP`,
+					height: 0.2,
 					offset: [0, 0.5, 0],
 					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
 					font: '"Comic Sans MS"',
 				},
 			],
+			health: this.health,
 		};
 	}
 

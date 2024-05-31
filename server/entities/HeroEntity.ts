@@ -21,6 +21,8 @@ export class HeroEntity extends PlayerEntity {
 	// Game properties
 	isSabotaged: boolean = false;
 	isTrapped: boolean = false;
+	isBoss = false;
+	health = 10;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
