@@ -10,7 +10,8 @@ export type ServerMessage =
 	| CameraLock
 	| PlaySound
 	| SabotageHero
-	| GameOver;
+	| GameOver
+	| PlayParticle;
 
 export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage | DebugMessages;
 
@@ -82,6 +83,11 @@ export type CameraLock = {
 export type PlaySound = {
 	type: "sound";
 	sound: SoundId;
+	position: Vector3;
+};
+
+export type PlayParticle = {
+	type: "particle";
 	position: Vector3;
 };
 

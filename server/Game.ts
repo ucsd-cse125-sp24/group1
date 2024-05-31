@@ -344,6 +344,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({ type: "sound", sound, position });
 	}
 
+	playParticle(position: phys.Vec3 | Vector3): void {
+		if (position instanceof phys.Vec3) {
+			position = position.toArray();
+		}
+		this.#server.broadcast({ type: "particle", position });
+	}
+
 	updateGameState() {
 		for (let [id, player] of this.#players.entries()) {
 			let inputs = player.input.getInputs();
@@ -371,6 +378,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (posedge.attack) {
 				const attacked = player.entity.attack();
 				console.log(player.entity.getPos()); //FOR TESTING
+				this.playParticle(player.entity.getPos());
 				if (!attacked) {
 					this.playSound("attackFail", player.entity.getPos());
 				}

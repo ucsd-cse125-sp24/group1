@@ -21,6 +21,7 @@ import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
 import { SoundManager } from "./SoundManager";
+import { ParticleSystem } from "./render/model/ParticleSystem"
 import { drawModels } from "./render/model/draw";
 import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
@@ -96,6 +97,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 				[panner.positionX.value, panner.positionY.value, panner.positionZ.value] = data.position;
 			}
 			break;
+		case "particle":
+			// Play particle here
+			particle.enable();
+			particle.draw;
+			break;
 		case "sabotage-hero":
 			sporeFilterStrength.setTarget(1);
 			setTimeout(() => sporeFilterStrength.setTarget(0), data.time);
@@ -122,6 +128,7 @@ const setTimer = (ms: number) => {
 
 const { gl, audioContext } = getContexts();
 const sound = new SoundManager(audioContext);
+
 const engine = new GraphicsEngine(gl);
 const sporeFilter = {
 	shader: new ShaderProgram(
@@ -157,6 +164,16 @@ const camera = new PlayerCamera(
 	engine,
 );
 const fov = new Transition(Math.PI / 3);
+
+const particle = new ParticleSystem(engine, 10, 1000, 5, {
+    size: 16,
+    color: [1, 0, 0],  // red color
+    mass: 1,
+    initialPosition: camera.getForwardDir(),
+    initialVelocity: [0, 1, 0],
+    initialVelocityRange: undefined,
+    ttl: 5,
+});
 
 type DebugInputs = {
 	toggleFreecam: boolean;
