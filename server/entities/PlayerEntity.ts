@@ -180,6 +180,18 @@ export abstract class PlayerEntity extends Entity {
 		if (Date.now() - this.#previousAttackTime < this.attackCooldown) {
 			return false;
 		}
+		if (!this.isBoss && this.itemInHands !== null) {
+			if (this.itemInHands.type === "bow" || this.itemInHands.type === "gamer_bow") {
+				const isGamer = this.itemInHands.type === "gamer_bow";
+				this.game.shootArrow(
+					this.body.position.vadd(this.lookDir.scale(2)),
+					this.lookDir.scale(isGamer ? 30 : 60),
+					isGamer ? 3 : 6,
+				);
+				this.#previousAttackTime = Date.now();
+				return false;
+			}
+		}
 		const entities = this.game.raycast(
 			this.body.position,
 			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),

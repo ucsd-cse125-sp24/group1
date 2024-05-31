@@ -30,6 +30,7 @@ import { PhysicsWorld } from "./PhysicsWorld";
 import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
+import { ArrowEntity } from "./entities/ArrowEntity";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -423,6 +424,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		hero.isTrapped = false;
 		this.addToDeleteQueue(trapId);
 		this.playSound("trapEscape", hero.getPos());
+	}
+
+	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number) {
+		this.#registerEntity(new ArrowEntity(this, position, velocity, damage));
 	}
 
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
