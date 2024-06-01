@@ -1,212 +1,176 @@
 {
-	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.62",
-		"version":"2.0"
+	"asset": {
+		"generator": "Khronos glTF Blender I/O v4.1.62",
+		"version": "2.0"
 	},
-	"scene":0,
-	"scenes":[
+	"scene": 0,
+	"scenes": [
 		{
-			"name":"Scene",
-			"nodes":[
-				0
-			]
+			"name": "Scene",
+			"nodes": [0]
 		}
 	],
-	"nodes":[
+	"nodes": [
 		{
-			"mesh":0,
-			"name":"Cube",
-			"scale":[
-				1.309706211090088,
-				1.309706211090088,
-				1.309706211090088
-			],
-			"translation":[
-				0,
-				1.5323388576507568,
-				0
-			]
+			"mesh": 0,
+			"name": "Cube",
+			"scale": [1.309706211090088, 1.309706211090088, 1.309706211090088],
+			"translation": [0, 1.5323388576507568, 0]
 		}
 	],
-	"materials":[
+	"materials": [
 		{
-			"doubleSided":true,
-			"name":"Material.005",
-			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.11602090299129486,
-					0.10492639243602753,
-					0.10244207084178925,
-					1
-				],
-				"metallicFactor":0,
-				"roughnessFactor":0.5
+			"doubleSided": true,
+			"name": "Material.005",
+			"pbrMetallicRoughness": {
+				"baseColorFactor": [0.11602090299129486, 0.10492639243602753, 0.10244207084178925, 1],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.5
 			}
 		},
 		{
-			"doubleSided":true,
-			"name":"Material.007",
-			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.4018639326095581,
-					0.5132083296775818,
-					0.5678637027740479,
-					1
-				],
-				"metallicFactor":0.3149605989456177,
-				"roughnessFactor":0.38582709431648254
+			"doubleSided": true,
+			"name": "Material.007",
+			"pbrMetallicRoughness": {
+				"baseColorFactor": [0.4018639326095581, 0.5132083296775818, 0.5678637027740479, 1],
+				"metallicFactor": 0.3149605989456177,
+				"roughnessFactor": 0.38582709431648254
 			}
 		}
 	],
-	"meshes":[
+	"meshes": [
 		{
-			"name":"Cube",
-			"primitives":[
+			"name": "Cube",
+			"primitives": [
 				{
-					"attributes":{
-						"POSITION":0,
-						"NORMAL":1,
-						"TEXCOORD_0":2
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2
 					},
-					"indices":3,
-					"material":0
+					"indices": 3,
+					"material": 0
 				},
 				{
-					"attributes":{
-						"POSITION":4,
-						"NORMAL":5,
-						"TEXCOORD_0":6
+					"attributes": {
+						"POSITION": 4,
+						"NORMAL": 5,
+						"TEXCOORD_0": 6
 					},
-					"indices":7,
-					"material":1
+					"indices": 7,
+					"material": 1
 				}
 			]
 		}
 	],
-	"accessors":[
+	"accessors": [
 		{
-			"bufferView":0,
-			"componentType":5126,
-			"count":305,
-			"max":[
-				1.5824339389801025,
-				2.1455209255218506,
-				1.9362118244171143
-			],
-			"min":[
-				-1.4887628555297852,
-				-1,
-				-1.70904541015625
-			],
-			"type":"VEC3"
+			"bufferView": 0,
+			"componentType": 5126,
+			"count": 305,
+			"max": [1.5824339389801025, 2.1455209255218506, 1.9362118244171143],
+			"min": [-1.4887628555297852, -1, -1.70904541015625],
+			"type": "VEC3"
 		},
 		{
-			"bufferView":1,
-			"componentType":5126,
-			"count":305,
-			"type":"VEC3"
+			"bufferView": 1,
+			"componentType": 5126,
+			"count": 305,
+			"type": "VEC3"
 		},
 		{
-			"bufferView":2,
-			"componentType":5126,
-			"count":305,
-			"type":"VEC2"
+			"bufferView": 2,
+			"componentType": 5126,
+			"count": 305,
+			"type": "VEC2"
 		},
 		{
-			"bufferView":3,
-			"componentType":5123,
-			"count":516,
-			"type":"SCALAR"
+			"bufferView": 3,
+			"componentType": 5123,
+			"count": 516,
+			"type": "SCALAR"
 		},
 		{
-			"bufferView":4,
-			"componentType":5126,
-			"count":222,
-			"max":[
-				1.671462059020996,
-				2.0861260890960693,
-				1.4002058506011963
-			],
-			"min":[
-				-1.2917474508285522,
-				-0.5,
-				-1.5317840576171875
-			],
-			"type":"VEC3"
+			"bufferView": 4,
+			"componentType": 5126,
+			"count": 222,
+			"max": [1.671462059020996, 2.0861260890960693, 1.4002058506011963],
+			"min": [-1.2917474508285522, -0.5, -1.5317840576171875],
+			"type": "VEC3"
 		},
 		{
-			"bufferView":5,
-			"componentType":5126,
-			"count":222,
-			"type":"VEC3"
+			"bufferView": 5,
+			"componentType": 5126,
+			"count": 222,
+			"type": "VEC3"
 		},
 		{
-			"bufferView":6,
-			"componentType":5126,
-			"count":222,
-			"type":"VEC2"
+			"bufferView": 6,
+			"componentType": 5126,
+			"count": 222,
+			"type": "VEC2"
 		},
 		{
-			"bufferView":7,
-			"componentType":5123,
-			"count":348,
-			"type":"SCALAR"
+			"bufferView": 7,
+			"componentType": 5123,
+			"count": 348,
+			"type": "SCALAR"
 		}
 	],
-	"bufferViews":[
+	"bufferViews": [
 		{
-			"buffer":0,
-			"byteLength":3660,
-			"byteOffset":0,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 3660,
+			"byteOffset": 0,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":3660,
-			"byteOffset":3660,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 3660,
+			"byteOffset": 3660,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":2440,
-			"byteOffset":7320,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 2440,
+			"byteOffset": 7320,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":1032,
-			"byteOffset":9760,
-			"target":34963
+			"buffer": 0,
+			"byteLength": 1032,
+			"byteOffset": 9760,
+			"target": 34963
 		},
 		{
-			"buffer":0,
-			"byteLength":2664,
-			"byteOffset":10792,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 2664,
+			"byteOffset": 10792,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":2664,
-			"byteOffset":13456,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 2664,
+			"byteOffset": 13456,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":1776,
-			"byteOffset":16120,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 1776,
+			"byteOffset": 16120,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":696,
-			"byteOffset":17896,
-			"target":34963
+			"buffer": 0,
+			"byteLength": 696,
+			"byteOffset": 17896,
+			"target": 34963
 		}
 	],
-	"buffers":[
+	"buffers": [
 		{
-			"byteLength":18592,
-			"uri":"ore%20vein.bin"
+			"byteLength": 18592,
+			"uri": "ore%20vein.bin"
 		}
 	]
 }

@@ -75,7 +75,6 @@ export class Item extends InteractableEntity {
 			bow: true,
 			gamer_bow: true,
 
-			
 			iron: false,
 			magic_sauce: false,
 			mushroom: false,

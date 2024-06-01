@@ -35,9 +35,6 @@ import { bottle_table } from "./bottle_table";
 import { anvil } from "./anvil";
 import { armor } from "./armor";
 
-
-
-
 import { defaultCube } from "./default-cube";
 
 export const getModels = (engine: GraphicsEngine) =>
@@ -83,8 +80,6 @@ export const getModels = (engine: GraphicsEngine) =>
 		bottle_table: GltfModelWrapper.from(engine.gltfMaterial, bottle_table),
 		anvil: GltfModelWrapper.from(engine.gltfMaterial, anvil),
 		armor: GltfModelWrapper.from(engine.gltfMaterial, armor),
-
-
 	}) satisfies Record<string, Model>;
 
 export type ModelId = keyof ReturnType<typeof getModels>;

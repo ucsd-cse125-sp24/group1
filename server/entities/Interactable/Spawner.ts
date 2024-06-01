@@ -67,7 +67,7 @@ export class Spawner extends InteractableEntity {
 			this.game,
 			this.toSpawn,
 			[...this.getPos()],
-			[{ modelId: this.toSpawn,  scale: 0.5 }],
+			[{ modelId: this.toSpawn, scale: 0.5 }],
 			"resource",
 		);
 
