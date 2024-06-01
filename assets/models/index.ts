@@ -23,6 +23,8 @@ import { shears } from "./shears";
 import { string } from "./string";
 import { sword } from "./sword";
 import { wood } from "./wood";
+import { furnace } from "./furnace";
+
 import { defaultCube } from "./default-cube";
 
 export const getModels = (engine: GraphicsEngine) =>
@@ -56,6 +58,8 @@ export const getModels = (engine: GraphicsEngine) =>
 		string: GltfModelWrapper.from(engine.gltfMaterial, string),
 		sword: GltfModelWrapper.from(engine.gltfMaterial, sword),
 		wood: GltfModelWrapper.from(engine.gltfMaterial, wood),
+
+		furnace: GltfModelWrapper.from(engine.gltfMaterial, furnace),
 	}) satisfies Record<string, Model>;
 
 export type ModelId = keyof ReturnType<typeof getModels>;

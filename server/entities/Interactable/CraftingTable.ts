@@ -144,7 +144,12 @@ export class CraftingTable extends InteractableEntity {
 				// Delete ingredients
 				this.itemList = [];
 				console.log("crafted ", result.output);
-				this.#eject(new Item(this.game, result.output, this.getPos(), [{ modelId: result.output }], "resource"));
+				this.#eject(new Item(
+					this.game, 
+					result.output, 
+					this.getPos(), 
+					[{ modelId: result.output, scale: 0.5, offset: [0, -0.25, 0] }], 
+					"resource"));
 				this.game.playSound("craftingSuccess", this.getPos());
 			} else if (result.type === "unsatisfiable") {
 				for (const item of this.itemList) {

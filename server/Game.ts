@@ -198,7 +198,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(plane);
 
 		let posIndex = Math.floor(Math.random() * 4);
-		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.75 }], "tool");
+		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.5 }], "tool");
 		this.#registerEntity(axe);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
@@ -207,7 +207,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this,
 			"pickaxe",
 			startingToolLocations[posIndex],
-			[{ modelId: "pickaxe", scale: 0.75 }],
+			[{ modelId: "pickaxe", scale: 0.5 }],
 			"tool",
 		);
 		this.#registerEntity(pick);
@@ -218,7 +218,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this,
 			"shears",
 			startingToolLocations[posIndex],
-			[{ modelId: "shears", scale: 0.75 }],
+			[{ modelId: "shears", scale: 0.5 }],
 			"tool",
 		);
 		this.#registerEntity(shears);
@@ -228,7 +228,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let Furnace = new CraftingTable(
 			this,
 			startingStationLocations[posIndex],
-			[{ modelId: "fish1", scale: 7 }],
+			[{ modelId: "furnace", scale: 7 }],
 			[
 				{ ingredients: ["raw_iron", "wood"], output: "iron" },
 				{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
