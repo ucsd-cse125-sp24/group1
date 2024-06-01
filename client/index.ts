@@ -7,7 +7,7 @@ import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
 import gltfDebugLightFragmentSource from "./shaders/gltf_debug_light.frag";
 import gltfDebugUniqueShadowFragmentSource from "./shaders/gltf_debug_unique_shadow.frag";
 import gltfVertexSource from "./shaders/gltf.vert";
-import "./index.css";
+import "./ui/index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/InputListener";
@@ -21,13 +21,14 @@ import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
 import { SoundManager } from "./SoundManager";
-import { ParticleSystem } from "./render/model/ParticleSystem"
+import { ParticleSystem } from "./render/model/ParticleSystem";
 import { drawModels } from "./render/model/draw";
 import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
 import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
+import { Welcome } from "./ui/components/Welcome";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -100,7 +101,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 		case "particle":
 			// Play particle here
 			particle.enable();
-			
+
 			break;
 		case "sabotage-hero":
 			sporeFilterStrength.setTarget(1);
@@ -126,8 +127,21 @@ const setTimer = (ms: number) => {
 	}
 };
 
-const { gl, audioContext } = getContexts();
+const { gl, audioContext, lockPointer } = getContexts();
 const sound = new SoundManager(audioContext);
+
+const welcome = new Welcome({
+	onName(name) {
+		//
+		lockPointer();
+		welcome.remove();
+	},
+	onRejoin() {
+		//
+		lockPointer();
+		welcome.remove();
+	},
+}).show(null);
 
 const engine = new GraphicsEngine(gl);
 const sporeFilter = {
@@ -166,13 +180,13 @@ const camera = new PlayerCamera(
 const fov = new Transition(Math.PI / 3);
 
 const particle = new ParticleSystem(engine, 10, 1000, 5, {
-    size: 16,
-    color: [1, 0, 0],  // red color
-    mass: 1,
-    initialPosition: camera.getForwardDir(),
-    initialVelocity: [0, 1, 0],
-    initialVelocityRange: undefined,
-    ttl: 5,
+	size: 16,
+	color: [1, 0, 0], // red color
+	mass: 1,
+	initialPosition: camera.getForwardDir(),
+	initialVelocity: [0, 1, 0],
+	initialVelocityRange: undefined,
+	ttl: 5,
 });
 
 type DebugInputs = {
@@ -417,9 +431,9 @@ const paint = () => {
 	const modelMatrices = [
 		mat4.create(), // Identity matrix for default transformation
 		mat4.fromTranslation(mat4.create(), [1, 0, 0]), // Translate by (1, 0, 0)
-		mat4.fromRotation(mat4.create(), Math.PI / 4, [0, 1, 0]) // Rotate 45 degrees around Y axis
+		mat4.fromRotation(mat4.create(), Math.PI / 4, [0, 1, 0]), // Rotate 45 degrees around Y axis
 	];
-	
+
 	// Initialize view matrix (e.g., camera positioned at (0, 0, 5), looking at the origin)
 	const viewMatrix = mat4.lookAt(mat4.create(), [0, 0, 5], [0, 0, 0], [0, 1, 0]);
 	particle.draw(modelMatrices, viewMatrix);

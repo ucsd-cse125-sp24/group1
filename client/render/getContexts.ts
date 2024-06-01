@@ -3,6 +3,11 @@ import { allowDomExceptions } from "../lib/allowDomExceptions";
 export type Contexts = {
 	gl: WebGL2RenderingContext;
 	audioContext: AudioContext;
+	/**
+	 * This must only be called on a user interaction event (e.g. clicking on the
+	 * page).
+	 */
+	lockPointer: () => void;
 };
 
 export function getContexts(): Contexts {
@@ -34,8 +39,16 @@ export function getContexts(): Contexts {
 	});
 	observer.observe(canvas, { box: "content-box" });
 
-	canvas.addEventListener("click", async () => {
+	const gl = canvas.getContext("webgl2");
+	if (!gl) {
+		throw new Error("Failed to get WebGL context");
+	}
+	gl.enable(gl.CULL_FACE);
+	gl.enable(gl.DEPTH_TEST);
+
+	const lockPointer = async () => {
 		audioContext.resume();
+
 		// Lock pointer to canvas
 		// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 		if (!document.pointerLockElement) {
@@ -50,6 +63,7 @@ export function getContexts(): Contexts {
 				allowDomExceptions(error, ["SecurityError", "UnknownError"]);
 			}
 		}
+
 		// Enter landscape mode (Android only)
 		// https://developer.mozilla.org/en-US/docs/Web/API/ScreenOrientation/lock
 		if ("lock" in screen.orientation && screen.orientation.type.startsWith("portrait")) {
@@ -63,14 +77,12 @@ export function getContexts(): Contexts {
 				allowDomExceptions(error, ["NotSupportedError"]);
 			}
 		}
-	});
+	};
+	canvas.addEventListener("click", lockPointer);
 
-	const gl = canvas.getContext("webgl2");
-	if (!gl) {
-		throw new Error("Failed to get WebGL context");
-	}
-	gl.enable(gl.CULL_FACE);
-	gl.enable(gl.DEPTH_TEST);
-
-	return { gl, audioContext };
+	return {
+		gl,
+		audioContext,
+		lockPointer,
+	};
 }

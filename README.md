@@ -2,17 +2,7 @@
 
 This is our group's 3D multiplayer video game for [CSE 125](https://cse125.ucsd.edu/). Our team opted to use WebGL to allow the game to run on more devices.
 
-Potential optimizations:
-
-- Merge models into one mesh for fewer draw calls
-
-## Usage
-
-Debug keybinds:
-
-- `P`: toggle freecam
-- `K`: cycle through wireframe modes
-- `B`: toggle boss or hero (`+ shift` to keep old entity)
+The game is currently deployed live at **[cse125.ucsd.edu:2345](http://cse125.ucsd.edu:2345/)**. There's also a local preview on [GitHub Pages](https://ucsd-cse125-sp24.github.io/group1/), but it does not support multiplayer.
 
 ## Development
 
