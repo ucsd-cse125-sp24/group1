@@ -51,15 +51,7 @@ const itemModels: ItemType[] = [
 	"wood",
 ];
 
-const startingStationLocations: Vector3[] = [
-	[18, 0, 18],
-	[-18, 6, -18],
-	[12, 0, 18],
-	[5, 0, 18],
-	[-24, 0, 18],
-	[21, 0, -11],
-	[0, 0, -20],
-];
+
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -198,7 +190,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(plane);
 
 		let posIndex = Math.floor(Math.random() * 4);
-		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.5, offset: [0, -.25, 0] }], "tool");
+		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.5 }], "tool");
 		this.#registerEntity(axe);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
@@ -207,7 +199,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this,
 			"pickaxe",
 			startingToolLocations[posIndex],
-			[{ modelId: "pickaxe", scale: 0.5, offset: [0, -.25, 0] }],
+			[{ modelId: "pickaxe", scale: 0.5 }],
 			"tool",
 		);
 		this.#registerEntity(pick);
@@ -218,17 +210,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this,
 			"shears",
 			startingToolLocations[posIndex],
-			[{ modelId: "shears", scale: 0.5, offset: [0, -.25, 0] }],
+			[{ modelId: "shears", scale: 0.5 }],
 			"tool",
 		);
 		this.#registerEntity(shears);
 
-		posIndex = Math.floor(Math.random() * 7);
-		console.log(posIndex);
+
+
 		let Furnace = new CraftingTable(
 			this,
-			startingStationLocations[posIndex],
-			[{ modelId: "furnace", scale: 0.5, offset: [0, -0.1, 0] }],
+			[18, 0, 18],
+			[{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0] }],
 			[
 				{ ingredients: ["raw_iron", "wood"], output: "iron" },
 				{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
@@ -236,12 +228,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(Furnace);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
 		let WeaponCrafter = new CraftingTable(
 			this,
-			startingStationLocations[posIndex],
-			[{ modelId: "anvil", offset: [0, -0.1, 0] }],
+			[-18, 6, -18],
+			[{ modelId: "anvil", offset: [0, -1.25, 0] }],
 			[
 				{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 				{ ingredients: ["iron", "wood"], output: "knife" },
@@ -252,12 +242,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(WeaponCrafter);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
 		let FletchingTable = new CraftingTable(
 			this,
-			startingStationLocations[posIndex],
-			[{ modelId: "work_station", offset: [0, -0.1, 0] }],
+			[12, 0, 18],
+			[{ modelId: "work_station", offset: [0, -1.25, 0] }],
 			[
 				{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
 				{ ingredients: ["bow", "magic_sauce"], output: "gamer_bow" },
@@ -266,33 +254,44 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(FletchingTable);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let woodSpawner = new Spawner(this, startingStationLocations[posIndex], "wood", "axe", [
-			{ modelId: "chair", offset: [0, -0.6, 0] },
+
+		let woodSpawner = new Spawner(this, [5, 0, 18], "wood", "axe", [
+			{ modelId: "chair", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(woodSpawner);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let oreSpawner = new Spawner(this, startingStationLocations[posIndex], "raw_iron", "pickaxe", [
-			{ modelId: "ore_vein", offset: [0, -0.6, 0] },
+		let oreSpawner = new Spawner(this, [-24, 0, 18], "raw_iron", "pickaxe", [
+			{ modelId: "ore_vein", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(oreSpawner);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let stringSpawner = new Spawner(this, startingStationLocations[posIndex], "string", "shears", [
-			{ modelId: "spider_web", offset: [0, -0.6, 0]},
+		let stringSpawner = new Spawner(this, [21, 0, -11], "string", "shears", [
+			{ modelId: "spider_web", offset: [0, -1.1, 0]},
 		]);
 		this.#registerEntity(stringSpawner);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let mushroomSpawner = new Spawner(this, startingStationLocations[posIndex], "mushroom", "knife", [
-			{ modelId: "mushroom_cluster",  offset: [0, -0.6, 0]},
+		let mushroomSpawner = new Spawner(this, [0, 0, -15], "mushroom", "knife", [
+			{ modelId: "mushroom_cluster",  offset: [0, -1.1, 0]},
 		]);
 		this.#registerEntity(mushroomSpawner);
+	
+		let sampleIorn = new Item(
+			this, 
+			"knife",
+			[5, 0, 5],
+			[{ modelId: "knife", scale: 0.5}],
+			"resource"
+		);
+		this.#registerEntity(sampleIorn);
+
+		let sampleIorn2 = new Item(
+			this, 
+			"raw_iron",
+			[7, 0, 5],
+			[{ modelId: "raw_iron", scale: 0.5}],
+			"resource"
+		);
+		this.#registerEntity(sampleIorn2);
 	}
 
 	/**
@@ -377,7 +376,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 			if (posedge.attack) {
 				const attacked = player.entity.attack();
-				console.log(player.entity.getPos()); //FOR TESTING
 				this.playParticle(player.entity.getPos());
 				if (!attacked) {
 					this.playSound("attackFail", player.entity.getPos());

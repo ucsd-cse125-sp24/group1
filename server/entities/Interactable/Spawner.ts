@@ -31,7 +31,7 @@ export class Spawner extends InteractableEntity {
 		this.toSpawn = toSpawn;
 		this.toolToHarvest = toolToHarvest;
 
-		this.halfExtent = 1.1;
+		this.halfExtent = 1.6;
 
 		this.body = new phys.Body({
 			mass: 1000.0,
@@ -67,14 +67,14 @@ export class Spawner extends InteractableEntity {
 			this.game,
 			this.toSpawn,
 			[...this.getPos()],
-			[{ modelId: this.toSpawn, offset: [0, -0.3, 0], scale: 0.5 }],
+			[{ modelId: this.toSpawn,  scale: 0.5 }],
 			"resource",
 		);
 
 		item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));
 		item.canBeAbsorbedByCraftingTable = false;
 		this.game.addToCreateQueue(item);
-		item.throw(new phys.Vec3(...[0, 100, 0]));
+		item.throw(new phys.Vec3(...[10, 50, 10]));
 		this.previousTick = this.game.getCurrentTick();
 		console.log("sptting");
 		this.game.playSound("spawnerHarvest", this.getPos());

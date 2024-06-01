@@ -71,10 +71,11 @@ export class Item extends InteractableEntity {
 			pickaxe: true,
 			shears: true,
 			sword: true,
+			gamer_sword: true,
+			bow: true,
+			gamer_bow: true,
 
-			bow: false,
-			gamer_bow: false,
-			gamer_sword: false,
+			
 			iron: false,
 			magic_sauce: false,
 			mushroom: false,
@@ -109,17 +110,19 @@ export class Item extends InteractableEntity {
 		//everything else will have a cylindrical collider
 
 		let rot = new phys.Quaternion(0, 0, 0, 1);
+		let off = new phys.Vec3(0, 0.5, 0);
 
 		if (hasFlatCollider[type]) {
 			shape = new phys.Box(new phys.Vec3(0.3, 1.0, 0.1));
+			off = new phys.Vec3(...[0, 1.0, 0]);
 		} else if (hasSphereCollider[type]) {
 			shape = new phys.Sphere(0.5);
 		} else {
 			shape = new phys.Cylinder(0.3, 0.3, 1.25, 12);
-			rot.setFromEuler(0, 0, 1.5707);
+			//rot.setFromEuler(0, 0, 1.5707);
 		}
 
-		this.body.addShape(shape, new phys.Vec3(0, 0.5, 0), rot);
+		this.body.addShape(shape, off, rot);
 
 		this.body.position = new phys.Vec3(...pos);
 	}
@@ -171,7 +174,7 @@ export class Item extends InteractableEntity {
 		//unlock it from the player's hands
 		let throwForce = direction;
 		throwForce.normalize();
-		this.body.applyImpulse(throwForce.scale(20));
+		this.body.applyImpulse(throwForce.scale(45));
 	}
 
 	toString(): string {

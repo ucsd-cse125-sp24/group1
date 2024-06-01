@@ -3,11 +3,11 @@ import { EntityModel, SerializedEntity } from "../../common/messages";
 import { Game } from "../Game";
 import { PlayerEntity } from "./PlayerEntity";
 
-const PLAYER_INTERACTION_RANGE = 15.0; // TEMP, but 2 is too low IMO
+const PLAYER_INTERACTION_RANGE = 8.0; // TEMP, but 2 is too low IMO
 const HERO_CAPSULE_HEIGHT = 2;
 const HERO_CAPSULE_RADIUS = 0.5;
 
-const HERO_WALK_SPEED = 20;
+const HERO_WALK_SPEED = 16;
 /**
  * Maximum change in horizontal velocity that can be caused by the player in one
  * tick
