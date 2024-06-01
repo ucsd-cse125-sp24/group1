@@ -1,214 +1,180 @@
 {
-	"asset":{
-		"generator":"Khronos glTF Blender I/O v4.1.62",
-		"version":"2.0"
+	"asset": {
+		"generator": "Khronos glTF Blender I/O v4.1.62",
+		"version": "2.0"
 	},
-	"extensionsUsed":[
-		"KHR_materials_specular"
-	],
-	"scene":0,
-	"scenes":[
+	"extensionsUsed": ["KHR_materials_specular"],
+	"scene": 0,
+	"scenes": [
 		{
-			"name":"Scene",
-			"nodes":[
-				0
-			]
+			"name": "Scene",
+			"nodes": [0]
 		}
 	],
-	"nodes":[
+	"nodes": [
 		{
-			"mesh":0,
-			"name":"Cube"
+			"mesh": 0,
+			"name": "Cube"
 		}
 	],
-	"materials":[
+	"materials": [
 		{
-			"doubleSided":true,
-			"name":"wood",
-			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					1,
-					0.31908711791038513,
-					0,
-					1
-				],
-				"metallicFactor":0,
-				"roughnessFactor":0.7914285659790039
+			"doubleSided": true,
+			"name": "wood",
+			"pbrMetallicRoughness": {
+				"baseColorFactor": [1, 0.31908711791038513, 0, 1],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.7914285659790039
 			}
 		},
 		{
-			"doubleSided":true,
-			"extensions":{
-				"KHR_materials_specular":{
-					"specularColorFactor":[
-						1.2285715341567993,
-						1.2285715341567993,
-						1.2285715341567993
-					]
+			"doubleSided": true,
+			"extensions": {
+				"KHR_materials_specular": {
+					"specularColorFactor": [1.2285715341567993, 1.2285715341567993, 1.2285715341567993]
 				}
 			},
-			"name":"metal",
-			"pbrMetallicRoughness":{
-				"baseColorFactor":[
-					0.5136945843696594,
-					0.5136945843696594,
-					0.5136945843696594,
-					1
-				],
-				"metallicFactor":0,
-				"roughnessFactor":0.18000000715255737
+			"name": "metal",
+			"pbrMetallicRoughness": {
+				"baseColorFactor": [0.5136945843696594, 0.5136945843696594, 0.5136945843696594, 1],
+				"metallicFactor": 0,
+				"roughnessFactor": 0.18000000715255737
 			}
 		}
 	],
-	"meshes":[
+	"meshes": [
 		{
-			"name":"Cube",
-			"primitives":[
+			"name": "Cube",
+			"primitives": [
 				{
-					"attributes":{
-						"POSITION":0,
-						"NORMAL":1,
-						"TEXCOORD_0":2
+					"attributes": {
+						"POSITION": 0,
+						"NORMAL": 1,
+						"TEXCOORD_0": 2
 					},
-					"indices":3,
-					"material":0
+					"indices": 3,
+					"material": 0
 				},
 				{
-					"attributes":{
-						"POSITION":4,
-						"NORMAL":5,
-						"TEXCOORD_0":6
+					"attributes": {
+						"POSITION": 4,
+						"NORMAL": 5,
+						"TEXCOORD_0": 6
 					},
-					"indices":7,
-					"material":1
+					"indices": 7,
+					"material": 1
 				}
 			]
 		}
 	],
-	"accessors":[
+	"accessors": [
 		{
-			"bufferView":0,
-			"componentType":5126,
-			"count":224,
-			"max":[
-				0.23432636260986328,
-				3.793034315109253,
-				0.28530433773994446
-			],
-			"min":[
-				-0.23432636260986328,
-				-0.10621172189712524,
-				-0.28530433773994446
-			],
-			"type":"VEC3"
+			"bufferView": 0,
+			"componentType": 5126,
+			"count": 224,
+			"max": [0.23432636260986328, 3.793034315109253, 0.28530433773994446],
+			"min": [-0.23432636260986328, -0.10621172189712524, -0.28530433773994446],
+			"type": "VEC3"
 		},
 		{
-			"bufferView":1,
-			"componentType":5126,
-			"count":224,
-			"type":"VEC3"
+			"bufferView": 1,
+			"componentType": 5126,
+			"count": 224,
+			"type": "VEC3"
 		},
 		{
-			"bufferView":2,
-			"componentType":5126,
-			"count":224,
-			"type":"VEC2"
+			"bufferView": 2,
+			"componentType": 5126,
+			"count": 224,
+			"type": "VEC2"
 		},
 		{
-			"bufferView":3,
-			"componentType":5123,
-			"count":336,
-			"type":"SCALAR"
+			"bufferView": 3,
+			"componentType": 5123,
+			"count": 336,
+			"type": "SCALAR"
 		},
 		{
-			"bufferView":4,
-			"componentType":5126,
-			"count":424,
-			"max":[
-				1.6325169801712036,
-				3.6381289958953857,
-				0.29972168803215027
-			],
-			"min":[
-				-1.6325169801712036,
-				2.7443363666534424,
-				-0.29972168803215027
-			],
-			"type":"VEC3"
+			"bufferView": 4,
+			"componentType": 5126,
+			"count": 424,
+			"max": [1.6325169801712036, 3.6381289958953857, 0.29972168803215027],
+			"min": [-1.6325169801712036, 2.7443363666534424, -0.29972168803215027],
+			"type": "VEC3"
 		},
 		{
-			"bufferView":5,
-			"componentType":5126,
-			"count":424,
-			"type":"VEC3"
+			"bufferView": 5,
+			"componentType": 5126,
+			"count": 424,
+			"type": "VEC3"
 		},
 		{
-			"bufferView":6,
-			"componentType":5126,
-			"count":424,
-			"type":"VEC2"
+			"bufferView": 6,
+			"componentType": 5126,
+			"count": 424,
+			"type": "VEC2"
 		},
 		{
-			"bufferView":7,
-			"componentType":5123,
-			"count":768,
-			"type":"SCALAR"
+			"bufferView": 7,
+			"componentType": 5123,
+			"count": 768,
+			"type": "SCALAR"
 		}
 	],
-	"bufferViews":[
+	"bufferViews": [
 		{
-			"buffer":0,
-			"byteLength":2688,
-			"byteOffset":0,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 2688,
+			"byteOffset": 0,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":2688,
-			"byteOffset":2688,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 2688,
+			"byteOffset": 2688,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":1792,
-			"byteOffset":5376,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 1792,
+			"byteOffset": 5376,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":672,
-			"byteOffset":7168,
-			"target":34963
+			"buffer": 0,
+			"byteLength": 672,
+			"byteOffset": 7168,
+			"target": 34963
 		},
 		{
-			"buffer":0,
-			"byteLength":5088,
-			"byteOffset":7840,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 5088,
+			"byteOffset": 7840,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":5088,
-			"byteOffset":12928,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 5088,
+			"byteOffset": 12928,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":3392,
-			"byteOffset":18016,
-			"target":34962
+			"buffer": 0,
+			"byteLength": 3392,
+			"byteOffset": 18016,
+			"target": 34962
 		},
 		{
-			"buffer":0,
-			"byteLength":1536,
-			"byteOffset":21408,
-			"target":34963
+			"buffer": 0,
+			"byteLength": 1536,
+			"byteOffset": 21408,
+			"target": 34963
 		}
 	],
-	"buffers":[
+	"buffers": [
 		{
-			"byteLength":22944,
-			"uri":"pickaxe.bin"
+			"byteLength": 22944,
+			"uri": "pickaxe.bin"
 		}
 	]
 }

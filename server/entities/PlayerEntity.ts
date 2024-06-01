@@ -132,11 +132,12 @@ export abstract class PlayerEntity extends Entity {
 		if (this.itemInHands instanceof Item) {
 			//this is a little janky ngl
 			this.itemInHands.body.position = this.body.position.vadd(
-				new phys.Vec3(this.lookDir.x, -0.25, this.lookDir.z).unit().scale(this.#capsuleRadius + this.itemInHands.radius),
+				new phys.Vec3(this.lookDir.x, -0.25, this.lookDir.z)
+					.unit()
+					.scale(this.#capsuleRadius + this.itemInHands.radius),
 			);
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
 			this.itemInHands.body.quaternion = new phys.Quaternion(0, 0, 0, 1).setFromEuler(1.5707, 0, 0);
-
 		}
 
 		if (movement.jump && this.#coyoteCounter > 0) {

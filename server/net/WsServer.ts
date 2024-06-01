@@ -6,9 +6,9 @@ import { WebSocket, WebSocketServer } from "ws";
 import express from "express";
 import { Game } from "../Game";
 import { ClientControlMessage, ClientMessage, ServerControlMessage, ServerMessage } from "../../common/messages";
+import { BiMap } from "../../common/lib/BiMap";
 import { Connection, Server } from "./Server";
 import { log } from "./_tempDebugLog";
-import { BiMap } from "../../common/lib/BiMap";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -51,8 +51,6 @@ const itemModels: ItemType[] = [
 	"wood",
 ];
 
-
-
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
 	[-20, 0, -1],
@@ -195,27 +193,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let pick = new Item(
-			this,
-			"pickaxe",
-			startingToolLocations[posIndex],
-			[{ modelId: "pickaxe", scale: 0.5 }],
-			"tool",
-		);
+		let pick = new Item(this, "pickaxe", startingToolLocations[posIndex], [{ modelId: "pickaxe", scale: 0.5 }], "tool");
 		this.#registerEntity(pick);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let shears = new Item(
-			this,
-			"shears",
-			startingToolLocations[posIndex],
-			[{ modelId: "shears", scale: 0.5 }],
-			"tool",
-		);
+		let shears = new Item(this, "shears", startingToolLocations[posIndex], [{ modelId: "shears", scale: 0.5 }], "tool");
 		this.#registerEntity(shears);
-
-
 
 		let Furnace = new CraftingTable(
 			this,
@@ -235,7 +219,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			[
 				{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 				{ ingredients: ["iron", "wood"], output: "knife" },
-				{ ingredients: ["iron", "iron", "string", "string"], output: "armor" }, 
+				{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
 				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "armor" }, //GAMER ARMOR
 			],
@@ -254,10 +238,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(FletchingTable);
 
-
-		let woodSpawner = new Spawner(this, [5, 0, 18], "wood", "axe", [
-			{ modelId: "chair", offset: [0, -1.1, 0] },
-		]);
+		let woodSpawner = new Spawner(this, [5, 0, 18], "wood", "axe", [{ modelId: "chair", offset: [0, -1.1, 0] }]);
 		this.#registerEntity(woodSpawner);
 
 		let oreSpawner = new Spawner(this, [-24, 0, 18], "raw_iron", "pickaxe", [
@@ -266,31 +247,19 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(oreSpawner);
 
 		let stringSpawner = new Spawner(this, [21, 0, -11], "string", "shears", [
-			{ modelId: "spider_web", offset: [0, -1.1, 0]},
+			{ modelId: "spider_web", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(stringSpawner);
 
 		let mushroomSpawner = new Spawner(this, [0, 0, -15], "mushroom", "knife", [
-			{ modelId: "mushroom_cluster",  offset: [0, -1.1, 0]},
+			{ modelId: "mushroom_cluster", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(mushroomSpawner);
-	
-		let sampleIorn = new Item(
-			this, 
-			"knife",
-			[5, 0, 5],
-			[{ modelId: "knife", scale: 0.5}],
-			"resource"
-		);
+
+		let sampleIorn = new Item(this, "knife", [5, 0, 5], [{ modelId: "knife", scale: 0.5 }], "resource");
 		this.#registerEntity(sampleIorn);
 
-		let sampleIorn2 = new Item(
-			this, 
-			"raw_iron",
-			[7, 0, 5],
-			[{ modelId: "raw_iron", scale: 0.5}],
-			"resource"
-		);
+		let sampleIorn2 = new Item(this, "raw_iron", [7, 0, 5], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
 		this.#registerEntity(sampleIorn2);
 	}
 
