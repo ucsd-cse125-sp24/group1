@@ -23,6 +23,7 @@ export type ItemType =
 	| "shears"
 	| "string"
 	| "sword"
+	| "armor"
 	| "wood";
 
 export class Item extends InteractableEntity {
@@ -80,6 +81,8 @@ export class Item extends InteractableEntity {
 			raw_iron: false,
 			string: false,
 			wood: false,
+			armor: false,
+			//gamer_armor: false,
 		};
 
 		const hasSphereCollider: Record<ItemType, boolean | undefined> = {
@@ -87,6 +90,8 @@ export class Item extends InteractableEntity {
 			string: true,
 			magic_sauce: true,
 			mushroom: true,
+			armor: true,
+			//gamer_armor: true,
 
 			axe: false,
 			knife: false,
@@ -110,7 +115,7 @@ export class Item extends InteractableEntity {
 		} else if (hasSphereCollider[type]) {
 			shape = new phys.Sphere(0.5);
 		} else {
-			shape = new phys.Cylinder(0.5, 0.5, 1.0, 12);
+			shape = new phys.Cylinder(0.3, 0.3, 1.25, 12);
 			rot.setFromEuler(0, 0, 1.5707);
 		}
 

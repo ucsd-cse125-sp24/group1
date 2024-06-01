@@ -198,7 +198,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(plane);
 
 		let posIndex = Math.floor(Math.random() * 4);
-		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.5 }], "tool");
+		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.5, offset: [0, -.25, 0] }], "tool");
 		this.#registerEntity(axe);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
@@ -207,7 +207,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this,
 			"pickaxe",
 			startingToolLocations[posIndex],
-			[{ modelId: "pickaxe", scale: 0.5 }],
+			[{ modelId: "pickaxe", scale: 0.5, offset: [0, -.25, 0] }],
 			"tool",
 		);
 		this.#registerEntity(pick);
@@ -218,7 +218,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this,
 			"shears",
 			startingToolLocations[posIndex],
-			[{ modelId: "shears", scale: 0.5 }],
+			[{ modelId: "shears", scale: 0.5, offset: [0, -.25, 0] }],
 			"tool",
 		);
 		this.#registerEntity(shears);
@@ -228,7 +228,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let Furnace = new CraftingTable(
 			this,
 			startingStationLocations[posIndex],
-			[{ modelId: "furnace", scale: 7 }],
+			[{ modelId: "furnace", scale: 0.5, offset: [0, -0.1, 0] }],
 			[
 				{ ingredients: ["raw_iron", "wood"], output: "iron" },
 				{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
@@ -241,13 +241,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let WeaponCrafter = new CraftingTable(
 			this,
 			startingStationLocations[posIndex],
-			[{ modelId: "fish1", scale: 7 }],
+			[{ modelId: "anvil", offset: [0, -0.1, 0] }],
 			[
 				{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 				{ ingredients: ["iron", "wood"], output: "knife" },
-				{ ingredients: ["iron", "iron", "string", "string"], output: "mushroom" }, //ARMOR
+				{ ingredients: ["iron", "iron", "string", "string"], output: "armor" }, 
 				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "magic_sauce" }, //GAMER_ARMOR
+				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "armor" }, //GAMER ARMOR
 			],
 		);
 		this.#registerEntity(WeaponCrafter);
@@ -257,7 +257,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let FletchingTable = new CraftingTable(
 			this,
 			startingStationLocations[posIndex],
-			[{ modelId: "fish1", scale: 7 }],
+			[{ modelId: "work_station", offset: [0, -0.1, 0] }],
 			[
 				{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
 				{ ingredients: ["bow", "magic_sauce"], output: "gamer_bow" },
@@ -269,28 +269,28 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
 		let woodSpawner = new Spawner(this, startingStationLocations[posIndex], "wood", "axe", [
-			{ modelId: "wood", scale: 1.5 },
+			{ modelId: "chair", offset: [0, -0.6, 0] },
 		]);
 		this.#registerEntity(woodSpawner);
 
 		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
 		let oreSpawner = new Spawner(this, startingStationLocations[posIndex], "raw_iron", "pickaxe", [
-			{ modelId: "raw_iron", scale: 1.5 },
+			{ modelId: "ore_vein", offset: [0, -0.6, 0] },
 		]);
 		this.#registerEntity(oreSpawner);
 
 		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
 		let stringSpawner = new Spawner(this, startingStationLocations[posIndex], "string", "shears", [
-			{ modelId: "string", scale: 1.5 },
+			{ modelId: "spider_web", offset: [0, -0.6, 0]},
 		]);
 		this.#registerEntity(stringSpawner);
 
 		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
 		let mushroomSpawner = new Spawner(this, startingStationLocations[posIndex], "mushroom", "knife", [
-			{ modelId: "mushroom", scale: 1.5 },
+			{ modelId: "mushroom_cluster",  offset: [0, -0.6, 0]},
 		]);
 		this.#registerEntity(mushroomSpawner);
 	}
@@ -300,7 +300,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	#transitionToCombat() {
 		this.#currentStage = "combat";
-		this.#timeRemaining = 60 * 1000; // 1 minute
+		this.#timeRemaining = 60 * 1000 * 3; // 3 minute
 
 		// TODO: Big old QTE or actual combat
 	}

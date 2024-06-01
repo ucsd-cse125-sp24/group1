@@ -45,7 +45,7 @@ export class CraftingTable extends InteractableEntity {
 		this.itemList = [];
 		this.recipes = recipes;
 		this.ingredients = recipes.flatMap((recipe) => recipe.ingredients);
-		this.halfExtent = 0.75;
+		this.halfExtent = 1.5;
 
 		this.body = new phys.Body({
 			mass: 1000.0,

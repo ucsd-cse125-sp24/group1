@@ -31,7 +31,7 @@ export class Spawner extends InteractableEntity {
 		this.toSpawn = toSpawn;
 		this.toolToHarvest = toolToHarvest;
 
-		this.halfExtent = 0.75;
+		this.halfExtent = 1.1;
 
 		this.body = new phys.Body({
 			mass: 1000.0,
@@ -67,7 +67,7 @@ export class Spawner extends InteractableEntity {
 			this.game,
 			this.toSpawn,
 			[...this.getPos()],
-			[{ modelId: this.toSpawn, offset: [0, -0.5, 0], scale: 0.5 }],
+			[{ modelId: this.toSpawn, offset: [0, -0.3, 0], scale: 0.5 }],
 			"resource",
 		);
 
