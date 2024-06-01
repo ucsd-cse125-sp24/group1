@@ -12,15 +12,16 @@ export class Welcome {
 		action: "javascript:",
 		contents: [
 			elem("label", {
+				className: styles.inputWrapper,
 				contents: [
-					elem("span", { textContent: "Display name" }),
-					elem("input", { type: "text", name: "name", required: true }),
+					elem("span", { className: styles.label, textContent: "What's your name?" }),
+					elem("input", { className: styles.input, type: "text", name: "name", required: true }),
 				],
 			}),
-			elem("button", { type: "submit", textContent: "Play" }),
+			elem("button", { type: "submit", className: styles.button, textContent: "Play" }),
 		],
 	});
-	#rejoinBtn = elem("button", { type: "button", textContent: "Return to game" });
+	#rejoinBtn = elem("button", { type: "button", className: styles.button, textContent: "Return to game" });
 	#returningPlayerName = elem("span", { textContent: "Player" });
 	#returningPlayer = elem("div", {
 		className: styles.wrapper,

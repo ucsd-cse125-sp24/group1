@@ -123,7 +123,7 @@ const setTimer = (ms: number) => {
 	const minutes = Math.floor(t / 60);
 	const seconds = t % 60;
 	if (timer) {
-		timer.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+		timer.textContent = ms >= 0 ? `${minutes}:${seconds.toString().padStart(2, "0")}` : "";
 	}
 };
 
@@ -134,11 +134,15 @@ const welcome = new Welcome({
 	onName(name) {
 		//
 		lockPointer();
+		inputListener.listen();
+		camera.listen();
 		welcome.remove();
 	},
 	onRejoin() {
 		//
 		lockPointer();
+		inputListener.listen();
+		camera.listen();
 		welcome.remove();
 	},
 }).show(null);
@@ -444,6 +448,4 @@ const paint = () => {
 };
 
 connection.connect();
-inputListener.listen();
-camera.listen();
 paint();

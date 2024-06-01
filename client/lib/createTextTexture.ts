@@ -16,7 +16,7 @@ export const createTextTexture = (
 	{ gl }: WebGlUtils,
 	text: string,
 	height: number,
-	font = '"TODO", sans-serif',
+	font = '"Inter", "Helvetica Neue", Helvetica, Arial, sans-serif',
 ): TextTexture => {
 	c.font = `${height}px/1 ${font}`;
 	const width = 1 << Math.ceil(Math.log2(c.measureText(text).width));

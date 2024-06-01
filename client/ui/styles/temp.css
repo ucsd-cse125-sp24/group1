@@ -32,6 +32,11 @@
 		display: flex;
 		flex-direction: column;
 	}
+	& button {
+		border: 1px solid black;
+		background-color: blue;
+	}
+
 	& .controls-title {
 		top: 10px;
 		left: 10px;
