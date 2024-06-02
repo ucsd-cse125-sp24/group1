@@ -206,7 +206,7 @@ export abstract class PlayerEntity extends Entity {
 				console.log("attack", entity.id);
 				if (this.game.getCurrentStage().type === "combat") {
 					if (this.isBoss !== entity.isBoss) {
-						entity.takeDamage(this.itemInHands);
+						entity.hitByWeapon(this.itemInHands);
 					}
 				}
 				// Apply knockback to player when attacked
@@ -225,7 +225,7 @@ export abstract class PlayerEntity extends Entity {
 		return false;
 	}
 
-	takeDamage(weapon: Item | null): void {
+	hitByWeapon(weapon: Item | null): void {
 		if (weapon === null) {
 			return;
 		}
@@ -240,7 +240,14 @@ export abstract class PlayerEntity extends Entity {
 				damage = 1;
 				break;
 		}
+		this.takeDamage(damage);
+	}
+
+	takeDamage(damage: number): void {
 		this.health -= damage;
+		if (this.health < 0) {
+			this.health = 0;
+		}
 	}
 
 	serialize(): SerializedEntity {

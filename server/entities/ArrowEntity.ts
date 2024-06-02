@@ -22,7 +22,7 @@ export class ArrowEntity extends Entity {
 
 	onCollide(otherEntity: Entity): void {
 		if (otherEntity instanceof BossEntity) {
-			otherEntity.health -= this.damage;
+			otherEntity.takeDamage(this.damage);
 		} else if (otherEntity instanceof MapEntity) {
 			this.game.addToDeleteQueue(this.id);
 		}
