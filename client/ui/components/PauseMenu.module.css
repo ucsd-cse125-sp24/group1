@@ -4,7 +4,6 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: space-between;
 	transition: all 0.5s;
 }
 .gaming {
@@ -14,6 +13,7 @@
 .logo {
 	font-size: 6rem;
 	font-weight: bold;
+	margin-top: 50px;
 }
 
 .playerList {
@@ -24,7 +24,7 @@
 	overflow: auto;
 	display: flex;
 	flex-direction: column;
-	width: 20rem;
+	width: 18rem;
 	padding: 20px;
 	gap: 20px;
 	background-color: rgba(0, 0, 0, 0.5);
@@ -56,4 +56,16 @@
 	& .playerList {
 		transform: translateX(100%);
 	}
+}
+
+.winnerMessage {
+	margin-top: 20px;
+	margin-bottom: auto;
+	font-size: 1.5rem;
+}
+.boss {
+	color: #ef4444;
+}
+.hero {
+	color: #3b82f6;
 }

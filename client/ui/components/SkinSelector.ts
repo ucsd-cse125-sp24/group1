@@ -7,7 +7,7 @@ export class SkinSelector {
 	#startBtn = elem("button", { classes: [styles.startBtn, "start-game-btn"], textContent: "Start game" });
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide],
-		contents: [this.#startBtn],
+		contents: [elem("p", { textContent: "We recommend playing with 1 Boss and 3 Heroes." }), this.#startBtn],
 	});
 
 	listen(connection: Connection): void {

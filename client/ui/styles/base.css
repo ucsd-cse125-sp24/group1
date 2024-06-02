@@ -25,3 +25,7 @@ textarea {
 button:not(:disabled) {
 	cursor: pointer;
 }
+h2,
+p {
+	margin: 0;
+}

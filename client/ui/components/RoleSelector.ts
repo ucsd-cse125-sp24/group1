@@ -4,8 +4,8 @@ import { elem } from "../elem";
 import styles from "./RoleSelector.module.css";
 
 export class RoleSelector {
-	#selectBossBtn = elem("button", { classes: [styles.button, styles.bossBtn], textContent: "Join boss team" });
-	#selectHeroBtn = elem("button", { classes: [styles.button, styles.heroBtn], textContent: "Join hero team" });
+	#selectBossBtn = elem("button", { classes: [styles.button, styles.bossBtn], textContent: "Join team Boss" });
+	#selectHeroBtn = elem("button", { classes: [styles.button, styles.heroBtn], textContent: "Join team Heroes" });
 	#spectateBtn = elem("button", { classes: [styles.button, styles.spectateBtn], textContent: "Spectate" });
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, "trap-clicks"],

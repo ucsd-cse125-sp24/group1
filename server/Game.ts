@@ -59,7 +59,7 @@ const itemModels: ItemType[] = [
 /** Length of the crafting stage in milliseconds */
 const CRAFT_STAGE_LENGTH = 60 * 1000; // 1 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000 * 3; // 3 minute
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 0.5; // 0.5 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -182,6 +182,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	async #startGame() {
 		this.#currentStage = {
 			type: "crafting",
+			startTime: Date.now(),
 			endTime: Date.now() + CRAFT_STAGE_LENGTH,
 		};
 
@@ -280,7 +281,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * State transition from "crafting" to "combat"
 	 */
 	#transitionToCombat() {
-		this.#currentStage = { type: "combat", endTime: Date.now() + COMBAT_STAGE_LENGTH };
+		this.#currentStage = { type: "combat", startTime: Date.now(), endTime: Date.now() + COMBAT_STAGE_LENGTH };
 
 		// TODO: Big old QTE or actual combat
 	}

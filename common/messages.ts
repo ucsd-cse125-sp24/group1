@@ -51,11 +51,13 @@ export type GameStage =
 	  }
 	| {
 			type: "crafting";
+			startTime: number;
 			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
 			endTime: number;
 	  }
 	| {
 			type: "combat";
+			startTime: number;
 			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
 			endTime: number;
 	  };

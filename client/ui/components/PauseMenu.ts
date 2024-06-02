@@ -11,10 +11,17 @@ export class PauseMenu {
 	#skinSelector = new SkinSelector();
 	#clickMessage = elem("div", { className: styles.clickMessage });
 	#playerList = new PlayerList();
+	#winner = elem("strong");
+	#winnerRest = elem("span");
+	#winnerMessage = elem("p", {
+		classes: [styles.winnerMessage, styles.hide],
+		contents: ["The ", this.#winner, this.#winnerRest],
+	});
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.lobby],
 		contents: [
-			elem("div", { className: styles.logo, textContent: "Game Logo" }),
+			elem("h2", { className: styles.logo, textContent: "Game Logo" }),
+			this.#winnerMessage,
 			this.#clickMessage,
 			this.#roleSelector.element,
 			elem("div", {
@@ -38,9 +45,18 @@ export class PauseMenu {
 			if (state.stage.type === "lobby") {
 				this.element.classList.add(styles.lobby);
 				this.element.classList.remove(styles.gaming);
+				if (state.stage.previousWinner) {
+					this.#winner.textContent = state.stage.previousWinner === "boss" ? "Boss" : "Heroes";
+					this.#winner.className = state.stage.previousWinner === "boss" ? styles.boss : styles.hero;
+					this.#winnerRest.textContent = state.stage.previousWinner === "boss" ? " has won!" : " have won!";
+					this.#winnerMessage.classList.remove(styles.hide);
+				} else {
+					this.#winnerMessage.classList.add(styles.hide);
+				}
 			} else {
 				this.element.classList.remove(styles.lobby);
 				this.element.classList.add(styles.gaming);
+				this.#winnerMessage.classList.add(styles.hide);
 			}
 		}
 
