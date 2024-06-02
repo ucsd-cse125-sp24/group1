@@ -442,6 +442,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
+			if (player.entity) {
+				conn.send({
+					type: "camera-lock",
+					entityId: player.entity.id,
+					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
+				});
+			}
 		} else {
 			let input = new PlayerInput();
 			this.#createdInputs.push(input);
@@ -568,13 +575,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	broadcastState() {
-		this.#server.broadcast({
-			type: "entire-game-state",
-			stage: this.#currentStage,
-			entities: this.serialize(),
-			physicsBodies: this.serializePhysicsBodies(),
-			players: [],
-		});
+		for (const player of this.#players.values()) {
+			player.conn.send({
+				type: "entire-game-state",
+				stage: this.#currentStage,
+				entities: this.serialize(),
+				physicsBodies: this.serializePhysicsBodies(),
+				players: Array.from(this.#players.values(), (p) => ({
+					name: p.name,
+					role: !p.entity ? "spectator" : p.entity instanceof BossEntity ? "boss" : "hero",
+					entityId: p.entity?.id,
+					me: p === player,
+				})),
+			});
+		}
 	}
 
 	addToDeleteQueue(sussyAndRemovable: EntityId) {

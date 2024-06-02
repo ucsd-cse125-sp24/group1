@@ -1,6 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
+import { ClientMessage, EntireGameState, SerializedCollider, ServerMessage } from "../common/messages";
 import { EntityId } from "../server/entities/Entity";
 import { sounds } from "../assets/sounds";
 import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
@@ -41,6 +41,7 @@ if (errorWindow instanceof HTMLDialogElement) {
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
 
+let gameState: EntireGameState | undefined;
 let entities: ClientEntity[] = [];
 let colliders: { collider: SerializedCollider; transform: mat4 }[] = [];
 /** Time for the timer to count down to */
@@ -85,6 +86,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 				}));
 			});
 			timerTarget = data.stage.type === "lobby" ? null : data.stage.endTime;
+
+			pauseMenu.render(data, gameState);
+			gameState = data;
 			break;
 		case "camera-lock":
 			cameraLockTarget = data.entityId;

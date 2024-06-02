@@ -3,6 +3,7 @@ import { elem } from "../elem";
 import { RoleSelector } from "./RoleSelector";
 import { SkinSelector } from "./SkinSelector";
 import styles from "./PauseMenu.module.css";
+import { EntireGameState } from "../../../common/messages";
 
 export class PauseMenu {
 	#roleSelector = new RoleSelector();
@@ -19,5 +20,10 @@ export class PauseMenu {
 	listen(connection: Connection): void {
 		this.#roleSelector.listen(connection);
 		this.#skinSelector.listen(connection);
+	}
+
+	render(state: EntireGameState, previous?: EntireGameState): void {
+		this.#roleSelector.render(state, previous);
+		this.#skinSelector.render(state, previous);
 	}
 }

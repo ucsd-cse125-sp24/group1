@@ -1,0 +1,7 @@
+.wrapper {
+	transition: all 0.5s;
+}
+.hide {
+	opacity: 0;
+	visibility: hidden;
+}

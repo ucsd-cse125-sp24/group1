@@ -1,0 +1,12 @@
+.wrapper {
+	transition: all 0.5s;
+
+	& :disabled {
+		opacity: 0.5;
+	}
+}
+.hide {
+	transform: translateY(20px);
+	opacity: 0;
+	visibility: hidden;
+}

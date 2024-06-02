@@ -1,11 +1,14 @@
+import { EntireGameState } from "../../../common/messages";
 import { Connection } from "../../net/Connection";
 import { elem } from "../elem";
+import styles from "./RoleSelector.module.css";
 
 export class RoleSelector {
 	#selectBossBtn = elem("button", { textContent: "Join boss team" });
 	#selectHeroBtn = elem("button", { textContent: "Join hero team" });
 	#spectateBtn = elem("button", { textContent: "Spectate" });
 	element = elem("div", {
+		classes: [styles.wrapper, styles.hide],
 		contents: [this.#selectBossBtn, this.#selectHeroBtn, this.#spectateBtn],
 	});
 
@@ -19,5 +22,23 @@ export class RoleSelector {
 		this.#spectateBtn.addEventListener("click", () => {
 			connection.send({ type: "change-role", role: "spectator" });
 		});
+	}
+
+	render(state: EntireGameState, previous?: EntireGameState): void {
+		const role = state.players.find((player) => player.me)?.role;
+		const previousRole = previous?.players.find((player) => player.me)?.role;
+		if (role !== previousRole) {
+			this.#selectBossBtn.disabled = role === "boss";
+			this.#selectHeroBtn.disabled = role === "hero";
+			this.#spectateBtn.disabled = role === "spectator";
+		}
+
+		if (state.stage.type !== previous?.stage.type) {
+			if (state.stage.type === "lobby") {
+				this.element.classList.remove(styles.hide);
+			} else {
+				this.element.classList.add(styles.hide);
+			}
+		}
 	}
 }
