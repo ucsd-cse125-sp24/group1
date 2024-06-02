@@ -10,9 +10,16 @@ export type ServerMessage =
 	| CameraLock
 	| PlaySound
 	| SabotageHero
-	| GameOver;
+	| GameOver
+	| PlayParticle;
 
-export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage | DebugMessages;
+export type ClientMessage =
+	| { type: "ping" }
+	| { type: "pong" }
+	| ClientInputMessage
+	| ChangeDisplayName
+	| ChangeRole
+	| StartGame;
 
 export type ClientControlMessage = {
 	/**
@@ -36,15 +43,28 @@ export type ServerControlMessage = {
 	id: string;
 };
 
-export type GameStage = "lobby" | "crafting" | "combat";
+export type GameStage =
+	| {
+			type: "lobby";
+			/** Null if no games have been played yet */
+			previousWinner: "hero" | "boss" | null;
+	  }
+	| {
+			type: "crafting";
+			startTime: number;
+			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
+			endTime: number;
+	  }
+	| {
+			type: "combat";
+			startTime: number;
+			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
+			endTime: number;
+	  };
 
 export type EntireGameState = {
 	type: "entire-game-state";
 	stage: GameStage;
-	/**
-	 * Amount of time left in the current stage, in milliseconds
-	 */
-	timeRemaining: number;
 	entities: SerializedEntity[];
 	/**
 	 * All physics engine colliders to draw wireframes around for debug purposes.
@@ -52,7 +72,19 @@ export type EntireGameState = {
 	 * predict positions on these bodies.
 	 */
 	physicsBodies: SerializedBody[];
+	players: PlayerEntry[];
 };
+
+export type PlayerEntry = {
+	name: string;
+	role: Role;
+	entityId?: number;
+	online: boolean;
+	/** Whether this entry corresponds to the client */
+	me: boolean;
+};
+
+export type Role = "boss" | "hero" | "spectator";
 
 export type GameOver = {
 	type: "game-over";
@@ -85,6 +117,11 @@ export type PlaySound = {
 	position: Vector3;
 };
 
+export type PlayParticle = {
+	type: "particle";
+	position: Vector3;
+};
+
 /**
  * Tells a client that it has been sabotaged by the boss. The client should
  * render a screen effect until the specified time.
@@ -113,9 +150,19 @@ export type ClientInputMessage = {
 	type: "client-input";
 } & ClientInputs;
 
-export type DebugMessages = {
-	type: "--debug-switch-role";
-	keepBody: boolean;
+export type ChangeDisplayName = {
+	type: "change-name";
+	name: string;
+};
+
+export type ChangeRole = {
+	type: "change-role";
+	role: Role;
+	skin?: "red" | "yellow" | "green" | "blue";
+};
+
+export type StartGame = {
+	type: "start-game";
 };
 
 export type EntityModelObject = {

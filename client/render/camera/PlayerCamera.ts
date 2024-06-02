@@ -36,7 +36,6 @@ export class PlayerCamera extends Camera {
 		engine: GraphicsEngine,
 	) {
 		super(position, orientation, upDir, fovY, aspectRatio, nearBound, farBound, engine);
-		this.#checkPointerLock();
 	}
 
 	setFree(isFree: boolean): void {
@@ -44,13 +43,18 @@ export class PlayerCamera extends Camera {
 	}
 
 	listen(): void {
-		document.addEventListener("pointerlockchange", this.#checkPointerLock);
-
 		const canvas = this._engine.gl.canvas;
 		if (canvas instanceof OffscreenCanvas) {
 			// Can't add event listeners to OffscreenCanvas
 			return;
 		}
+
+		canvas.addEventListener("mousemove", (e) => {
+			if (document.pointerLockElement === canvas) {
+				this.#handleMouseMove(e);
+			}
+		});
+
 		// Add touch support
 		type DragState = { pointerId: number; lastX: number; lastY: number };
 		let dragState: DragState | null = null;
@@ -85,20 +89,7 @@ export class PlayerCamera extends Camera {
 		canvas.addEventListener("pointercancel", handlePointerEnd);
 	}
 
-	#checkPointerLock = () => {
-		const canvas = this._engine.gl.canvas;
-		if (canvas instanceof OffscreenCanvas) {
-			// Can't add event listeners to OffscreenCanvas
-			return;
-		}
-		if (document.pointerLockElement === canvas) {
-			canvas.addEventListener("mousemove", this.#handleMouseMove);
-		} else {
-			canvas.removeEventListener("mousemove", this.#handleMouseMove);
-		}
-	};
-
-	#handleMouseMove = ({ movementX, movementY }: { movementX: number; movementY: number }) => {
+	#handleMouseMove({ movementX, movementY }: { movementX: number; movementY: number }) {
 		if (!this.canRotate && !this.#isFree) {
 			return;
 		}
@@ -106,7 +97,7 @@ export class PlayerCamera extends Camera {
 			this._orientation[0] + movementY * this.#sensitivity * ROTATION_RATE,
 			this._orientation[1] - movementX * this.#sensitivity * ROTATION_RATE,
 		);
-	};
+	}
 
 	updateFreecam(inputs: FreecamInputs): void {
 		if (!this.#isFree) {

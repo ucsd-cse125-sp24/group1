@@ -1,0 +1,31 @@
+:root {
+	color-scheme: dark;
+}
+html,
+body {
+	height: 100%;
+}
+body {
+	display: flex;
+	margin: 0;
+	background-color: black;
+	color: white;
+	font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+button,
+input,
+select,
+textarea {
+	border: none;
+	background: none;
+	color: inherit;
+	font: inherit;
+	box-sizing: border-box;
+}
+button:not(:disabled) {
+	cursor: pointer;
+}
+h2,
+p {
+	margin: 0;
+}

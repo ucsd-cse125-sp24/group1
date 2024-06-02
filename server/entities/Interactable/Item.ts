@@ -21,9 +21,11 @@ export type ItemType =
 	| "shears"
 	| "string"
 	| "sword"
+	| "armor"
 	| "wood";
 
 const colliderShapeForItemType: Record<ItemType, phys.Shape> = {
+	armor: new phys.Sphere(0.5),
 	axe: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
 	bow: new phys.Cylinder(0.5, 0.5, 1.0, 12),
 	gamer_bow: new phys.Cylinder(0.5, 0.5, 1.0, 12),

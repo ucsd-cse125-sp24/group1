@@ -9,7 +9,14 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ClientMessage, GameStage, SerializedBody, SerializedEntity, ServerMessage } from "../common/messages";
+import {
+	ChangeRole,
+	ClientMessage,
+	GameStage,
+	SerializedBody,
+	SerializedEntity,
+	ServerMessage,
+} from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { ModelId } from "../assets/models";
@@ -32,8 +39,6 @@ import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
 
-// TEMP? (used for randomization)
-const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
 	"axe",
@@ -52,15 +57,10 @@ const itemModels: ItemType[] = [
 	"wood",
 ];
 
-const startingStationLocations: Vector3[] = [
-	[18, 0, 18],
-	[-18, 6, -18],
-	[12, 0, 18],
-	[5, 0, 18],
-	[-24, 0, 18],
-	[21, 0, -11],
-	[0, 0, -20],
-];
+/** Length of the crafting stage in milliseconds */
+const CRAFT_STAGE_LENGTH = 60 * 1000; // 1 minute
+/** Length of the combat stage in milliseconds */
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 0.5; // 0.5 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -74,9 +74,12 @@ const COMBAT_STAGE_TIME = 120 * 1000;
 
 interface NetworkedPlayer {
 	input: PlayerInput;
-	entity: PlayerEntity;
+	/** `null` if spectating */
+	entity: PlayerEntity | null;
+	online: boolean;
 	id: string;
 	conn: Connection<ServerMessage>;
+	name: string;
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
@@ -97,16 +100,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#currentTick: number;
 	/**
-	 * Timestamp of previous tick's completion in milliseconds, as would be
-	 * returned by `Date.now()`
-	 */
-	#previousTickTimestamp: number;
-	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
 	 */
-	#currentStage: GameStage;
-	#timeRemaining: number;
+	#currentStage: GameStage = {
+		type: "lobby",
+		previousWinner: null,
+	};
 
 	constructor() {
 		this.#createdInputs = [];
@@ -118,9 +118,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
-		this.#previousTickTimestamp = 0;
-		this.#currentStage = "lobby";
-		this.#timeRemaining = Number.POSITIVE_INFINITY;
 
 		this.#server = BROWSER ? new WebWorker(this) : new (require("./net/WsServer").WsServer)(this);
 		this.#server.listen(2345);
@@ -183,18 +180,25 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * A function that sets up the base state for the game
 	 */
-	async setup() {
-		this.#previousTickTimestamp = Date.now();
-		// TEMP: immediately transition to "crafting" state until lobby implemented
-		await this.#transitionToCrafting();
-	}
+	async setup() {}
 
 	/**
 	 * State transition from "lobby" to "crafting"
 	 */
-	async #transitionToCrafting() {
-		this.#currentStage = "crafting";
-		this.#timeRemaining = CRAFTING_STAGE_TIME;
+	async #startGame() {
+		this.#currentStage = {
+			type: "crafting",
+			startTime: Date.now(),
+			endTime: Date.now() + CRAFT_STAGE_LENGTH,
+		};
+
+		// Move players
+		for (const player of this.#players.values()) {
+			if (player.entity) {
+				player.entity.body.position = new phys.Vec3(21, -1, 20);
+				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
+			}
+		}
 
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
@@ -204,37 +208,23 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(plane);
 
 		let posIndex = Math.floor(Math.random() * 4);
-		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.75 }], "tool");
+		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.5 }], "tool");
 		this.#registerEntity(axe);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let pick = new Item(
-			this,
-			"pickaxe",
-			startingToolLocations[posIndex],
-			[{ modelId: "pickaxe", scale: 0.75 }],
-			"tool",
-		);
+		let pick = new Item(this, "pickaxe", startingToolLocations[posIndex], [{ modelId: "pickaxe", scale: 0.5 }], "tool");
 		this.#registerEntity(pick);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let shears = new Item(
-			this,
-			"shears",
-			startingToolLocations[posIndex],
-			[{ modelId: "shears", scale: 0.75 }],
-			"tool",
-		);
+		let shears = new Item(this, "shears", startingToolLocations[posIndex], [{ modelId: "shears", scale: 0.5 }], "tool");
 		this.#registerEntity(shears);
 
-		posIndex = Math.floor(Math.random() * 7);
-		console.log(posIndex);
 		let Furnace = new CraftingTable(
 			this,
-			startingStationLocations[posIndex],
-			[{ modelId: "fish1", scale: 7 }],
+			[18, 0, 18],
+			[{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0] }],
 			[
 				{ ingredients: ["raw_iron", "wood"], output: "iron" },
 				{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
@@ -242,28 +232,24 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(Furnace);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
 		let WeaponCrafter = new CraftingTable(
 			this,
-			startingStationLocations[posIndex],
-			[{ modelId: "fish1", scale: 7 }],
+			[-18, 6, -18],
+			[{ modelId: "anvil", offset: [0, -1.25, 0] }],
 			[
 				{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 				{ ingredients: ["iron", "wood"], output: "knife" },
-				{ ingredients: ["iron", "iron", "string", "string"], output: "mushroom" }, //ARMOR
+				{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "magic_sauce" }, //GAMER_ARMOR
+				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "armor" }, //GAMER ARMOR
 			],
 		);
 		this.#registerEntity(WeaponCrafter);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
 		let FletchingTable = new CraftingTable(
 			this,
-			startingStationLocations[posIndex],
-			[{ modelId: "fish1", scale: 7 }],
+			[12, 0, 18],
+			[{ modelId: "work_station", offset: [0, -1.25, 0] }],
 			[
 				{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
 				{ ingredients: ["bow", "magic_sauce"], output: "gamer_bow" },
@@ -272,44 +258,41 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(FletchingTable);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let woodSpawner = new Spawner(this, startingStationLocations[posIndex], "wood", "axe", [
-			{ modelId: "wood", scale: 1.5 },
-		]);
+		let woodSpawner = new Spawner(this, [5, 0, 18], "wood", "axe", [{ modelId: "chair", offset: [0, -1.1, 0] }]);
 		this.#registerEntity(woodSpawner);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let oreSpawner = new Spawner(this, startingStationLocations[posIndex], "raw_iron", "pickaxe", [
-			{ modelId: "raw_iron", scale: 1.5 },
+		let oreSpawner = new Spawner(this, [-24, 0, 18], "raw_iron", "pickaxe", [
+			{ modelId: "ore_vein", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(oreSpawner);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let stringSpawner = new Spawner(this, startingStationLocations[posIndex], "string", "shears", [
-			{ modelId: "string", scale: 1.5 },
+		let stringSpawner = new Spawner(this, [21, 0, -11], "string", "shears", [
+			{ modelId: "spider_web", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(stringSpawner);
 
-		posIndex == 6 ? (posIndex = 0) : posIndex++;
-		console.log(posIndex);
-		let mushroomSpawner = new Spawner(this, startingStationLocations[posIndex], "mushroom", "knife", [
-			{ modelId: "mushroom", scale: 1.5 },
+		let mushroomSpawner = new Spawner(this, [0, 0, -15], "mushroom", "knife", [
+			{ modelId: "mushroom_cluster", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(mushroomSpawner);
+
+		let sampleIorn = new Item(this, "knife", [5, 0, 5], [{ modelId: "knife", scale: 0.5 }], "resource");
+		this.#registerEntity(sampleIorn);
+
+		let sampleIorn2 = new Item(this, "raw_iron", [7, 0, 5], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
+		this.#registerEntity(sampleIorn2);
 	}
 
 	/**
 	 * State transition from "crafting" to "combat"
 	 */
 	#transitionToCombat() {
-		this.#currentStage = "combat";
-		this.#timeRemaining = COMBAT_STAGE_TIME;
+		this.#currentStage = { type: "combat", startTime: Date.now(), endTime: Date.now() + COMBAT_STAGE_LENGTH };
 
 		for (const player of this.#players.values()) {
-			if (this.#boss === null && player.entity.isBoss) {
+			if (player.entity === null) {
+				continue;
+			} else if (this.#boss === null && player.entity.isBoss) {
 				this.#boss = player.entity as BossEntity;
 			} else if (!player.entity.isBoss) {
 				this.#heroes.push(player.entity as HeroEntity);
@@ -322,7 +305,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * Check whether either side has met their win condition
 	 */
-	#checkGameOver() {
+	#endGame() {
 		let isAnyHeroAlive = false;
 		for (const hero of this.#heroes) {
 			if (hero.health > 0) {
@@ -330,14 +313,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				break;
 			}
 		}
+		const endTime = this.#currentStage.type === "lobby" ? 0 : this.#currentStage.endTime;
 		if (this.#boss !== null && this.#boss.health <= 0) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
-		} else if (this.#timeRemaining <= 0 || !isAnyHeroAlive) {
+			this.#currentStage = { type: "lobby", previousWinner: "hero" };
+		} else if (Date.now() > endTime || !isAnyHeroAlive) {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
+			this.#currentStage = { type: "lobby", previousWinner: "boss" };
 		}
-		// TODO: stop game if someone won
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
@@ -347,8 +332,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({ type: "sound", sound, position });
 	}
 
+	playParticle(position: phys.Vec3 | Vector3): void {
+		if (position instanceof phys.Vec3) {
+			position = position.toArray();
+		}
+		this.#server.broadcast({ type: "particle", position });
+	}
+
 	updateGameState() {
 		for (let [id, player] of this.#players.entries()) {
+			if (!player.entity) {
+				continue;
+			}
 			let inputs = player.input.getInputs();
 			let posedge = player.input.getPosedge();
 
@@ -373,7 +368,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 			if (posedge.attack) {
 				const attacked = player.entity.attack();
-				console.log(player.entity.getPos()); //FOR TESTING
+				this.playParticle(player.entity.getPos());
 				if (!attacked) {
 					this.playSound("attackFail", player.entity.getPos());
 				}
@@ -432,11 +427,34 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
 		for (const player of this.#players.values()) {
-			if (player.entity.id === id) {
+			if (player.entity?.id === id) {
 				return player;
 			}
 		}
 		return undefined;
+	}
+
+	#createPlayerEntity(pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+		switch (role) {
+			case "hero":
+				return new HeroEntity(this, pos, [
+					{
+						modelId: `player_${skin}`,
+						offset: [0, -1.5, 0],
+						scale: 0.4,
+					},
+				]);
+			case "boss":
+				return new BossEntity(this, pos, [
+					{
+						modelId: "samplePlayer",
+						offset: [0, -0.75, 0],
+						scale: 0.2,
+					},
+				]);
+			default:
+				return null;
+		}
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>) {
@@ -444,36 +462,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
-		} else {
-			let playerORHero = Math.floor(Math.random() * 4);
-			let playerEntity;
-			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				playerEntity = new HeroEntity(
-					this,
-					[20, -1, 20],
-					[
-						{
-							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
-							offset: [0, -1.5, 0],
-							scale: 0.4,
-						},
-					],
-				);
-			} else {
-				playerEntity = new BossEntity(
-					this,
-					[20, -1, 20],
-					[
-						{
-							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
-							offset: [0, -0.75, 0],
-							scale: 0.2,
-						},
-					],
-				);
+			player.online = true;
+			if (player.entity) {
+				conn.send({
+					type: "camera-lock",
+					entityId: player.entity.id,
+					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
+				});
 			}
-			this.addToCreateQueue(playerEntity);
-
+		} else {
 			let input = new PlayerInput();
 			this.#createdInputs.push(input);
 
@@ -481,16 +478,19 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				id: conn.id,
 				conn: conn,
 				input: input,
-				entity: playerEntity,
+				entity: null,
+				online: true,
+				name: `Player ${conn.id.slice(0, 6)}`,
 			};
 			this.#players.set(conn.id, player);
 		}
+	}
 
-		conn.send({
-			type: "camera-lock",
-			entityId: player.entity.id,
-			pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
-		});
+	handlePlayerDisconnect(id: string): void {
+		const player = this.#players.get(id);
+		if (player) {
+			player.online = false;
+		}
 	}
 
 	/**
@@ -516,33 +516,44 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			case "client-input":
 				this.#players.get(conn.id)?.input?.updateInputs?.(data);
 				break;
-			case "--debug-switch-role":
+			case "change-name": {
 				const player = this.#players.get(conn.id);
 				if (!player) {
 					return;
 				}
-				if (!data.keepBody) {
-					this.addToDeleteQueue(player.entity.id);
+				player.name = data.name;
+				if (player.entity) {
+					player.entity.displayName = data.name;
 				}
-				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
-					this,
-					[20, -1, 20],
-					[
-						{
-							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
-							offset: [0, player.entity instanceof BossEntity ? -1.5 : -0.75, 0],
-							scale: player.entity instanceof BossEntity ? 0.4 : 0.2,
-						},
-					],
-				);
-				this.addToCreateQueue(newEntity);
-				player.entity = newEntity;
-				conn.send({
-					type: "camera-lock",
-					entityId: player.entity.id,
-					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
-				});
 				break;
+			}
+			case "change-role": {
+				const player = this.#players.get(conn.id);
+				if (!player) {
+					return;
+				}
+				const oldEntity = player.entity;
+				if (oldEntity) {
+					this.addToDeleteQueue(oldEntity.id);
+				}
+				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [20, -1, 20], data);
+				if (player.entity) {
+					this.addToCreateQueue(player.entity);
+					player.entity.displayName = player.name;
+					conn.send({
+						type: "camera-lock",
+						entityId: player.entity.id,
+						pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
+					});
+				}
+				break;
+			}
+			case "start-game": {
+				if (this.#currentStage.type === "lobby") {
+					this.#startGame();
+				}
+				break;
+			}
 			default:
 				console.warn(`Unhandled message '${data["type"]}'`);
 		}
@@ -559,23 +570,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.clearEntityQueues();
 		}
 
-		if (this.#currentStage === "combat") {
-			this.#checkGameOver();
-		}
-
-		const now = Date.now();
-		const dt = now - this.#previousTickTimestamp;
-		this.#timeRemaining -= dt;
-		this.#previousTickTimestamp = now;
-
-		if (this.#timeRemaining <= 0) {
-			switch (this.#currentStage) {
-				case "lobby":
-					this.#transitionToCrafting();
-					break;
-				case "crafting":
+		switch (this.#currentStage.type) {
+			case "crafting": {
+				if (Date.now() >= this.#currentStage.endTime) {
 					this.#transitionToCombat();
-					break;
+				}
+				break;
+			}
+			case "combat": {
+				if (Date.now() >= this.#currentStage.endTime) {
+					this.#endGame();
+				}
+				break;
 			}
 		}
 	}
@@ -598,13 +604,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	broadcastState() {
-		this.#server.broadcast({
-			type: "entire-game-state",
-			stage: this.#currentStage,
-			timeRemaining: this.#timeRemaining,
-			entities: this.serialize(),
-			physicsBodies: this.serializePhysicsBodies(),
-		});
+		for (const player of this.#players.values()) {
+			player.conn.send({
+				type: "entire-game-state",
+				stage: this.#currentStage,
+				entities: this.serialize(),
+				physicsBodies: this.serializePhysicsBodies(),
+				players: Array.from(this.#players.values(), (p) => ({
+					name: p.name,
+					role: !p.entity ? "spectator" : p.entity instanceof BossEntity ? "boss" : "hero",
+					entityId: p.entity?.id,
+					online: p.online,
+					me: p === player,
+				})),
+			});
+		}
 	}
 
 	addToDeleteQueue(sussyAndRemovable: EntityId) {

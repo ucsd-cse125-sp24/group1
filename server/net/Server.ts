@@ -9,6 +9,10 @@ export type ServerHandlers<ReceiveType, SendType> = {
 	 */
 	handlePlayerJoin: (conn: Connection<SendType>) => void;
 	/**
+	 * Handle a connection that has disconnected.
+	 */
+	handlePlayerDisconnect: (id: string) => void;
+	/**
 	 * Handles a message sent from the client, and decides what to reply with. It
 	 * can return `undefined` to not send back anything.
 	 */

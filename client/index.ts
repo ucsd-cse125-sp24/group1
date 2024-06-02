@@ -1,13 +1,13 @@
 import { mat4, vec3 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { ClientMessage, SerializedCollider, ServerMessage } from "../common/messages";
+import { ClientMessage, EntireGameState, SerializedCollider, ServerMessage } from "../common/messages";
 import { EntityId } from "../server/entities/Entity";
 import { sounds } from "../assets/sounds";
 import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
 import gltfDebugLightFragmentSource from "./shaders/gltf_debug_light.frag";
 import gltfDebugUniqueShadowFragmentSource from "./shaders/gltf_debug_unique_shadow.frag";
 import gltfVertexSource from "./shaders/gltf.vert";
-import "./index.css";
+import "./ui/index.css";
 import { listenErrors } from "./lib/listenErrors";
 import { Connection } from "./net/Connection";
 import { InputListener } from "./net/InputListener";
@@ -21,12 +21,15 @@ import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
 import { TempLightEntity } from "./render/lights/TempLightEntity";
 import { SoundManager } from "./SoundManager";
+import { ParticleSystem } from "./render/model/ParticleSystem";
 import { drawModels } from "./render/model/draw";
 import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
 import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
+import { PauseMenu } from "./ui/components/PauseMenu";
+import { GameplayUi } from "./ui/components/GameplayUi";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -38,6 +41,7 @@ if (errorWindow instanceof HTMLDialogElement) {
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
 
+let gameState: EntireGameState | undefined;
 let entities: ClientEntity[] = [];
 let colliders: { collider: SerializedCollider; transform: mat4 }[] = [];
 let cameraLockTarget: EntityId | null = null;
@@ -79,7 +83,13 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 					),
 				}));
 			});
-			setTimer(data.timeRemaining);
+
+			gameUi.render(data, gameState);
+			pauseMenu.render(data, gameState);
+			if (data.stage.type === "lobby" && gameState?.stage.type !== "lobby") {
+				unlockPointer();
+			}
+			gameState = data;
 			break;
 		case "camera-lock":
 			cameraLockTarget = data.entityId;
@@ -96,13 +106,18 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 				[panner.positionX.value, panner.positionY.value, panner.positionZ.value] = data.position;
 			}
 			break;
+		case "particle":
+			// Play particle here
+			particle.enable();
+
+			break;
 		case "sabotage-hero":
 			sporeFilterStrength.setTarget(1);
 			setTimeout(() => sporeFilterStrength.setTarget(0), data.time);
 			break;
 		case "game-over":
 			// TEMP
-			alert(`TEMP: GAME OVER - ${data.winner} win(s)`);
+			console.log(`TEMP: GAME OVER - ${data.winner} win(s)`);
 			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
@@ -110,18 +125,38 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 };
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
-const timer = document.getElementById("timer");
-const setTimer = (ms: number) => {
-	const t = Math.floor(ms / 1000);
-	const minutes = Math.floor(t / 60);
-	const seconds = t % 60;
-	if (timer) {
-		timer.textContent = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-	}
-};
-
-const { gl, audioContext } = getContexts();
+const { gl, audioContext, lockPointer, unlockPointer } = getContexts();
 const sound = new SoundManager(audioContext);
+
+// lockPointer();
+// inputListener.listen();
+// camera.listen();
+
+const gameUi = new GameplayUi();
+const pauseMenu = new PauseMenu();
+pauseMenu.listen(connection);
+document.body.append(gameUi.element, pauseMenu.element);
+pauseMenu.show();
+
+document.addEventListener("pointerlockchange", () => {
+	if (document.pointerLockElement === engine.gl.canvas) {
+		gameUi.show();
+		pauseMenu.hide();
+		inputListener.enabled = true;
+	} else {
+		gameUi.hide();
+		pauseMenu.show();
+		inputListener.enabled = false;
+	}
+});
+document.addEventListener("click", (e) => {
+	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks,.start-game-btn");
+	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
+	if ((!trapClick && gameState?.stage.type !== "lobby") || isStartBtn) {
+		lockPointer();
+	}
+});
+
 const engine = new GraphicsEngine(gl);
 const sporeFilter = {
 	shader: new ShaderProgram(
@@ -158,11 +193,22 @@ const camera = new PlayerCamera(
 );
 const fov = new Transition(Math.PI / 3);
 
+let result = vec3.create();
+vec3.add(result, camera.getPosition(), camera.getForwardDir());
+
+const particle = new ParticleSystem(engine, 10, 1000, 5, {
+	size: 16,
+	color: [1, 0, 0], // red color
+	mass: 1,
+	initialPosition: result,
+	initialVelocity: [0, 1, 0],
+	initialVelocityRange: undefined,
+	ttl: 5,
+});
+
 type DebugInputs = {
 	toggleFreecam: boolean;
 	cycleWireframe: boolean;
-	toggleRole: boolean;
-	toggleRoleKeepOld: boolean;
 	toggleTones: boolean;
 	cycleDebugGltf: boolean;
 };
@@ -175,8 +221,6 @@ const defaultDebugInputs = {
 	freecamDown: false,
 	toggleFreecam: false,
 	cycleWireframe: false,
-	toggleRole: false,
-	toggleRoleKeepOld: false,
 	toggleTones: false,
 	cycleDebugGltf: false,
 };
@@ -201,8 +245,6 @@ const inputListener = new InputListener({
 		ShiftLeft: "freecamDown",
 		KeyP: "toggleFreecam",
 		KeyK: "cycleWireframe",
-		KeyB: "toggleRole",
-		KeyN: "toggleRoleKeepOld",
 		KeyX: "emote",
 		KeyT: "toggleTones",
 		KeyL: "cycleDebugGltf",
@@ -214,12 +256,6 @@ const inputListener = new InputListener({
 		}
 		if (inputs.cycleWireframe && !debugInputs.cycleWireframe) {
 			wireframe = (wireframe + 1) % 3;
-		}
-		if (inputs.toggleRole && !debugInputs.toggleRole) {
-			connection.send({ type: "--debug-switch-role", keepBody: false });
-		}
-		if (inputs.toggleRoleKeepOld && !debugInputs.toggleRoleKeepOld) {
-			connection.send({ type: "--debug-switch-role", keepBody: true });
 		}
 		if (inputs.toggleTones && !debugInputs.toggleTones) {
 			tones = !tones;
@@ -394,16 +430,25 @@ const paint = () => {
 		}
 	}
 
+	const modelMatrices = [mat4.create()];
+	particle.shader.use();
+	particle.options.initialPosition = result;
+	// Draw particles
+	particle.draw(modelMatrices, view);
+
 	pipeline.stopRender();
 
 	pipeline.draw();
 
 	// engine.checkError();
 
+	gameUi.timer.renderTime();
+
 	window.requestAnimationFrame(paint);
 };
 
 connection.connect();
 inputListener.listen();
+inputListener.enabled = false;
 camera.listen();
 paint();

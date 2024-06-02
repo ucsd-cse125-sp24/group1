@@ -1,0 +1,8 @@
+@import url("./styles/base.css");
+@import url("./styles/temp.css");
+
+canvas {
+	width: 100%;
+	height: 100%;
+	touch-action: none;
+}

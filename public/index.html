@@ -7,21 +7,22 @@
 		<title>Game | CSE 125 2024</title>
 		<meta name="description" content="Made by TBD Studios (Group 1)." />
 
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
 		<link rel="stylesheet" href="./index.css" />
 		<script src="./index.js" defer></script>
 	</head>
 	<body>
-		<div id="crosshair">+</div>
-		<div id="timer">00:00</div>
 		<canvas id="canvas"></canvas>
-		<div id="network-status">⏳ Not connected</div>
+		<div id="network-status" style="display: none">⏳ Not connected</div>
 		<dialog id="error-window">
 			<form method="dialog">
 				<h2>Error :(</h2>
 				<button type="submit">Dismiss</button>
 			</form>
 		</dialog>
-		<div id="temporary-mobile-controls">
+		<div id="temporary-mobile-controls" style="display: none">
 			<div class="controls-title">
 				<h2>Controls & Mobile Controls</h2>
 				<p>Press a key to dismiss.</p>
@@ -39,8 +40,6 @@
 			<div class="controls-debug">
 				<p><button class="mobile-key" data-key="KeyP">P</button> to toggle freecam</p>
 				<p><button class="mobile-key" data-key="KeyK">K</button> to cycle wireframe views</p>
-				<p><button class="mobile-key" data-key="KeyB">B</button> to toggle hero/boss</p>
-				<p><button class="mobile-key" data-key="KeyN">N</button> to toggle hero/boss and keep old entity</p>
 				<p><button class="mobile-key" data-key="KeyX">X</button> to spawn a random item somewhere</p>
 				<p><button class="mobile-key" data-key="KeyT">T</button> to toggle cell shading</p>
 				<p><button class="mobile-key" data-key="KeyL">L</button> to cycle debug shaders</p>

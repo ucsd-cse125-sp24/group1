@@ -1,0 +1,69 @@
+.wrapper {
+	display: flex;
+	flex-direction: column;
+	white-space: pre;
+}
+
+.list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.player {
+	display: flex;
+	gap: 10px;
+}
+.offline {
+	opacity: 0.5;
+}
+.roleIcon {
+	/* TEMP? ideally should be an icon */
+	display: block;
+	width: 1em;
+	height: 1em;
+	flex: none;
+	text-align: center;
+	font-weight: bold;
+}
+.role-icon-boss {
+	color: #ef4444;
+	&::before {
+		content: "B";
+	}
+}
+.role-icon-hero {
+	color: #3b82f6;
+	&::before {
+		content: "H";
+	}
+}
+.role-icon-spectator {
+	color: #94a3b8;
+	&::before {
+		content: "S";
+	}
+}
+.offlineTag {
+	margin-left: auto;
+	flex: none;
+}
+.me {
+	display: flex;
+	align-items: baseline;
+	gap: 5px;
+}
+.input {
+	padding: 5px;
+	margin: 5px 0;
+	flex: auto;
+	width: 0;
+	border: 1px solid transparent;
+	border-radius: 5px;
+	cursor: pointer;
+	&:hover {
+		border-color: rgba(255, 255, 255, 0.3);
+	}
+	&:focus {
+		cursor: auto;
+	}
+}

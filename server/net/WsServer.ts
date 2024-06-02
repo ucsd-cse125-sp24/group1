@@ -6,9 +6,9 @@ import { WebSocket, WebSocketServer } from "ws";
 import express from "express";
 import { Game } from "../Game";
 import { ClientControlMessage, ClientMessage, ServerControlMessage, ServerMessage } from "../../common/messages";
+import { BiMap } from "../../common/lib/BiMap";
 import { Connection, Server } from "./Server";
 import { log } from "./_tempDebugLog";
-import { BiMap } from "../../common/lib/BiMap";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -120,6 +120,8 @@ export class WsServer implements Server<ClientMessage, ServerMessage> {
 			if (!wsId) return;
 
 			log(`Player ${wsId.slice(0, 6)} disconnected`);
+
+			this.#game.handlePlayerDisconnect(wsId);
 
 			// Give players a while to reconnect
 			this.#disconnectTimeouts.set(

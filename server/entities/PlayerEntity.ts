@@ -18,6 +18,7 @@ export abstract class PlayerEntity extends Entity {
 	#previousAttackTime: number = 0;
 	/** Minimum time between attacks in milliseconds */
 	attackCooldown: number = 500;
+	displayName = `Player ${this.id}`;
 
 	onGround: boolean;
 	jumping = false;
@@ -139,11 +140,13 @@ export abstract class PlayerEntity extends Entity {
 				this.lookDir.unit().scale(this.#capsuleRadius + this.itemInHands.radius),
 			);
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
+			this.itemInHands.body.quaternion = new phys.Quaternion(0, 0, 0, 1).setFromEuler(1.5707, 0, 0);
 		}
 
 		if (movement.jump && this.#coyoteCounter > 0) {
 			if (!this.jumping && this.onGround) {
 				this.game.playSound("jump", this.getPos());
+				this.game.playParticle(this.getPos());
 				this.jumping = true;
 			}
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
@@ -201,7 +204,7 @@ export abstract class PlayerEntity extends Entity {
 		for (const entity of entities) {
 			if (entity instanceof PlayerEntity) {
 				console.log("attack", entity.id);
-				if (this.game.getCurrentStage() === "combat") {
+				if (this.game.getCurrentStage().type === "combat") {
 					if (this.isBoss !== entity.isBoss) {
 						entity.takeDamage(this.itemInHands);
 					}
@@ -255,7 +258,7 @@ export abstract class PlayerEntity extends Entity {
 			model: [
 				...this.model,
 				{
-					text: `Player ${this.id}`,
+					text: this.displayName,
 					height: 0.2,
 					offset: [0, 0.8, 0],
 					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
