@@ -1,0 +1,27 @@
+.timer {
+	display: flex;
+	font-size: 4rem;
+	align-items: baseline;
+}
+
+.left,
+.right {
+	width: 8rem;
+}
+.left {
+	text-align: right;
+}
+.colon {
+	transform: translateY(-5px);
+}
+
+.secondsOnly {
+	gap: 5px;
+	& .colon {
+		display: none;
+	}
+	& .right {
+		font-size: 0.5em;
+		opacity: 0.8;
+	}
+}

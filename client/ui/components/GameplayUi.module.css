@@ -1,0 +1,16 @@
+.wrapper {
+	position: fixed;
+	inset: 0;
+	/* Only shows when mouse is locked, so it can't be interacted with anyways */
+	pointer-events: none;
+	user-select: none;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	transition: all 0.5s;
+}
+.hide {
+	opacity: 0;
+	visibility: hidden;
+}

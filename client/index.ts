@@ -30,6 +30,7 @@ import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
 import { Welcome } from "./ui/components/Welcome";
 import { PauseMenu } from "./ui/components/PauseMenu";
+import { GameplayUi } from "./ui/components/GameplayUi";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -44,8 +45,6 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 let gameState: EntireGameState | undefined;
 let entities: ClientEntity[] = [];
 let colliders: { collider: SerializedCollider; transform: mat4 }[] = [];
-/** Time for the timer to count down to */
-let timerTarget: number | null = null;
 let cameraLockTarget: EntityId | null = null;
 let isFirstPerson: boolean = true;
 let freecam: boolean = false; // for debug purposes
@@ -85,8 +84,8 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 					),
 				}));
 			});
-			timerTarget = data.stage.type === "lobby" ? null : data.stage.endTime;
 
+			gameUi.render(data, gameState);
 			pauseMenu.render(data, gameState);
 			gameState = data;
 			break;
@@ -124,11 +123,6 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 };
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
-const timer = document.getElementById("timer");
-if (!timer) {
-	throw new Error("Couldn't find #timer");
-}
-
 const { gl, audioContext, lockPointer } = getContexts();
 const sound = new SoundManager(audioContext);
 
@@ -149,9 +143,10 @@ const welcome = new Welcome({
 	},
 });
 
+const gameUi = new GameplayUi();
 const pauseMenu = new PauseMenu();
 pauseMenu.listen(connection);
-document.body.append(pauseMenu.element);
+document.body.append(gameUi.element, pauseMenu.element);
 
 const engine = new GraphicsEngine(gl);
 const sporeFilter = {
@@ -438,15 +433,7 @@ const paint = () => {
 
 	// engine.checkError();
 
-	const secondsLeft = ((timerTarget ?? 0) - Date.now()) / 1000;
-	if (secondsLeft >= 0) {
-		const minutes = Math.floor(secondsLeft / 60);
-		const seconds = secondsLeft % 60;
-		timer.textContent =
-			secondsLeft < 10 ? `${seconds.toFixed(2)}` : `${minutes}:${Math.floor(seconds).toString().padStart(2, "0")}`;
-	} else {
-		timer.textContent = "";
-	}
+	gameUi.timer.renderTime();
 
 	window.requestAnimationFrame(paint);
 };
