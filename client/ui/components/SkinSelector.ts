@@ -4,7 +4,7 @@ import { elem } from "../elem";
 import styles from "./SkinSelector.module.css";
 
 export class SkinSelector {
-	#startBtn = elem("button", { textContent: "Start game" });
+	#startBtn = elem("button", { classes: [styles.startBtn, "start-game-btn"], textContent: "Start game" });
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide],
 		contents: [this.#startBtn],

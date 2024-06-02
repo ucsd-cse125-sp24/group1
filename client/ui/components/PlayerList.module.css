@@ -8,38 +8,53 @@
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	padding: 20px;
+	padding: 0 20px;
 }
 .player {
 	display: flex;
 	gap: 10px;
-	&::before {
-		/* TEMP? ideally should be an icon */
-		display: block;
-		width: 1em;
-		height: 1em;
-		text-align: center;
-		font-weight: bold;
-	}
 }
 .offline {
 	opacity: 0.5;
 }
-.role-boss {
+.roleIcon {
+	/* TEMP? ideally should be an icon */
+	display: block;
+	width: 1em;
+	height: 1em;
+	flex: none;
+	text-align: center;
+	font-weight: bold;
+}
+.role-icon-boss {
 	color: #ef4444;
 	&::before {
 		content: "B";
 	}
 }
-.role-hero {
+.role-icon-hero {
 	color: #3b82f6;
 	&::before {
 		content: "H";
 	}
 }
-.role-spectator {
+.role-icon-spectator {
 	color: #94a3b8;
 	&::before {
 		content: "S";
 	}
+}
+.offlineTag {
+	margin-left: auto;
+	flex: none;
+}
+.me {
+	display: flex;
+	padding: 0 20px;
+	align-items: baseline;
+}
+.input {
+	padding: 10px;
+	flex: auto;
+	width: 0;
 }

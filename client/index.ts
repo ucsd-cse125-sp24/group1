@@ -145,8 +145,8 @@ document.addEventListener("pointerlockchange", () => {
 	}
 });
 document.addEventListener("click", (e) => {
-	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks");
-	if (!trapClick) {
+	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks,.start-game-btn");
+	if (!trapClick || (trapClick instanceof Element && trapClick.classList.contains("start-game-btn"))) {
 		lockPointer();
 	}
 });
@@ -191,13 +191,13 @@ let result = vec3.create();
 vec3.add(result, camera.getPosition(), camera.getForwardDir());
 
 const particle = new ParticleSystem(engine, 10, 1000, 5, {
-    size: 16,
-    color: [1, 0, 0],  // red color
-    mass: 1,
-    initialPosition: result,
-    initialVelocity: [0, 1, 0],
-    initialVelocityRange: undefined,
-    ttl: 5,
+	size: 16,
+	color: [1, 0, 0], // red color
+	mass: 1,
+	initialPosition: result,
+	initialVelocity: [0, 1, 0],
+	initialVelocityRange: undefined,
+	ttl: 5,
 });
 
 type DebugInputs = {
@@ -424,9 +424,7 @@ const paint = () => {
 		}
 	}
 
-	const modelMatrices = [
-		mat4.create()
-	];
+	const modelMatrices = [mat4.create()];
 	particle.shader.use();
 	particle.options.initialPosition = result;
 	// Draw particles

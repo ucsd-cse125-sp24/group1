@@ -14,16 +14,20 @@ export class PauseMenu {
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.lobby],
 		contents: [
-			elem("div", { textContent: "Game Name Here" }),
+			elem("div", { className: styles.logo, textContent: "Game Logo" }),
 			this.#clickMessage,
 			this.#roleSelector.element,
-			elem("div", { className: styles.playerList, contents: [this.#playerList.element, this.#skinSelector.element] }),
+			elem("div", {
+				classes: [styles.playerList, "trap-clicks"],
+				contents: [this.#playerList.element, this.#skinSelector.element],
+			}),
 		],
 	});
 
 	listen(connection: Connection): void {
 		this.#roleSelector.listen(connection);
 		this.#skinSelector.listen(connection);
+		this.#playerList.listen(connection);
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
