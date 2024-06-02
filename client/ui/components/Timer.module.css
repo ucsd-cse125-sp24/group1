@@ -2,6 +2,21 @@
 	display: flex;
 	font-size: 4rem;
 	align-items: baseline;
+	transition: all 0.5s;
+}
+.hide {
+	opacity: 0;
+	visibility: hidden;
+}
+.secondsOnly {
+	gap: 5px;
+	& .colon {
+		display: none;
+	}
+	& .right {
+		font-size: 0.5em;
+		opacity: 0.8;
+	}
 }
 
 .left,
@@ -13,15 +28,4 @@
 }
 .colon {
 	transform: translateY(-5px);
-}
-
-.secondsOnly {
-	gap: 5px;
-	& .colon {
-		display: none;
-	}
-	& .right {
-		font-size: 0.5em;
-		opacity: 0.8;
-	}
 }

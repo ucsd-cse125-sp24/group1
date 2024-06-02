@@ -184,6 +184,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			endTime: Date.now() + CRAFT_STAGE_LENGTH,
 		};
 
+		// Move players
+		for (const player of this.#players.values()) {
+			if (player.entity) {
+				player.entity.body.position = new phys.Vec3(20, -1, 20);
+				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
+			}
+		}
+
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.#registerEntity(mapEntity);

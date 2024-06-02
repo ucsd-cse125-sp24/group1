@@ -5,11 +5,23 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: space-between;
+	transition: all 0.5s;
 }
+
 .playerList {
 	position: fixed;
 	top: 0;
 	bottom: 0;
 	right: 0;
 	background-color: rgba(0, 0, 0, 0.5);
+	transition: all 0.5s;
+}
+
+.hide {
+	opacity: 0;
+	visibility: hidden;
+
+	& .playerList {
+		transform: translateX(100%);
+	}
 }

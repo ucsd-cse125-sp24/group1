@@ -78,7 +78,6 @@ export function getContexts(): Contexts {
 			}
 		}
 	};
-	canvas.addEventListener("click", lockPointer);
 
 	return {
 		gl,

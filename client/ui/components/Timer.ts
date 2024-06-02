@@ -6,7 +6,7 @@ export class Timer {
 	#left = elem("span", { className: styles.left });
 	#right = elem("span", { className: styles.right });
 	element = elem("div", {
-		className: styles.timer,
+		classes: [styles.timer, styles.hide],
 		contents: [this.#left, elem("span", { className: styles.colon, textContent: ":" }), this.#right],
 	});
 	targetTime: number | null = null;
@@ -31,17 +31,19 @@ export class Timer {
 				this.element.classList.remove(styles.secondsOnly);
 			}
 		} else {
-			this.element.classList.add("hide");
+			this.#left.textContent = "0";
+			this.#right.textContent = "00";
+			this.element.classList.add(styles.hide);
 		}
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
 		if (state.stage.type !== previous?.stage.type) {
 			if (state.stage.type === "lobby") {
-				this.element.classList.add("hide");
+				this.element.classList.add(styles.hide);
 				this.targetTime = null;
 			} else {
-				this.element.classList.remove("hide");
+				this.element.classList.remove(styles.hide);
 				this.targetTime = state.stage.endTime;
 				this.renderTime();
 			}

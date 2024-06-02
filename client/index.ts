@@ -28,7 +28,6 @@ import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
 import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
-import { Welcome } from "./ui/components/Welcome";
 import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
 
@@ -126,27 +125,31 @@ const connection = new Connection(wsUrl, handleMessage, document.getElementById(
 const { gl, audioContext, lockPointer } = getContexts();
 const sound = new SoundManager(audioContext);
 
-const welcome = new Welcome({
-	onName(name) {
-		//
-		lockPointer();
-		inputListener.listen();
-		camera.listen();
-		welcome.remove();
-	},
-	onRejoin() {
-		//
-		lockPointer();
-		inputListener.listen();
-		camera.listen();
-		welcome.remove();
-	},
-});
+// lockPointer();
+// inputListener.listen();
+// camera.listen();
 
 const gameUi = new GameplayUi();
 const pauseMenu = new PauseMenu();
 pauseMenu.listen(connection);
 document.body.append(gameUi.element, pauseMenu.element);
+pauseMenu.show();
+
+document.addEventListener("pointerlockchange", () => {
+	if (document.pointerLockElement === engine.gl.canvas) {
+		gameUi.show();
+		pauseMenu.hide();
+	} else {
+		gameUi.hide();
+		pauseMenu.show();
+	}
+});
+document.addEventListener("click", (e) => {
+	const trapClick = e.target instanceof Element && e.target.closest(".trap-click");
+	if (!trapClick) {
+		lockPointer();
+	}
+});
 
 const engine = new GraphicsEngine(gl);
 const sporeFilter = {
