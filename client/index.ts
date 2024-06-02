@@ -146,7 +146,6 @@ document.addEventListener("pointerlockchange", () => {
 });
 document.addEventListener("click", (e) => {
 	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks");
-	console.log(trapClick, e.target);
 	if (!trapClick) {
 		lockPointer();
 	}
@@ -425,9 +424,6 @@ const paint = () => {
 		}
 	}
 
-	pipeline.stopRender();
-
-	pipeline.draw();
 	const modelMatrices = [
 		mat4.create()
 	];
@@ -435,6 +431,10 @@ const paint = () => {
 	particle.options.initialPosition = result;
 	// Draw particles
 	particle.draw(modelMatrices, view);
+
+	pipeline.stopRender();
+
+	pipeline.draw();
 
 	// engine.checkError();
 
