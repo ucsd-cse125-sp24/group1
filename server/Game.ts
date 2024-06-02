@@ -19,7 +19,6 @@ import {
 } from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
-import { ModelId } from "../assets/models";
 import { SoundId } from "../assets/sounds";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
@@ -298,14 +297,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				this.#heroes.push(player.entity as HeroEntity);
 			}
 		}
-
-		// TODO: Big old QTE or actual combat
 	}
 
 	/**
 	 * Check whether either side has met their win condition
 	 */
-	#endGame() {
+	#checkGameOver() {
 		let isAnyHeroAlive = false;
 		for (const hero of this.#heroes) {
 			if (hero.health > 0) {
@@ -314,7 +311,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 		}
 		const endTime = this.#currentStage.type === "lobby" ? 0 : this.#currentStage.endTime;
-		if (this.#boss !== null && this.#boss.health <= 0) {
+		if (this.#boss === null || this.#boss.health <= 0) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
 			this.#currentStage = { type: "lobby", previousWinner: "hero" };
@@ -578,9 +575,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				break;
 			}
 			case "combat": {
-				if (Date.now() >= this.#currentStage.endTime) {
-					this.#endGame();
-				}
+				this.#checkGameOver();
 				break;
 			}
 		}
