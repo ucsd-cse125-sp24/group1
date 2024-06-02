@@ -40,9 +40,6 @@
 	& .controls-title {
 		top: 10px;
 		left: 10px;
-		& h2 {
-			font-style: italic;
-		}
 	}
 	& .mobile-key {
 		font-size: 2rem;

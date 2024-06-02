@@ -70,7 +70,15 @@ export type EntireGameState = {
 	 * predict positions on these bodies.
 	 */
 	physicsBodies: SerializedBody[];
+	players: PlayerEntry[];
 };
+
+export type PlayerEntry = {
+	name: string;
+	role: Role;
+};
+
+export type Role = "boss" | "hero" | "spectator";
 
 export type GameOver = {
 	type: "game-over";
@@ -143,8 +151,8 @@ export type ChangeDisplayName = {
 
 export type ChangeRole = {
 	type: "change-role";
-	role: "boss" | "hero" | "spectator";
-	skin: "red" | "yellow" | "green" | "blue";
+	role: Role;
+	skin?: "red" | "yellow" | "green" | "blue";
 };
 
 export type StartGame = {

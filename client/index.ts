@@ -29,6 +29,7 @@ import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
 import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
 import { Welcome } from "./ui/components/Welcome";
+import { PauseMenu } from "./ui/components/PauseMenu";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -142,7 +143,11 @@ const welcome = new Welcome({
 		camera.listen();
 		welcome.remove();
 	},
-}).show(null);
+});
+
+const pauseMenu = new PauseMenu();
+pauseMenu.listen(connection);
+document.body.append(pauseMenu.element);
 
 const engine = new GraphicsEngine(gl);
 const sporeFilter = {

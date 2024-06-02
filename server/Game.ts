@@ -173,10 +173,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * A function that sets up the base state for the game
 	 */
-	async setup() {
-		// TEMP: immediately transition to "crafting" state until lobby implemented
-		await this.#startGame();
-	}
+	async setup() {}
 
 	/**
 	 * State transition from "lobby" to "crafting"
@@ -576,6 +573,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			stage: this.#currentStage,
 			entities: this.serialize(),
 			physicsBodies: this.serializePhysicsBodies(),
+			players: [],
 		});
 	}
 
