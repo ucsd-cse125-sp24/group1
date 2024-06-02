@@ -15,13 +15,15 @@ export function elem<K extends keyof HTMLElementTagNameMap>(
 		contents = [],
 		classes = [],
 		...props
-	}: Partial<HTMLElementTagNameMap[K]> & { contents?: (Node | string)[]; classes?: string[] } = {},
+	}: Partial<HTMLElementTagNameMap[K]> & { contents?: (Node | string)[]; classes?: (string | null)[] } = {},
 ): HTMLElementTagNameMap[K] {
 	const element = document.createElement(tagName);
 	Object.assign(element, props);
 	element.append(...contents);
 	for (const className of classes) {
-		element.classList.add(className);
+		if (className) {
+			element.classList.add(className);
+		}
 	}
 	return element;
 }

@@ -121,6 +121,8 @@ export class WsServer implements Server<ClientMessage, ServerMessage> {
 
 			log(`Player ${wsId.slice(0, 6)} disconnected`);
 
+			this.#game.handlePlayerDisconnect(wsId);
+
 			// Give players a while to reconnect
 			this.#disconnectTimeouts.set(
 				wsId,

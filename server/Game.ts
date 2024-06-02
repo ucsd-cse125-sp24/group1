@@ -72,6 +72,7 @@ interface NetworkedPlayer {
 	input: PlayerInput;
 	/** `null` if spectating */
 	entity: PlayerEntity | null;
+	online: boolean;
 	id: string;
 	conn: Connection<ServerMessage>;
 	name: string;
@@ -450,6 +451,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
+			player.online = true;
 			if (player.entity) {
 				conn.send({
 					type: "camera-lock",
@@ -466,9 +468,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				conn: conn,
 				input: input,
 				entity: null,
+				online: true,
 				name: `Player ${conn.id.slice(0, 6)}`,
 			};
 			this.#players.set(conn.id, player);
+		}
+	}
+
+	handlePlayerDisconnect(id: string): void {
+		const player = this.#players.get(id);
+		if (player) {
+			player.online = false;
 		}
 	}
 
@@ -593,6 +603,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					name: p.name,
 					role: !p.entity ? "spectator" : p.entity instanceof BossEntity ? "boss" : "hero",
 					entityId: p.entity?.id,
+					online: p.online,
 					me: p === player,
 				})),
 			});

@@ -77,6 +77,7 @@ export type PlayerEntry = {
 	name: string;
 	role: Role;
 	entityId?: number;
+	online: boolean;
 	/** Whether this entry corresponds to the client */
 	me: boolean;
 };
