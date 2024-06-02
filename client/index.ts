@@ -193,8 +193,6 @@ const particle = new ParticleSystem(engine, 10, 1000, 5, {
 type DebugInputs = {
 	toggleFreecam: boolean;
 	cycleWireframe: boolean;
-	toggleRole: boolean;
-	toggleRoleKeepOld: boolean;
 	toggleTones: boolean;
 	cycleDebugGltf: boolean;
 };
@@ -207,8 +205,6 @@ const defaultDebugInputs = {
 	freecamDown: false,
 	toggleFreecam: false,
 	cycleWireframe: false,
-	toggleRole: false,
-	toggleRoleKeepOld: false,
 	toggleTones: false,
 	cycleDebugGltf: false,
 };
@@ -233,8 +229,6 @@ const inputListener = new InputListener({
 		ShiftLeft: "freecamDown",
 		KeyP: "toggleFreecam",
 		KeyK: "cycleWireframe",
-		KeyB: "toggleRole",
-		KeyN: "toggleRoleKeepOld",
 		KeyX: "emote",
 		KeyT: "toggleTones",
 		KeyL: "cycleDebugGltf",
@@ -246,12 +240,6 @@ const inputListener = new InputListener({
 		}
 		if (inputs.cycleWireframe && !debugInputs.cycleWireframe) {
 			wireframe = (wireframe + 1) % 3;
-		}
-		if (inputs.toggleRole && !debugInputs.toggleRole) {
-			connection.send({ type: "--debug-switch-role", keepBody: false });
-		}
-		if (inputs.toggleRoleKeepOld && !debugInputs.toggleRoleKeepOld) {
-			connection.send({ type: "--debug-switch-role", keepBody: true });
 		}
 		if (inputs.toggleTones && !debugInputs.toggleTones) {
 			tones = !tones;

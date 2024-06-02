@@ -13,7 +13,13 @@ export type ServerMessage =
 	| GameOver
 	| PlayParticle;
 
-export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage | DebugMessages;
+export type ClientMessage =
+	| { type: "ping" }
+	| { type: "pong" }
+	| ClientInputMessage
+	| ChangeDisplayName
+	| ChangeRole
+	| StartGame;
 
 export type ClientControlMessage = {
 	/**
@@ -130,9 +136,19 @@ export type ClientInputMessage = {
 	type: "client-input";
 } & ClientInputs;
 
-export type DebugMessages = {
-	type: "--debug-switch-role";
-	keepBody: boolean;
+export type ChangeDisplayName = {
+	type: "change-name";
+	name: string;
+};
+
+export type ChangeRole = {
+	type: "change-role";
+	role: "boss" | "hero" | "spectator";
+	skin: "red" | "yellow" | "green" | "blue";
+};
+
+export type StartGame = {
+	type: "start-game";
 };
 
 export type EntityModelObject = {

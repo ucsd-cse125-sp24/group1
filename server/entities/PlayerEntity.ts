@@ -12,6 +12,7 @@ const COYOTE_FRAMES = 10;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
+	displayName = `Player ${this.id}`;
 
 	onGround: boolean;
 	jumping = false;
@@ -215,7 +216,7 @@ export abstract class PlayerEntity extends Entity {
 			model: [
 				...this.model,
 				{
-					text: `Player ${this.id}`,
+					text: this.displayName,
 					height: 0.2,
 					offset: [0, 0.5, 0],
 					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],

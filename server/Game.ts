@@ -9,7 +9,14 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ClientMessage, GameStage, SerializedBody, SerializedEntity, ServerMessage } from "../common/messages";
+import {
+	ChangeRole,
+	ClientMessage,
+	GameStage,
+	SerializedBody,
+	SerializedEntity,
+	ServerMessage,
+} from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { ModelId } from "../assets/models";
@@ -31,8 +38,6 @@ import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 
-// TEMP? (used for randomization)
-const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
 	"axe",
@@ -65,9 +70,11 @@ const startingToolLocations: Vector3[] = [
 
 interface NetworkedPlayer {
 	input: PlayerInput;
-	entity: PlayerEntity;
+	/** `null` if spectating */
+	entity: PlayerEntity | null;
 	id: string;
 	conn: Connection<ServerMessage>;
+	name: string;
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
@@ -321,6 +328,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	updateGameState() {
 		for (let [id, player] of this.#players.entries()) {
+			if (!player.entity) {
+				continue;
+			}
 			let inputs = player.input.getInputs();
 			let posedge = player.input.getPosedge();
 
@@ -400,11 +410,34 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
 		for (const player of this.#players.values()) {
-			if (player.entity.id === id) {
+			if (player.entity?.id === id) {
 				return player;
 			}
 		}
 		return undefined;
+	}
+
+	#createPlayerEntity(pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+		switch (role) {
+			case "hero":
+				return new HeroEntity(this, pos, [
+					{
+						modelId: `player_${skin}`,
+						offset: [0, -1.5, 0],
+						scale: 0.4,
+					},
+				]);
+			case "boss":
+				return new BossEntity(this, pos, [
+					{
+						modelId: "samplePlayer",
+						offset: [0, -0.75, 0],
+						scale: 0.2,
+					},
+				]);
+			default:
+				return null;
+		}
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>) {
@@ -413,35 +446,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (player) {
 			player.conn = conn;
 		} else {
-			let playerORHero = Math.floor(Math.random() * 4);
-			let playerEntity;
-			if (playerORHero % 4 == 0 || playerORHero % 4 == 1) {
-				playerEntity = new HeroEntity(
-					this,
-					[20, -1, 20],
-					[
-						{
-							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
-							offset: [0, -1.5, 0],
-							scale: 0.4,
-						},
-					],
-				);
-			} else {
-				playerEntity = new BossEntity(
-					this,
-					[20, -1, 20],
-					[
-						{
-							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
-							offset: [0, -0.75, 0],
-							scale: 0.2,
-						},
-					],
-				);
-			}
-			this.addToCreateQueue(playerEntity);
-
 			let input = new PlayerInput();
 			this.#createdInputs.push(input);
 
@@ -449,16 +453,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				id: conn.id,
 				conn: conn,
 				input: input,
-				entity: playerEntity,
+				entity: null,
+				name: `Player ${conn.id.slice(0, 6)}`,
 			};
 			this.#players.set(conn.id, player);
 		}
-
-		conn.send({
-			type: "camera-lock",
-			entityId: player.entity.id,
-			pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
-		});
 	}
 
 	/**
@@ -484,33 +483,44 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			case "client-input":
 				this.#players.get(conn.id)?.input?.updateInputs?.(data);
 				break;
-			case "--debug-switch-role":
+			case "change-name": {
 				const player = this.#players.get(conn.id);
 				if (!player) {
 					return;
 				}
-				if (!data.keepBody) {
-					this.addToDeleteQueue(player.entity.id);
+				player.name = data.name;
+				if (player.entity) {
+					player.entity.displayName = data.name;
 				}
-				const newEntity = new (player.entity instanceof BossEntity ? HeroEntity : BossEntity)(
-					this,
-					[20, -1, 20],
-					[
-						{
-							modelId: playerModels[Math.floor(Math.random() * playerModels.length)],
-							offset: [0, player.entity instanceof BossEntity ? -1.5 : -0.75, 0],
-							scale: player.entity instanceof BossEntity ? 0.4 : 0.2,
-						},
-					],
-				);
-				this.addToCreateQueue(newEntity);
-				player.entity = newEntity;
-				conn.send({
-					type: "camera-lock",
-					entityId: player.entity.id,
-					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
-				});
 				break;
+			}
+			case "change-role": {
+				const player = this.#players.get(conn.id);
+				if (!player) {
+					return;
+				}
+				const oldEntity = player.entity;
+				if (oldEntity) {
+					this.addToDeleteQueue(oldEntity.id);
+				}
+				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [20, -1, 20], data);
+				if (player.entity) {
+					this.addToCreateQueue(player.entity);
+					player.entity.displayName = player.name;
+					conn.send({
+						type: "camera-lock",
+						entityId: player.entity.id,
+						pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
+					});
+				}
+				break;
+			}
+			case "start-game": {
+				if (this.#currentStage.type === "lobby") {
+					this.#startGame();
+				}
+				break;
+			}
 			default:
 				console.warn(`Unhandled message '${data["type"]}'`);
 		}
