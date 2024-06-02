@@ -1,5 +1,5 @@
 import * as phys from "cannon-es";
-import { quat, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
@@ -12,6 +12,12 @@ const COYOTE_FRAMES = 10;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
+	isBoss: boolean = false;
+	health: number = 0;
+	/** Timestamp of previous attack in milliseconds */
+	#previousAttackTime: number = 0;
+	/** Minimum time between attacks in milliseconds */
+	attackCooldown: number = 500;
 	displayName = `Player ${this.id}`;
 
 	onGround: boolean;
@@ -51,8 +57,6 @@ export abstract class PlayerEntity extends Entity {
 		interactionRange: number,
 	) {
 		super(game, model, ["player"]);
-
-		this.isPlayer = true;
 
 		this.itemInHands = null;
 		this.interactionRange = interactionRange;
@@ -131,14 +135,15 @@ export abstract class PlayerEntity extends Entity {
 		this.body.applyImpulse(deltaVelocity.scale(this.body.mass));
 
 		if (this.itemInHands instanceof Item) {
-			//this is a little janky ngl
-			this.itemInHands.body.position = this.body.position.vadd(
-				new phys.Vec3(this.lookDir.x, -0.25, this.lookDir.z)
-					.unit()
-					.scale(this.#capsuleRadius + this.itemInHands.radius),
-			);
+			const offset = this.lookDir.unit().scale(1.5).vadd(this.lookDir.cross(rightVector).unit().scale(0.5));
+			this.itemInHands.body.position = this.body.position.vadd(offset);
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
-			this.itemInHands.body.quaternion = new phys.Quaternion(0, 0, 0, 1).setFromEuler(1.5707, 0, 0);
+			this.itemInHands.body.quaternion = new phys.Quaternion(
+				...mat4.getRotation(
+					quat.create(),
+					mat4.targetTo(mat4.create(), vec3.fromValues(0, 0, 0), this.lookDir.toArray(), vec3.fromValues(0, 1, 0)),
+				),
+			);
 		}
 
 		if (movement.jump && this.#coyoteCounter > 0) {
@@ -178,27 +183,75 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	attack(): boolean {
+		if (Date.now() - this.#previousAttackTime < this.attackCooldown) {
+			return false;
+		}
+		const lookDir = this.lookDir.unit();
+		if (!this.isBoss && this.itemInHands !== null) {
+			if (this.itemInHands.type === "bow" || this.itemInHands.type === "gamer_bow") {
+				const isGamer = this.itemInHands.type === "gamer_bow";
+				this.game.shootArrow(
+					this.body.position.vadd(lookDir.scale(2)),
+					lookDir.scale(isGamer ? 80 : 40),
+					isGamer ? 6 : 3,
+				);
+				this.#previousAttackTime = Date.now();
+				return false;
+			}
+		}
 		const entities = this.game.raycast(
 			this.body.position,
-			this.body.position.vadd(this.lookDir.scale(this.interactionRange)),
+			this.body.position.vadd(lookDir.scale(this.interactionRange)),
 			{},
 			this,
 		);
 		for (const entity of entities) {
-			// Apply knockback to player when attacked
 			if (entity instanceof PlayerEntity) {
 				console.log("attack", entity.id);
+				if (this.game.getCurrentStage().type === "combat") {
+					if (this.isBoss !== entity.isBoss) {
+						entity.hitByWeapon(this.itemInHands);
+					}
+				}
+				// Apply knockback to player when attacked
 				entity.body.applyImpulse(
 					new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
 				);
 				this.game.playSound("hit", entity.getPos());
+				this.#previousAttackTime = Date.now();
 				return true;
 			} else if (entities[0] instanceof InteractableEntity) {
 				entities[0].hit(this);
+				this.#previousAttackTime = Date.now();
 				return true;
 			}
 		}
 		return false;
+	}
+
+	hitByWeapon(weapon: Item | null): void {
+		if (weapon === null) {
+			return;
+		}
+		let damage = 0;
+		switch (weapon.type) {
+			case "gamer_bow":
+			case "gamer_sword":
+				damage = 2;
+				break;
+			case "bow":
+			case "sword":
+				damage = 1;
+				break;
+		}
+		this.takeDamage(damage);
+	}
+
+	takeDamage(damage: number): void {
+		this.health -= damage;
+		if (this.health < 0) {
+			this.health = 0;
+		}
 	}
 
 	serialize(): SerializedEntity {
@@ -218,11 +271,19 @@ export abstract class PlayerEntity extends Entity {
 				{
 					text: this.displayName,
 					height: 0.2,
+					offset: [0, 0.8, 0],
+					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
+					font: '"Comic Sans MS"',
+				},
+				{
+					text: `${this.health.toFixed(1)} HP`,
+					height: 0.2,
 					offset: [0, 0.5, 0],
 					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
 					font: '"Comic Sans MS"',
 				},
 			],
+			health: this.health,
 		};
 	}
 

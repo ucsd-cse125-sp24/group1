@@ -19,7 +19,6 @@ import {
 } from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
-import { ModelId } from "../assets/models";
 import { SoundId } from "../assets/sounds";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
@@ -37,6 +36,7 @@ import { PhysicsWorld } from "./PhysicsWorld";
 import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
+import { ArrowEntity } from "./entities/ArrowEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -68,6 +68,9 @@ const startingToolLocations: Vector3[] = [
 	[20, 0, 1],
 ];
 
+const CRAFTING_STAGE_TIME = 30 * 1000;
+const COMBAT_STAGE_TIME = 120 * 1000;
+
 interface NetworkedPlayer {
 	input: PlayerInput;
 	/** `null` if spectating */
@@ -84,6 +87,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
+	#boss: BossEntity | null = null;
+	#heroes: HeroEntity[] = [];
 
 	#entities: Map<EntityId, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
@@ -283,36 +288,34 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#transitionToCombat() {
 		this.#currentStage = { type: "combat", startTime: Date.now(), endTime: Date.now() + COMBAT_STAGE_LENGTH };
 
-		// TODO: Big old QTE or actual combat
+		for (const player of this.#players.values()) {
+			if (player.entity === null) {
+				continue;
+			} else if (this.#boss === null && player.entity.isBoss) {
+				this.#boss = player.entity as BossEntity;
+			} else if (!player.entity.isBoss) {
+				this.#heroes.push(player.entity as HeroEntity);
+			}
+		}
 	}
 
 	/**
 	 * Check whether either side has met their win condition
 	 */
-	#endGame() {
-		// TEMP: just count the number of weapons crafted
-		let weaponCount = 0;
-		for (const entity of this.#entities.values()) {
-			if (!(entity instanceof Item)) {
-				continue;
-			}
-			switch (entity.type) {
-				case "gamer_bow":
-				case "gamer_sword":
-					weaponCount += 2;
-					break;
-				case "bow":
-				case "knife":
-				case "sword":
-					weaponCount += 1;
-					break;
+	#checkGameOver() {
+		let isAnyHeroAlive = false;
+		for (const hero of this.#heroes) {
+			if (hero.health > 0) {
+				isAnyHeroAlive = true;
+				break;
 			}
 		}
-		if (weaponCount >= 10) {
+		const endTime = this.#currentStage.type === "lobby" ? 0 : this.#currentStage.endTime;
+		if (this.#boss === null || this.#boss.health <= 0) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
 			this.#currentStage = { type: "lobby", previousWinner: "hero" };
-		} else {
+		} else if (Date.now() > endTime || !isAnyHeroAlive) {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 			this.#currentStage = { type: "lobby", previousWinner: "boss" };
@@ -413,6 +416,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		hero.isTrapped = false;
 		this.addToDeleteQueue(trapId);
 		this.playSound("trapEscape", hero.getPos());
+	}
+
+	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number) {
+		this.#registerEntity(new ArrowEntity(this, position, velocity, damage));
 	}
 
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
@@ -568,9 +575,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				break;
 			}
 			case "combat": {
-				if (Date.now() >= this.#currentStage.endTime) {
-					this.#endGame();
-				}
+				this.#checkGameOver();
 				break;
 			}
 		}
