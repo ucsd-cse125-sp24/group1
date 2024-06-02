@@ -7,7 +7,7 @@ export class GameplayUi {
 	timer = new Timer();
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide],
-		contents: [this.timer.element],
+		contents: [this.timer.element, elem("div", { className: styles.crosshair, textContent: "+" })],
 	});
 
 	render(state: EntireGameState, previous?: EntireGameState): void {

@@ -187,7 +187,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		// Move players
 		for (const player of this.#players.values()) {
 			if (player.entity) {
-				player.entity.body.position = new phys.Vec3(20, -1, 20);
+				player.entity.body.position = new phys.Vec3(21, -1, 20);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
 			}
 		}

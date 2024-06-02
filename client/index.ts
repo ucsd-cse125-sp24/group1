@@ -145,7 +145,8 @@ document.addEventListener("pointerlockchange", () => {
 	}
 });
 document.addEventListener("click", (e) => {
-	const trapClick = e.target instanceof Element && e.target.closest(".trap-click");
+	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks");
+	console.log(trapClick, e.target);
 	if (!trapClick) {
 		lockPointer();
 	}

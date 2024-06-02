@@ -7,6 +7,9 @@
 	justify-content: space-between;
 	transition: all 0.5s;
 }
+.gaming {
+	background-color: rgba(0, 0, 0, 0.2);
+}
 
 .playerList {
 	position: fixed;
@@ -14,7 +17,18 @@
 	bottom: 0;
 	right: 0;
 	background-color: rgba(0, 0, 0, 0.5);
+	width: 20rem;
 	transition: all 0.5s;
+}
+
+.clickMessage {
+	cursor: pointer;
+	padding: 20px;
+	transition: all 0.5s;
+}
+.lobby .clickMessage {
+	visibility: hidden;
+	opacity: 0;
 }
 
 .hide {

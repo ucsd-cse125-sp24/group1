@@ -8,7 +8,7 @@ export class RoleSelector {
 	#selectHeroBtn = elem("button", { textContent: "Join hero team" });
 	#spectateBtn = elem("button", { textContent: "Spectate" });
 	element = elem("div", {
-		classes: [styles.wrapper, styles.hide],
+		classes: [styles.wrapper, styles.hide, "trap-clicks"],
 		contents: [this.#selectBossBtn, this.#selectHeroBtn, this.#spectateBtn],
 	});
 
