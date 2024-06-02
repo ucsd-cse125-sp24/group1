@@ -1,5 +1,5 @@
 import * as phys from "cannon-es";
-import { quat, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
@@ -135,12 +135,15 @@ export abstract class PlayerEntity extends Entity {
 		this.body.applyImpulse(deltaVelocity.scale(this.body.mass));
 
 		if (this.itemInHands instanceof Item) {
-			//this is a little janky ngl
-			this.itemInHands.body.position = this.body.position.vadd(
-				this.lookDir.unit().scale(this.#capsuleRadius + this.itemInHands.radius),
-			);
+			const offset = this.lookDir.unit().scale(1.5).vadd(this.lookDir.cross(rightVector).unit().scale(0.5));
+			this.itemInHands.body.position = this.body.position.vadd(offset);
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
-			this.itemInHands.body.quaternion = new phys.Quaternion(0, 0, 0, 1).setFromEuler(1.5707, 0, 0);
+			this.itemInHands.body.quaternion = new phys.Quaternion(
+				...mat4.getRotation(
+					quat.create(),
+					mat4.targetTo(mat4.create(), vec3.fromValues(0, 0, 0), this.lookDir.toArray(), vec3.fromValues(0, 1, 0)),
+				),
+			);
 		}
 
 		if (movement.jump && this.#coyoteCounter > 0) {
