@@ -139,9 +139,11 @@ document.addEventListener("pointerlockchange", () => {
 	if (document.pointerLockElement === engine.gl.canvas) {
 		gameUi.show();
 		pauseMenu.hide();
+		inputListener.enabled = true;
 	} else {
 		gameUi.hide();
 		pauseMenu.show();
+		inputListener.enabled = false;
 	}
 });
 document.addEventListener("click", (e) => {
@@ -443,5 +445,6 @@ const paint = () => {
 
 connection.connect();
 inputListener.listen();
+inputListener.enabled = false;
 camera.listen();
 paint();
