@@ -4,7 +4,7 @@ import { expect } from "../../../common/lib/expect";
 import { ShaderProgram } from "../engine/ShaderProgram";
 import { ComponentType, GltfMaterial, GltfMode, componentSizes, componentTypes } from "../../../common/gltf/gltf-types";
 import { GltfParser } from "../../../common/gltf/gltf-parser";
-import { mergeMatrices } from "../../lib/mergeMatrices";
+import { f32ArrayEqual, mergeMatrices } from "../../lib/mergeMatrices";
 import { Model } from "./Model";
 
 type Accessor = {
@@ -15,6 +15,7 @@ type Accessor = {
 
 type ModelMesh = {
 	vao: WebGLVertexArrayObject;
+	previousTransformData?: Float32Array;
 	modelTransformBuffer: WebGLBuffer;
 	normalTransformBuffer: WebGLBuffer;
 	materialOptions: GltfMaterial;
@@ -127,7 +128,7 @@ export class GltfModel implements Model {
 				return texture;
 			}) ?? [];
 
-		this.#meshes = meshes.map((mesh) => {
+		this.#meshes = meshes.map((mesh): ModelMesh => {
 			const materialOptions = root.materials?.[mesh.material ?? 0] ?? {};
 
 			const vao = gl.createVertexArray() ?? expect("Failed to create VAO");
@@ -240,17 +241,18 @@ export class GltfModel implements Model {
 		// Default vertex color is white (since the base color is multiplied by it)
 		gl.vertexAttrib4f(material.attrib("a_color0"), 1, 1, 1, 1);
 
-		for (const {
-			vao,
-			modelTransformBuffer,
-			normalTransformBuffer,
-			materialOptions,
-			meshTextures,
-			indices,
-			count,
-			transform,
-			mode,
-		} of this.#meshes) {
+		for (const mesh of this.#meshes) {
+			const {
+				vao,
+				modelTransformBuffer,
+				normalTransformBuffer,
+				materialOptions,
+				meshTextures,
+				indices,
+				count,
+				transform,
+				mode,
+			} = mesh;
 			if (materialOptions.doubleSided) {
 				gl.disable(gl.CULL_FACE);
 			}
@@ -282,21 +284,24 @@ export class GltfModel implements Model {
 			gl.bindVertexArray(vao);
 
 			const partTransforms = models.map((model) => mat4.mul(mat4.create(), model, transform));
-			gl.bindBuffer(gl.ARRAY_BUFFER, modelTransformBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mergeMatrices(partTransforms)), gl.DYNAMIC_DRAW);
-			gl.bindBuffer(gl.ARRAY_BUFFER, normalTransformBuffer);
-			gl.bufferData(
-				gl.ARRAY_BUFFER,
-				new Float32Array(
+			const data = mergeMatrices(partTransforms);
+			// Do not set buffer data if it didn't change
+			if (!mesh.previousTransformData || !f32ArrayEqual(data, mesh.previousTransformData)) {
+				gl.bindBuffer(gl.ARRAY_BUFFER, modelTransformBuffer);
+				gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+				gl.bindBuffer(gl.ARRAY_BUFFER, normalTransformBuffer);
+				gl.bufferData(
+					gl.ARRAY_BUFFER,
 					mergeMatrices(
 						partTransforms.map((partTransform) =>
 							// https://stackoverflow.com/a/13654666
 							mat4.transpose(mat4.create(), mat4.invert(mat4.create(), partTransform)),
 						),
 					),
-				),
-				gl.DYNAMIC_DRAW,
-			);
+					gl.DYNAMIC_DRAW,
+				);
+				mesh.previousTransformData = data;
+			}
 
 			if (indices) {
 				gl.drawElementsInstanced(mode ?? gl.TRIANGLES, count, indices.vertexAttribPointerArgs[1], 0, models.length);

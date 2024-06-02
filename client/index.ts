@@ -448,4 +448,6 @@ const paint = () => {
 };
 
 connection.connect();
+inputListener.listen();
+camera.listen();
 paint();
