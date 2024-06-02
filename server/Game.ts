@@ -51,6 +51,11 @@ const itemModels: ItemType[] = [
 	"wood",
 ];
 
+/** Length of the crafting stage in milliseconds */
+const CRAFT_STAGE_LENGTH = 60 * 1000; // 1 minute
+/** Length of the combat stage in milliseconds */
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 3; // 3 minute
+
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
 	[-20, 0, -1],
@@ -81,16 +86,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#currentTick: number;
 	/**
-	 * Timestamp of previous tick's completion in milliseconds, as would be
-	 * returned by `Date.now()`
-	 */
-	#previousTickTimestamp: number;
-	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
 	 */
-	#currentStage: GameStage;
-	#timeRemaining: number;
+	#currentStage: GameStage = {
+		type: "lobby",
+		previousWinner: null,
+	};
 
 	constructor() {
 		this.#createdInputs = [];
@@ -102,9 +104,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
-		this.#previousTickTimestamp = 0;
-		this.#currentStage = "lobby";
-		this.#timeRemaining = Number.POSITIVE_INFINITY;
 
 		this.#server = BROWSER ? new WebWorker(this) : new (require("./net/WsServer").WsServer)(this);
 		this.#server.listen(2345);
@@ -168,17 +167,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	async setup() {
-		this.#previousTickTimestamp = Date.now();
 		// TEMP: immediately transition to "crafting" state until lobby implemented
-		await this.#transitionToCrafting();
+		await this.#startGame();
 	}
 
 	/**
 	 * State transition from "lobby" to "crafting"
 	 */
-	async #transitionToCrafting() {
-		this.#currentStage = "crafting";
-		this.#timeRemaining = 60 * 1000; // 1 minute
+	async #startGame() {
+		this.#currentStage = {
+			type: "crafting",
+			endTime: Date.now() + CRAFT_STAGE_LENGTH,
+		};
 
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
@@ -267,8 +267,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * State transition from "crafting" to "combat"
 	 */
 	#transitionToCombat() {
-		this.#currentStage = "combat";
-		this.#timeRemaining = 60 * 1000 * 3; // 3 minute
+		this.#currentStage = { type: "combat", endTime: Date.now() + COMBAT_STAGE_LENGTH };
 
 		// TODO: Big old QTE or actual combat
 	}
@@ -276,7 +275,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * Check whether either side has met their win condition
 	 */
-	#checkGameOver() {
+	#endGame() {
 		// TEMP: just count the number of weapons crafted
 		let weaponCount = 0;
 		for (const entity of this.#entities.values()) {
@@ -298,11 +297,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (weaponCount >= 10) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
-		} else if (this.#timeRemaining <= 0) {
+			this.#currentStage = { type: "lobby", previousWinner: "hero" };
+		} else {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
+			this.#currentStage = { type: "lobby", previousWinner: "boss" };
 		}
-		// TODO: stop game if someone won
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
@@ -527,26 +527,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.clearEntityQueues();
 		}
 
-		if (this.#currentStage === "combat") {
-			this.#checkGameOver();
-		}
-
-		const now = Date.now();
-		const dt = now - this.#previousTickTimestamp;
-		this.#timeRemaining -= dt;
-		this.#previousTickTimestamp = now;
-
-		if (this.#timeRemaining <= 0) {
-			switch (this.#currentStage) {
-				case "lobby":
-					this.#transitionToCrafting();
-					break;
-				case "crafting":
+		switch (this.#currentStage.type) {
+			case "crafting": {
+				if (Date.now() >= this.#currentStage.endTime) {
 					this.#transitionToCombat();
-					break;
-				case "combat":
-					this.#checkGameOver();
-					break;
+				}
+				break;
+			}
+			case "combat": {
+				if (Date.now() >= this.#currentStage.endTime) {
+					this.#endGame();
+				}
+				break;
 			}
 		}
 	}
@@ -572,7 +564,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({
 			type: "entire-game-state",
 			stage: this.#currentStage,
-			timeRemaining: this.#timeRemaining,
 			entities: this.serialize(),
 			physicsBodies: this.serializePhysicsBodies(),
 		});

@@ -42,6 +42,8 @@ const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").re
 
 let entities: ClientEntity[] = [];
 let colliders: { collider: SerializedCollider; transform: mat4 }[] = [];
+/** Time for the timer to count down to */
+let timerTarget: number | null = null;
 let cameraLockTarget: EntityId | null = null;
 let isFirstPerson: boolean = true;
 let freecam: boolean = false; // for debug purposes
@@ -81,7 +83,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 					),
 				}));
 			});
-			setTimer(data.timeRemaining);
+			timerTarget = data.stage.type === "lobby" ? null : data.stage.endTime;
 			break;
 		case "camera-lock":
 			cameraLockTarget = data.entityId;
@@ -118,14 +120,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
 const timer = document.getElementById("timer");
-const setTimer = (ms: number) => {
-	const t = Math.floor(ms / 1000);
-	const minutes = Math.floor(t / 60);
-	const seconds = t % 60;
-	if (timer) {
-		timer.textContent = ms >= 0 ? `${minutes}:${seconds.toString().padStart(2, "0")}` : "";
-	}
-};
+if (!timer) {
+	throw new Error("Couldn't find #timer");
+}
 
 const { gl, audioContext, lockPointer } = getContexts();
 const sound = new SoundManager(audioContext);
@@ -443,6 +440,16 @@ const paint = () => {
 	particle.draw(modelMatrices, viewMatrix);
 
 	// engine.checkError();
+
+	const secondsLeft = ((timerTarget ?? 0) - Date.now()) / 1000;
+	if (secondsLeft >= 0) {
+		const minutes = Math.floor(secondsLeft / 60);
+		const seconds = secondsLeft % 60;
+		timer.textContent =
+			secondsLeft < 10 ? `${seconds.toFixed(2)}` : `${minutes}:${Math.floor(seconds).toString().padStart(2, "0")}`;
+	} else {
+		timer.textContent = "";
+	}
 
 	window.requestAnimationFrame(paint);
 };
