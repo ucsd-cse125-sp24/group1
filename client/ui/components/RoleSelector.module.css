@@ -1,12 +1,46 @@
 .wrapper {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	align-items: center;
+	margin: 50px;
 	transition: all 0.5s;
-
-	& :disabled {
-		opacity: 0.5;
-	}
 }
 .hide {
 	transform: translateY(20px);
 	opacity: 0;
 	visibility: hidden;
+}
+
+.buttonRow {
+	display: flex;
+	gap: 10px;
+}
+
+.button {
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+	padding: 10px 20px;
+	border-radius: 40px;
+	&:disabled {
+		opacity: 0.5;
+		box-shadow: none;
+	}
+}
+.bossBtn {
+	background-color: #ef4444;
+	&:not(:disabled):hover {
+		background-color: #b91c1c;
+	}
+}
+.heroBtn {
+	background-color: #3b82f6;
+	&:not(:disabled):hover {
+		background-color: #1d4ed8;
+	}
+}
+.spectateBtn {
+	background-color: #64748b;
+	&:not(:disabled):hover {
+		background-color: #334155;
+	}
 }

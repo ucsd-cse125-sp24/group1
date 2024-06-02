@@ -21,11 +21,15 @@
 	top: 0;
 	bottom: 0;
 	right: 0;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	width: 20rem;
+	padding: 20px;
+	gap: 20px;
 	background-color: rgba(0, 0, 0, 0.5);
 	border-left: 1px solid rgba(0, 0, 0, 0.3);
 	box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-	width: 20rem;
-	padding: 20px 0;
 	backdrop-filter: blur(20px);
 	transition: all 0.5s;
 }

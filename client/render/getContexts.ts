@@ -8,6 +8,7 @@ export type Contexts = {
 	 * page).
 	 */
 	lockPointer: () => void;
+	unlockPointer: () => void;
 };
 
 export function getContexts(): Contexts {
@@ -79,9 +80,14 @@ export function getContexts(): Contexts {
 		}
 	};
 
+	const unlockPointer = () => {
+		document.exitPointerLock();
+	};
+
 	return {
 		gl,
 		audioContext,
 		lockPointer,
+		unlockPointer,
 	};
 }

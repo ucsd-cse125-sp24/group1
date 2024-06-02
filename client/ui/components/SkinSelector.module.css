@@ -1,4 +1,7 @@
 .wrapper {
+	flex: auto;
+	display: flex;
+	align-items: flex-end;
 	transition: all 0.5s;
 }
 .hide {
@@ -7,8 +10,12 @@
 }
 
 .startBtn {
-	background-color: yellow;
+	background-color: #eab308;
 	color: black;
-	padding: 20px;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+	padding: 10px 20px;
 	border-radius: 40px;
+	&:hover {
+		background-color: #facc15;
+	}
 }

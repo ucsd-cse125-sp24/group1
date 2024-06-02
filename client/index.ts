@@ -86,6 +86,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 
 			gameUi.render(data, gameState);
 			pauseMenu.render(data, gameState);
+			if (data.stage.type === "lobby" && gameState?.stage.type !== "lobby") {
+				unlockPointer();
+			}
 			gameState = data;
 			break;
 		case "camera-lock":
@@ -122,7 +125,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 };
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
-const { gl, audioContext, lockPointer } = getContexts();
+const { gl, audioContext, lockPointer, unlockPointer } = getContexts();
 const sound = new SoundManager(audioContext);
 
 // lockPointer();
@@ -148,7 +151,8 @@ document.addEventListener("pointerlockchange", () => {
 });
 document.addEventListener("click", (e) => {
 	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks,.start-game-btn");
-	if (!trapClick || (trapClick instanceof Element && trapClick.classList.contains("start-game-btn"))) {
+	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
+	if ((!trapClick && gameState?.stage.type !== "lobby") || isStartBtn) {
 		lockPointer();
 	}
 });
