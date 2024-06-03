@@ -30,6 +30,7 @@ import { PhysicsWorld } from "./PhysicsWorld";
 import { WsServer } from "./net/WsServer";
 import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
+import { SphereEntity } from "./entities/SphereEntity";
 
 // TEMP? (used for randomization)
 const playerModels: ModelId[] = ["samplePlayer", "player_blue", "player_green", "player_red", "player_yellow"];
@@ -163,6 +164,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the base state for the game
 	 */
 	async setup() {
+		this.#setupLobby();
 		const mapColliders = getColliders(await sampleMapColliders);
 		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.#registerEntity(mapEntity);
@@ -198,7 +200,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		posIndex = Math.floor(Math.random() * 7);
 		console.log(posIndex);
-		let Furnace = new CraftingTable(
+		let furnace = new CraftingTable(
 			this,
 			startingStationLocations[posIndex],
 			[{ modelId: "fish1", scale: 7 }],
@@ -207,11 +209,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
 			],
 		);
-		this.#registerEntity(Furnace);
+		this.#registerEntity(furnace);
 
 		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let WeaponCrafter = new CraftingTable(
+		let weaponCrafter = new CraftingTable(
 			this,
 			startingStationLocations[posIndex],
 			[{ modelId: "fish1", scale: 7 }],
@@ -223,11 +225,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "magic_sauce" }, //GAMER_ARMOR
 			],
 		);
-		this.#registerEntity(WeaponCrafter);
+		this.#registerEntity(weaponCrafter);
 
 		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let FletchingTable = new CraftingTable(
+		let fletchingTable = new CraftingTable(
 			this,
 			startingStationLocations[posIndex],
 			[{ modelId: "fish1", scale: 7 }],
@@ -237,7 +239,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				//probably should add arrows for when we get actual combat ngl
 			],
 		);
-		this.#registerEntity(FletchingTable);
+		this.#registerEntity(fletchingTable);
 
 		posIndex == 6 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
@@ -266,6 +268,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			{ modelId: "mushroom", scale: 1.5 },
 		]);
 		this.#registerEntity(mushroomSpawner);
+	}
+
+	#setupLobby() {
+		let camera = new SphereEntity(this, [1000, 10 ,1000], 0.1);
+		this.#registerEntity(camera);
+		
 	}
 
 	playSound(sound: SoundId, position: phys.Vec3 | Vector3): void {
@@ -489,9 +497,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	logTicks(ticks: number, totalDelta: number) {
-		log(
-			`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${this.#server._debugGetConnectionCount()} connection(s), ${this.#server._debugGetActivePlayerCount()} of ${this.#server._debugGetPlayerCount()} player(s) online`,
-		);
+		log(`${ticks} ticks sampled. Average simulation time: ${
+			(totalDelta / ticks).toFixed(4)
+		}ms per tick. ${
+			this.#server._debugGetConnectionCount()
+		} connection(s), ${
+			this.#server._debugGetActivePlayerCount()
+		} of ${
+			this.#server._debugGetPlayerCount()
+		} player(s) online`);
 	}
 
 	broadcastState() {
