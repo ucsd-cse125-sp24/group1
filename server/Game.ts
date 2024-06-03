@@ -57,7 +57,7 @@ const itemModels: ItemType[] = [
 ];
 
 /** Length of the crafting stage in milliseconds */
-const CRAFT_STAGE_LENGTH = 60 * 1000; // 1 minute
+const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
 /** Length of the combat stage in milliseconds */
 const COMBAT_STAGE_LENGTH = 60 * 1000 * 0.5; // 0.5 minutes
 

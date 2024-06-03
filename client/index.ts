@@ -127,6 +127,24 @@ const connection = new Connection(wsUrl, handleMessage, document.getElementById(
 
 const { gl, audioContext, lockPointer, unlockPointer } = getContexts();
 const convolver = audioContext.createConvolver();
+
+// https://stackoverflow.com/questions/78202922/how-to-set-wetness-and-dryness-of-a-convolver-filter-in-the-web-audio-api
+const raw = audioContext.createGain();
+raw.gain.value = 1.0;
+
+const dry = audioContext.createGain();
+const wet = audioContext.createGain();
+
+dry.connect(audioContext.destination);
+wet.connect(audioContext.destination);
+
+var mix = function (value: number) {
+	dry.gain.value = 1.0 - value;
+	wet.gain.value = value;
+};
+
+mix(0.15);
+
 fetch(reverbImpulse)
 	.then((r) => r.arrayBuffer())
 	.then((buffer) => audioContext.decodeAudioData(buffer))
@@ -134,8 +152,12 @@ fetch(reverbImpulse)
 		// convolver.normalize = false;
 		convolver.buffer = buffer;
 	});
-convolver.connect(audioContext.destination);
-const sound = new SoundManager(audioContext, convolver);
+
+raw.connect(dry);
+raw.connect(convolver);
+
+convolver.connect(wet);
+const sound = new SoundManager(audioContext, raw);
 
 // lockPointer();
 // inputListener.listen();

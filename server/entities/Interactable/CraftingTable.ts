@@ -108,7 +108,7 @@ export class CraftingTable extends InteractableEntity {
 		item.body.position = this.body.position.vadd(new phys.Vec3(0, 1, 0));
 		this.game.addToCreateQueue(item);
 		// TODO: randomize launch angle? or launch towards player?
-		item.throw(new phys.Vec3(-20, 100, -50));
+		item.throw(new phys.Vec3(-20, 30, -50));
 	}
 
 	interact(player: PlayerEntity) {

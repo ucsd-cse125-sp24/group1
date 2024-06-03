@@ -25,6 +25,11 @@ declare module "*.mp3" {
 	export default path;
 }
 
+declare module "*.wav" {
+	const path: string;
+	export default path;
+}
+
 declare module "*.module.css" {
 	const styles: Record<string, string>;
 	export default styles;
