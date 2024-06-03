@@ -15,15 +15,8 @@
 .startBtn {
 	background-color: #eab308;
 	color: black;
-	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-	height: 40px;
-	padding: 0 20px;
-	border-radius: 40px;
 	&:not(:disabled):hover {
 		background-color: #facc15;
-	}
-	&:disabled {
-		opacity: 0.5;
 	}
 }
 

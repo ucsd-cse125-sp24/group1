@@ -9,6 +9,7 @@
 }
 
 .optionsAnchor,
+.optionsPanel,
 .playerList {
 	width: 20rem;
 }
@@ -28,15 +29,15 @@
 
 .optionsPanel {
 	position: absolute;
+	z-index: 1;
 	left: 0;
 	top: 0;
 	bottom: 0;
-	width: 18rem;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
 	padding: 20px;
-	gap: 10px;
+	gap: 20px;
 	border-right: 1px solid rgba(0, 0, 0, 0.3);
 	transition: all 0.5s;
 }
@@ -46,17 +47,26 @@
 	box-shadow: none;
 	visibility: hidden;
 }
+.optionsHeader {
+	display: flex;
+	align-items: center;
+}
+.closeBtn {
+	font-size: 1rem;
+	font-weight: normal;
+	margin-left: auto;
+	background-color: #64748b;
+	&:not(:disabled):hover {
+		background-color: #475569;
+	}
+}
 
 .optionsBtn {
-	background-color: #0f172a;
-	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-	height: 40px;
-	padding: 0 20px;
-	border-radius: 40px;
 	position: absolute;
 	bottom: 0;
 	left: 0;
 	margin: 20px;
+	background-color: #0f172a;
 	&:hover {
 		background-color: #020617;
 	}
@@ -67,6 +77,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	position: relative;
 }
 
 .logo {
@@ -87,13 +98,16 @@
 }
 
 .clickMessage {
-	position: fixed;
+	position: absolute;
+	left: 0;
+	width: 100%;
 	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+	transform: translateY(-50%);
+	text-align: center;
 	font-size: 2rem;
 	cursor: pointer;
 	padding: 20px;
+	box-sizing: border-box;
 	transition: all 0.5s;
 }
 .lobby .clickMessage {

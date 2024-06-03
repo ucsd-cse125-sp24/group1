@@ -18,11 +18,15 @@ export class PauseMenu {
 		classes: [styles.winnerMessage, styles.hide],
 		contents: ["The ", this.#winner, this.#winnerRest],
 	});
-	#optionsBtn = elem("button", { classes: [styles.optionsBtn, "trap-clicks"], textContent: "Options" });
+	#closeBtn = elem("button", { classes: ["button", styles.closeBtn], textContent: "Close" });
+	#optionsBtn = elem("button", { classes: ["button", styles.optionsBtn, "trap-clicks"], textContent: "Options" });
 	options = new Options();
 	#optionsPanel = elem("div", {
 		classes: [styles.optionsPanel, styles.optionsHidden, "trap-clicks"],
-		contents: [elem("h2", { textContent: "Options" }), ...this.options.elements],
+		contents: [
+			elem("h2", { className: styles.optionsHeader, contents: ["Options", this.#closeBtn] }),
+			...this.options.elements,
+		],
 	});
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.lobby],
@@ -51,6 +55,9 @@ export class PauseMenu {
 
 		this.#optionsBtn.addEventListener("click", () => {
 			this.#optionsPanel.classList.toggle(styles.optionsHidden);
+		});
+		this.#closeBtn.addEventListener("click", () => {
+			this.#optionsPanel.classList.add(styles.optionsHidden);
 		});
 	}
 

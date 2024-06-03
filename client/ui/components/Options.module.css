@@ -1,7 +1,7 @@
 .slider {
 	display: grid;
-	grid-template-columns: 120px 1fr;
-	gap: 0 10px;
+	grid-template-columns: 1fr 100px;
+	gap: 10px;
 
 	& input[type="range"] {
 		margin: 0;
@@ -24,5 +24,13 @@
 		height: 100%;
 		flex: auto;
 		text-align: right;
+	}
+}
+
+.resetBtn {
+	align-self: flex-start;
+	background-color: #ef4444;
+	&:not(:disabled):hover {
+		background-color: #dc2626;
 	}
 }

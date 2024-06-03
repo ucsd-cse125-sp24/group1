@@ -17,7 +17,7 @@ export class SkinSelector {
 			...this.#skinButtons.map(({ button }) => button),
 		],
 	});
-	#startBtn = elem("button", { classes: [styles.startBtn, "start-game-btn"], textContent: "Start game" });
+	#startBtn = elem("button", { classes: ["button", styles.startBtn, "start-game-btn"], textContent: "Start game" });
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide],
 		contents: [

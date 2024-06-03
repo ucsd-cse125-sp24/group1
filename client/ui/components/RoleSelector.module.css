@@ -17,16 +17,6 @@
 	gap: 10px;
 }
 
-.button {
-	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-	height: 40px;
-	padding: 0 20px;
-	border-radius: 40px;
-	&:disabled {
-		opacity: 0.5;
-		box-shadow: none;
-	}
-}
 .bossBtn {
 	background-color: #ef4444;
 	&:not(:disabled):hover {
