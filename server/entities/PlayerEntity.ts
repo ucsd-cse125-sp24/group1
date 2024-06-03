@@ -273,15 +273,20 @@ export abstract class PlayerEntity extends Entity {
 					height: 0.2,
 					offset: [0, 0.8, 0],
 					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
-					font: '"Comic Sans MS"',
+					font: { weight: "bold" },
 				},
-				{
-					text: `${this.health.toFixed(1)} HP`,
-					height: 0.2,
-					offset: [0, 0.5, 0],
-					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
-					font: '"Comic Sans MS"',
-				},
+				...Array.from(
+					{ length: this.health },
+					(_, i): EntityModel => ({
+						modelId: "donut",
+						scale: 0.3,
+						offset: [
+							Math.cos((i / this.health + Date.now() / 10000) * 2 * Math.PI) * 0.2 * (this.health - 1),
+							0.5 + Math.cos((i / this.health + Date.now() / 5000) * 2 * Math.PI) * 0.05,
+							Math.sin((i / this.health + Date.now() / 10000) * 2 * Math.PI) * 0.2 * (this.health - 1),
+						],
+					}),
+				),
 			],
 			health: this.health,
 		};

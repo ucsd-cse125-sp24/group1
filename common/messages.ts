@@ -100,9 +100,13 @@ export type CameraLock = {
 	type: "camera-lock";
 	/**
 	 * Name of the entity to lock the camera to. If there is no entity with the
-	 * ID, the camera may stop moving.
+	 * ID, the camera will enter freecam mode to allow for spectating.
 	 */
 	entityId: EntityId;
+	/**
+	 * Whether to allow the camera to rotate freely. `pov` must be `first-person`.
+	 */
+	freeRotation: boolean;
 	/**
 	 * Camera point of view directive. In first-person mode, the camera locks to
 	 * the POV of the entity and can rotate freely. In top-down mode, the camera
@@ -172,14 +176,18 @@ export type EntityModelObject = {
 	/** Scales evenly in all directions */
 	scale?: number;
 };
+export type TextModelFont = {
+	color?: string;
+	family?: string;
+	weight?: string;
+};
 export type TextModelObject = {
 	text: string;
 	offset?: Vector3;
 	rotation?: Quaternion;
 	height?: number;
 	resolution?: number;
-	color?: Vector3;
-	font?: string;
+	font?: TextModelFont;
 };
 export type EntityModel = ModelId | EntityModelObject | TextModelObject;
 

@@ -8,7 +8,7 @@ export class RoleSelector {
 	#selectHeroBtn = elem("button", { classes: [styles.button, styles.heroBtn], textContent: "Join team Heroes" });
 	#spectateBtn = elem("button", { classes: [styles.button, styles.spectateBtn], textContent: "Spectate" });
 	element = elem("div", {
-		classes: [styles.wrapper, styles.hide, "trap-clicks"],
+		classes: [styles.wrapper, /* styles.hide, */ "trap-clicks"],
 		contents: [
 			elem("div", { className: styles.buttonRow, contents: [this.#selectBossBtn, this.#selectHeroBtn] }),
 			this.#spectateBtn,
@@ -36,12 +36,13 @@ export class RoleSelector {
 			this.#spectateBtn.disabled = role === "spectator";
 		}
 
-		if (state.stage.type !== previous?.stage.type) {
-			if (state.stage.type === "lobby") {
-				this.element.classList.remove(styles.hide);
-			} else {
-				this.element.classList.add(styles.hide);
-			}
-		}
+		// TEMP
+		// if (state.stage.type !== previous?.stage.type) {
+		// 	if (state.stage.type === "lobby") {
+		// 		this.element.classList.remove(styles.hide);
+		// 	} else {
+		// 		this.element.classList.add(styles.hide);
+		// 	}
+		// }
 	}
 }

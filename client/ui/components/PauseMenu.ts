@@ -17,13 +17,24 @@ export class PauseMenu {
 		classes: [styles.winnerMessage, styles.hide],
 		contents: ["The ", this.#winner, this.#winnerRest],
 	});
+	#optionsBtn = elem("button", { classes: [styles.optionsBtn, "trap-clicks"], textContent: "Options" });
+	#optionsPanel = elem("div", {
+		classes: [styles.optionsPanel, styles.optionsHidden, "trap-clicks"],
+		contents: [elem("h2", { textContent: "Options" })],
+	});
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.lobby],
 		contents: [
-			elem("h2", { className: styles.logo, textContent: "Game Logo" }),
-			this.#winnerMessage,
-			this.#clickMessage,
-			this.#roleSelector.element,
+			elem("div", { className: styles.optionsAnchor, contents: [this.#optionsPanel, this.#optionsBtn] }),
+			elem("div", {
+				className: styles.column,
+				contents: [
+					elem("h2", { className: styles.logo, textContent: "Game Logo" }),
+					this.#winnerMessage,
+					this.#clickMessage,
+					this.#roleSelector.element,
+				],
+			}),
 			elem("div", {
 				classes: [styles.playerList, "trap-clicks"],
 				contents: [this.#playerList.element, this.#skinSelector.element],
@@ -35,6 +46,10 @@ export class PauseMenu {
 		this.#roleSelector.listen(connection);
 		this.#skinSelector.listen(connection);
 		this.#playerList.listen(connection);
+
+		this.#optionsBtn.addEventListener("click", () => {
+			this.#optionsPanel.classList.toggle(styles.optionsHidden);
+		});
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {

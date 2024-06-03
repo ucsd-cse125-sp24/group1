@@ -1,12 +1,23 @@
 .wrapper {
 	display: flex;
 	flex-direction: column;
+}
+
+.timerWrapper {
+	display: flex;
+	flex-direction: column;
 	align-items: center;
 	transition: all 0.5s;
 }
 .hide {
 	opacity: 0;
 	visibility: hidden;
+}
+
+.timer {
+	display: flex;
+	align-items: baseline;
+	font-size: 4rem;
 }
 .secondsOnly {
 	& .timer {
@@ -19,12 +30,6 @@
 		font-size: 0.5em;
 		opacity: 0.8;
 	}
-}
-
-.timer {
-	display: flex;
-	align-items: baseline;
-	font-size: 4rem;
 }
 
 .left {

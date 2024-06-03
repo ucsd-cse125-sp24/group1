@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, quat, vec3, vec4 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { ClientMessage, EntireGameState, SerializedCollider, ServerMessage } from "../common/messages";
 import { EntityId } from "../server/entities/Entity";
@@ -94,7 +94,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 		case "camera-lock":
 			cameraLockTarget = data.entityId;
 			isFirstPerson = data.pov === "first-person";
-			camera.canRotate = isFirstPerson;
+			camera.canRotate = isFirstPerson && data.freeRotation;
 			break;
 		case "sound":
 			if (sounds[data.sound]) {
@@ -327,17 +327,20 @@ const tempEntities: ClientEntity[] = [
 	warmLight,
 	whiteLight,
 	new ClientEntity(engine, [
-		{ model: new TextModel(engine, "hey 羊 Â", 1, 64, [1, 0, 0.1], '"Comic Sans MS"'), transform: mat4.create() },
+		{
+			model: new TextModel(engine, "hey 羊 Â", 1, 64, { color: "red", family: '"Comic Sans MS"' }),
+			transform: mat4.create(),
+		},
 	]),
 	new ClientEntity(engine, [
 		{
-			model: new TextModel(engine, "bleh 😜", 1.5, 64, [1, 0, 0.1]),
+			model: new TextModel(engine, "bleh 😜", 1.5, 64, { color: "orange" }),
 			transform: mat4.fromTranslation(mat4.create(), [0, -1, 1]),
 		},
 	]),
 	new ClientEntity(engine, [
 		{
-			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, [1, 0, 0.1], "serif"),
+			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, { color: "cyan", family: "serif" }),
 			transform: mat4.fromYRotation(mat4.create(), Math.PI / 4),
 		},
 	]),
@@ -375,24 +378,28 @@ const paint = () => {
 	}
 
 	const cameraTarget = entities.find((entity) => entity.data?.id === cameraLockTarget);
-	if (cameraTarget) {
+	if (cameraTarget && !freecam) {
+		camera.setFree(false);
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
 		coolLight.position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		sporeFilterStrength.setTarget(cameraTarget.data?.isSabotaged ? 1 : 0);
 		fov.setTarget(cameraTarget.data?.isTrapped ? Math.PI / 6 : Math.PI / 3);
-		if (!freecam) {
-			if (isFirstPerson) {
-				camera.setPosition(position);
-			} else {
-				const offset = vec3.fromValues(-20, 50, 20);
-				camera.setPosition(vec3.add(vec3.create(), position, offset));
-				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
+		if (isFirstPerson) {
+			camera.setPosition(position);
+			if (!camera.canRotate) {
+				const [x, y, z] = vec4.transformMat4(vec4.create(), vec4.fromValues(0, 0, -1, 0), cameraTarget.transform);
+				camera.setForwardDir(vec3.fromValues(x, y, z));
 			}
+		} else {
+			const offset = vec3.fromValues(-20, 50, 20);
+			camera.setPosition(vec3.add(vec3.create(), position, offset));
+			camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
 		}
-	}
-	if (freecam) {
+	} else {
+		// Spectate
+		camera.setFree(true);
 		camera.updateFreecam(debugInputs);
 	}
 	// TODO: also call this when rotating camera?

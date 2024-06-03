@@ -8,18 +8,24 @@ export class Timer {
 	#left = elem("span", { className: styles.left });
 	#right = elem("span", { className: styles.right });
 	#bar = elem("div", { className: styles.bar });
-	element = elem("div", {
-		classes: [styles.wrapper, styles.hide],
+	#timer = elem("div", {
+		classes: [styles.timerWrapper, styles.hide],
 		contents: [
-			elem("div", {
-				className: styles.stages,
-				contents: [this.#craftStage, this.#combatStage],
-			}),
 			this.#bar,
 			elem("div", {
 				className: styles.timer,
 				contents: [this.#left, elem("span", { className: styles.colon, textContent: ":" }), this.#right],
 			}),
+		],
+	});
+	element = elem("div", {
+		classes: [styles.wrapper],
+		contents: [
+			elem("div", {
+				className: styles.stages,
+				contents: [this.#craftStage, this.#combatStage],
+			}),
+			this.#timer,
 		],
 	});
 	#duration: number = 0;
@@ -49,17 +55,17 @@ export class Timer {
 			this.#left.textContent = "0";
 			this.#right.textContent = "00";
 			this.#bar.style.setProperty("--percentage", "0");
-			this.element.classList.add(styles.hide);
+			this.#timer.classList.add(styles.hide);
 		}
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
 		if (state.stage.type !== previous?.stage.type) {
 			if (state.stage.type === "lobby") {
-				this.element.classList.add(styles.hide);
+				this.#timer.classList.add(styles.hide);
 				this.#targetTime = null;
 			} else {
-				this.element.classList.remove(styles.hide);
+				this.#timer.classList.remove(styles.hide);
 				this.#duration = state.stage.endTime - state.stage.startTime;
 				this.#targetTime = state.stage.endTime;
 				this.renderTime();
