@@ -253,8 +253,10 @@ export abstract class PlayerEntity extends Entity {
 
 	takeDamage(damage: number): void {
 		this.health -= damage;
-		if (this.health < 0) {
+		if (this.health <= 0) {
 			this.health = 0;
+			// Die
+			this.game.addToDeleteQueue(this.id);
 		}
 	}
 

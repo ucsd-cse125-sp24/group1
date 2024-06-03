@@ -59,7 +59,7 @@ const itemModels: ItemType[] = [
 /** Length of the crafting stage in milliseconds */
 const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000 * 0.5; // 0.5 minutes
+const COMBAT_STAGE_LENGTH = 60 * 1000; // 0.5 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -288,6 +288,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 			this.#currentStage = { type: "lobby", previousWinner: "boss" };
+		} else {
+			return
+		}
+		for (const player of this.#players.values()) {
+			// If player entity isn't in the world (because they died), add them back
+			if (player.entity && !this.#entities.has(player.entity.id)) {
+				this.addToCreateQueue(player.entity)
+			}
 		}
 	}
 
