@@ -28,8 +28,8 @@ export class RoleSelector {
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
-		const role = state.players.find((player) => player.me)?.role;
-		const previousRole = previous?.players.find((player) => player.me)?.role;
+		const role = state.me.role;
+		const previousRole = previous?.me.role;
 		if (role !== previousRole) {
 			this.#selectBossBtn.disabled = role === "boss";
 			this.#selectHeroBtn.disabled = role === "hero";

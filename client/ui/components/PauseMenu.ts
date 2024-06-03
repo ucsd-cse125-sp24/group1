@@ -75,8 +75,8 @@ export class PauseMenu {
 			}
 		}
 
-		const role = state.players.find((player) => player.me)?.role;
-		const previousRole = previous?.players.find((player) => player.me)?.role;
+		const role = state.me.role;
+		const previousRole = previous?.me.role;
 		if (role !== previousRole) {
 			this.#clickMessage.textContent = role === "spectator" ? "Click here to spectate" : "Click here to play";
 		}

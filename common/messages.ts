@@ -68,14 +68,15 @@ export type GameStage =
 export type EntireGameState = {
 	type: "entire-game-state";
 	stage: GameStage;
-	entities: SerializedEntity[];
+	entities: Record<EntityId, SerializedEntity>;
 	/**
 	 * All physics engine colliders to draw wireframes around for debug purposes.
 	 * These should be drawn directly as given; do not try to interpolate or
 	 * predict positions on these bodies.
 	 */
 	physicsBodies: SerializedBody[];
-	players: PlayerEntry[];
+	me: PlayerEntry;
+	others: PlayerEntry[];
 };
 
 export type PlayerEntry = {
@@ -84,11 +85,10 @@ export type PlayerEntry = {
 	entityId?: EntityId;
 	online: boolean;
 	health?: number;
-	/** Whether this entry corresponds to the client */
-	me: boolean;
 };
 
 export type Role = "boss" | "hero" | "spectator";
+export type Skin = "red" | "yellow" | "green" | "blue";
 
 export type GameOver = {
 	type: "game-over";
@@ -166,7 +166,7 @@ export type ChangeDisplayName = {
 export type ChangeRole = {
 	type: "change-role";
 	role: Role;
-	skin?: "red" | "yellow" | "green" | "blue";
+	skin?: Skin;
 };
 
 export type StartGame = {

@@ -9,7 +9,7 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ChangeRole, ClientMessage, GameStage, SerializedEntity, ServerMessage } from "../common/messages";
+import { ChangeRole, ClientMessage, GameStage, PlayerEntry, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { SoundId } from "../assets/sounds";
@@ -600,28 +600,27 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
+	#serializeNetworkedPlayer(player: NetworkedPlayer): PlayerEntry {
+		return {
+			name: player.name,
+			role: !player.entity ? "spectator" : player.entity instanceof BossEntity ? "boss" : "hero",
+			entityId: player.entity?.id,
+			online: player.online,
+			health: player.entity?.health,
+		};
+	}
+
 	broadcastState() {
-		let serial: SerializedEntity[] = [];
-
-		for (let [id, entity] of this.#entities.entries()) {
-			serial.push(entity.serialize());
-		}
-		let physicsBodies = this.#world.serialize();
-
 		for (const player of this.#players.values()) {
 			player.conn.send({
 				type: "entire-game-state",
 				stage: this.#currentStage,
-				entities: serial,
-				physicsBodies: physicsBodies,
-				players: Array.from(this.#players.values(), (p) => ({
-					name: p.name,
-					role: !p.entity ? "spectator" : p.entity instanceof BossEntity ? "boss" : "hero",
-					entityId: p.entity?.id,
-					online: p.online,
-					health: p.entity?.health,
-					me: p === player,
-				})),
+				entities: Object.fromEntries(Array.from(this.#entities.entries(), ([id, entity]) => [id, entity.serialize()])),
+				physicsBodies: this.#world.serialize(),
+				others: Array.from(this.#players.values(), (p) =>
+					p === player ? [] : [this.#serializeNetworkedPlayer(p)],
+				).flat(),
+				me: this.#serializeNetworkedPlayer(player),
 			});
 		}
 	}

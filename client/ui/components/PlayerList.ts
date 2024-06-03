@@ -21,12 +21,11 @@ export class PlayerList {
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
-		if (JSON.stringify(state.players) !== JSON.stringify(previous?.players)) {
+		const currentPlayers = state.others.map(({ name, role, online }) => ({ name, role, online }));
+		const previousPlayers = previous && previous.others.map(({ name, role, online }) => ({ name, role, online }));
+		if (JSON.stringify(currentPlayers) !== JSON.stringify(previousPlayers)) {
 			this.#others.textContent = "";
-			for (const player of state.players) {
-				if (player.me) {
-					continue;
-				}
+			for (const player of currentPlayers) {
 				this.#others.append(
 					elem("div", {
 						classes: [styles.player, player.online ? null : styles.offline],
@@ -38,18 +37,13 @@ export class PlayerList {
 					}),
 				);
 			}
+		}
 
-			const me = state.players.find((player) => player.me);
-			const previousMe = previous?.players.find((player) => player.me);
-			if (!me) {
-				return;
-			}
-			if (me.role !== previousMe?.role) {
-				this.#myRole.className = `${styles.roleIcon} ${styles[`role-icon-${me.role}`]}`;
-			}
-			if (me.name !== previousMe?.name && me.name !== this.#nameInput.value) {
-				this.#nameInput.value = me.name;
-			}
+		if (state.me.role !== previous?.me.role) {
+			this.#myRole.className = `${styles.roleIcon} ${styles[`role-icon-${state.me.role}`]}`;
+		}
+		if (state.me.name !== previous?.me.name && state.me.name !== this.#nameInput.value) {
+			this.#nameInput.value = state.me.name;
 		}
 	}
 }

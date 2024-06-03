@@ -26,3 +26,40 @@
 		opacity: 0.5;
 	}
 }
+
+.skins {
+	width: 100%;
+	border: none;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	margin: 0;
+	padding: 0;
+	gap: 10px;
+	transition: all 0.2s;
+}
+.skinlabel {
+	grid-column: 1 / -1;
+	font-weight: bold;
+}
+.skin {
+	aspect-ratio: 1 / 1;
+	width: 100%;
+	border-radius: 10px;
+	box-shadow: inset 0 0 0 0 white;
+	transition: all 0.2s;
+}
+.skin-red {
+	background-color: #ef4444;
+}
+.skin-yellow {
+	background-color: #eab308;
+}
+.skin-green {
+	background-color: #22c55e;
+}
+.skin-blue {
+	background-color: #3b82f6;
+}
+.selected {
+	box-shadow: inset 0 0 0 5px white;
+}

@@ -67,7 +67,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 				type: "ping",
 			};
 		case "entire-game-state":
-			entities = data.entities.map((entity) => deserialize(engine, entity));
+			entities = Object.values(data.entities).map((entity) => deserialize(engine, entity));
 			colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
 				const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
 				return colliders.map((collider) => ({
