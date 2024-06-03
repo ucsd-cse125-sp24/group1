@@ -1,0 +1,28 @@
+.slider {
+	display: grid;
+	grid-template-columns: 120px 1fr;
+	gap: 0 10px;
+
+	& input[type="range"] {
+		margin: 0;
+	}
+}
+.label {
+	grid-column: 1 / -1;
+	font-weight: bold;
+}
+.input {
+	display: flex;
+	height: 40px;
+	align-items: center;
+	background-color: rgba(255, 255, 255, 0.1);
+	border-radius: 10px;
+	padding-right: 10px;
+
+	& input {
+		width: 0;
+		height: 100%;
+		flex: auto;
+		text-align: right;
+	}
+}

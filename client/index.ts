@@ -165,7 +165,6 @@ const sound = new SoundManager(audioContext, raw);
 
 const gameUi = new GameplayUi();
 const pauseMenu = new PauseMenu();
-pauseMenu.listen(connection);
 document.body.append(gameUi.element, pauseMenu.element);
 pauseMenu.show();
 
@@ -391,7 +390,7 @@ const paint = () => {
 		const dir = camera.getForwardDir();
 		coolLight.position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		sporeFilterStrength.setTarget(cameraTarget.data?.isSabotaged ? 1 : 0);
-		fov.setTarget(cameraTarget.data?.isTrapped ? Math.PI / 6 : Math.PI / 3);
+		fov.setTarget(cameraTarget.data?.isTrapped ? Math.PI / 6 : (pauseMenu.options.fov * Math.PI) / 180);
 		if (isFirstPerson) {
 			camera.setPosition(position);
 			if (!camera.canRotate) {
@@ -495,4 +494,6 @@ connection.connect();
 inputListener.listen();
 inputListener.enabled = false;
 camera.listen();
+pauseMenu.listen(connection);
+pauseMenu.options.listen(camera);
 paint();

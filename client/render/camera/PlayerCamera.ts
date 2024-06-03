@@ -3,9 +3,6 @@ import GraphicsEngine from "../engine/GraphicsEngine";
 import { allowDomExceptions } from "../../lib/allowDomExceptions";
 import { Camera } from "./Camera";
 
-/** How fast the camera rotates in radians per pixel moved by the mouse */
-const ROTATION_RATE: number = (0.5 * Math.PI) / 180;
-
 export type FreecamInputs = {
 	forward: boolean;
 	backward: boolean;
@@ -19,7 +16,8 @@ export type FreecamInputs = {
  * Extends the Camera class to handle looking around as a player.
  */
 export class PlayerCamera extends Camera {
-	#sensitivity: number = 0.4;
+	/** How fast the camera rotates in degrees per pixel moved by the mouse */
+	sensitivity: number = 0.4;
 	canRotate: boolean = true;
 
 	// For freecam mode
@@ -94,8 +92,8 @@ export class PlayerCamera extends Camera {
 			return;
 		}
 		this.setOrientation(
-			this._orientation[0] + movementY * this.#sensitivity * ROTATION_RATE,
-			this._orientation[1] - movementX * this.#sensitivity * ROTATION_RATE,
+			this._orientation[0] + (movementY * this.sensitivity * Math.PI) / 180,
+			this._orientation[1] - (movementX * this.sensitivity * Math.PI) / 180,
 		);
 	}
 

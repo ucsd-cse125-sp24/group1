@@ -5,6 +5,7 @@ import { RoleSelector } from "./RoleSelector";
 import { SkinSelector } from "./SkinSelector";
 import styles from "./PauseMenu.module.css";
 import { PlayerList } from "./PlayerList";
+import { Options } from "./Options";
 
 export class PauseMenu {
 	#roleSelector = new RoleSelector();
@@ -18,9 +19,10 @@ export class PauseMenu {
 		contents: ["The ", this.#winner, this.#winnerRest],
 	});
 	#optionsBtn = elem("button", { classes: [styles.optionsBtn, "trap-clicks"], textContent: "Options" });
+	options = new Options();
 	#optionsPanel = elem("div", {
 		classes: [styles.optionsPanel, styles.optionsHidden, "trap-clicks"],
-		contents: [elem("h2", { textContent: "Options" })],
+		contents: [elem("h2", { textContent: "Options" }), ...this.options.elements],
 	});
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.lobby],
