@@ -9,17 +9,11 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import {
-	ChangeRole,
-	ClientMessage,
-	GameStage,
-	SerializedBody,
-	SerializedEntity,
-	ServerMessage,
-} from "../common/messages";
+import { ChangeRole, ClientMessage, GameStage, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { SoundId } from "../assets/sounds";
+import { CameraEntity } from "../server/entities/CameraEntity";
 import { PlayerInput } from "./net/PlayerInput";
 import { PlayerEntity } from "./entities/PlayerEntity";
 import { BossEntity } from "./entities/BossEntity";
@@ -37,7 +31,6 @@ import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
-import { CameraEntity } from "../server/entities/CameraEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -167,10 +160,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (player.entity) {
 				player.entity.body.position = new phys.Vec3(21, -1, 20);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
-				player.entity.health=player.entity.initHealth
+				player.entity.health = player.entity.initHealth;
 				if (player.entity instanceof HeroEntity) {
-					player.entity.isSabotaged=false
-					player.entity.isTrapped=false
+					player.entity.isSabotaged = false;
+					player.entity.isTrapped = false;
 				}
 			}
 		}
@@ -264,7 +257,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	#transitionToCombat() {
 		this.#currentStage = { type: "combat", startTime: Date.now(), endTime: Date.now() + COMBAT_STAGE_LENGTH };
-
 	}
 
 	/**
@@ -273,15 +265,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#checkGameOver() {
 		let isAnyHeroAlive = false;
 		let isAnyBossAlive = false;
-		for (const {entity} of this.#players.values()) {
-			if (entity&&entity.health > 0) {
+		for (const { entity } of this.#players.values()) {
+			if (entity && entity.health > 0) {
 				if (entity instanceof BossEntity) {
 					isAnyBossAlive = true;
 				} else if (entity instanceof HeroEntity) {
 					isAnyHeroAlive = true;
 				}
-				if (isAnyBossAlive&&isAnyHeroAlive){
-					break
+				if (isAnyBossAlive && isAnyHeroAlive) {
+					break;
 				}
 			}
 		}
@@ -295,12 +287,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 			this.#currentStage = { type: "lobby", previousWinner: "boss" };
 		} else {
-			return
+			return;
 		}
 		for (const player of this.#players.values()) {
 			// If player entity isn't in the world (because they died), add them back
 			if (player.entity && !this.#entities.has(player.entity.id)) {
-				this.addToCreateQueue(player.entity)
+				this.addToCreateQueue(player.entity);
 			}
 		}
 	}
@@ -393,10 +385,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.online = true;
 			if (player.entity) {
 				conn.send({
-				 	type: "camera-lock",
-				 	entityId: player.entity.id,
-				 	freeRotation: true,
-				 	pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
+					type: "camera-lock",
+					entityId: player.entity.id,
+					freeRotation: true,
+					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
 			}
 		} else {
@@ -418,7 +410,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: false
+				freeRotation: false,
 			});
 		}
 	}
@@ -493,13 +485,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 				break;
 			}
-			case "--debug-skip-stage":{
+			case "--debug-skip-stage": {
 				switch (this.#currentStage.type) {
-					case 'lobby': {
-						this.#startGame()
-						break}case 'crafting':
-						{this.#transitionToCombat();break}case 'combat':{this.#currentStage = { type: "lobby", previousWinner: null };
-							break}
+					case "lobby": {
+						this.#startGame();
+						break;
+					}
+					case "crafting": {
+						this.#transitionToCombat();
+						break;
+					}
+					case "combat": {
+						this.#currentStage = { type: "lobby", previousWinner: null };
+						break;
+					}
 				}
 				break;
 			}
@@ -515,17 +514,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	logTicks(ticks: number, totalDelta: number) {
 		if ("_debugGetActivePlayerCount" in this.#server) {
 			const server = this.#server as any;
-			log(`${
-				ticks
-			} ticks sampled. Average simulation time: ${
-				(totalDelta / ticks).toFixed(4)
-			}ms per tick. ${
-				server._debugGetConnectionCount()
-			} connection(s), ${
-				server._debugGetActivePlayerCount()
-			} of ${
-				server._debugGetPlayerCount()
-			} player(s) online`);
+			log(
+				`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(
+					4,
+				)}ms per tick. ${server._debugGetConnectionCount()} connection(s), ${server._debugGetActivePlayerCount()} of ${server._debugGetPlayerCount()} player(s) online`,
+			);
 		}
 	}
 	updateGameState() {
@@ -614,7 +607,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			serial.push(entity.serialize());
 		}
 		let physicsBodies = this.#world.serialize();
-		
+
 		for (const player of this.#players.values()) {
 			player.conn.send({
 				type: "entire-game-state",
@@ -626,7 +619,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					role: !p.entity ? "spectator" : p.entity instanceof BossEntity ? "boss" : "hero",
 					entityId: p.entity?.id,
 					online: p.online,
-					health:p.entity?.health,
+					health: p.entity?.health,
 					me: p === player,
 				})),
 			});

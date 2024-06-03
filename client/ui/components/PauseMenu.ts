@@ -1,9 +1,9 @@
 import { Connection } from "../../net/Connection";
 import { elem } from "../elem";
+import { EntireGameState } from "../../../common/messages";
 import { RoleSelector } from "./RoleSelector";
 import { SkinSelector } from "./SkinSelector";
 import styles from "./PauseMenu.module.css";
-import { EntireGameState } from "../../../common/messages";
 import { PlayerList } from "./PlayerList";
 
 export class PauseMenu {

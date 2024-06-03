@@ -2,9 +2,8 @@ import { mat4 } from "gl-matrix";
 import { ShaderProgram } from "../engine/ShaderProgram";
 import GraphicsEngine from "../engine/GraphicsEngine";
 import { TextTexture, createTextTexture } from "../../lib/createTextTexture";
-import { Vector3 } from "../../../common/commontypes";
-import { Model } from "./Model";
 import { TextModelFont } from "../../../common/messages";
+import { Model } from "./Model";
 
 export class TextModel implements Model {
 	shader: ShaderProgram;

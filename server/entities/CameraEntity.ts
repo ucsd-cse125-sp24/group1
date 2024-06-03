@@ -1,6 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { EntityModel, SerializedEntity } from "../../common/messages";
+import { SerializedEntity } from "../../common/messages";
 import { Game } from "../Game";
 import { Entity } from "./Entity";
 
@@ -12,7 +12,7 @@ export class CameraEntity extends Entity {
 			type: phys.BODY_TYPES.STATIC,
 			shape: new phys.Sphere(0.05),
 			quaternion: new phys.Quaternion().setFromEuler(...rotation, "XYZ"),
-			position: new phys.Vec3(...pos)
+			position: new phys.Vec3(...pos),
 		});
 	}
 
