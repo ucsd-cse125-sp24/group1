@@ -24,6 +24,23 @@ export type ItemType =
 	| "armor"
 	| "wood";
 
+const modelForItemType: Record<ItemType, EntityModel[]> = {
+	armor: [{ modelId: "armor", scale: 0.5 }],
+	axe: [{ modelId: "axe", scale: 0.5 }],
+	bow: [{ modelId: "bow", scale: 0.5 }],
+	gamer_bow: [{ modelId: "gamer_bow", scale: 0.5 }],
+	gamer_sword: [{ modelId: "gamer_sword", scale: 0.5 }],
+	iron: [{ modelId: "iron", scale: 0.5 }],
+	knife: [{ modelId: "knife", scale: 0.5 }],
+	magic_sauce: [{ modelId: "magic_sauce", scale: 0.5 }],
+	mushroom: [{ modelId: "mushroom", scale: 0.5 }],
+	pickaxe: [{ modelId: "pickaxe", scale: 0.5 }],
+	raw_iron: [{ modelId: "raw_iron", scale: 0.5 }],
+	shears: [{ modelId: "shears", scale: 0.5 }],
+	string: [{ modelId: "string", scale: 0.5 }],
+	sword: [{ modelId: "sword", scale: 0.5 }],
+	wood: [{ modelId: "wood", scale: 0.5 }],
+};
 const colliderShapeForItemType: Record<ItemType, phys.Shape> = {
 	armor: new phys.Sphere(0.5),
 	axe: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
@@ -36,7 +53,7 @@ const colliderShapeForItemType: Record<ItemType, phys.Shape> = {
 	mushroom: new phys.Sphere(0.5),
 	pickaxe: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
 	raw_iron: new phys.Sphere(0.5),
-	shears: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
+	shears: new phys.Box(new phys.Vec3(0.3, 0.5, 0.1)),
 	string: new phys.Sphere(0.5),
 	sword: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
 	wood: new phys.Cylinder(0.5, 0.5, 1.0, 12),
@@ -58,13 +75,13 @@ export class Item extends InteractableEntity {
 	/**
 	 * Tag should be a Tag type! For creating an item, it should only realistically be a resource or a tool!
 	 */
-	constructor(game: Game, type: ItemType, pos: Vector3, model: EntityModel[] = [], tag: Tag) {
-		super(game, model, [tag]);
+	constructor(game: Game, type: ItemType, pos: Vector3, tag: Tag) {
+		super(game, modelForItemType[type], [tag]);
 
 		//TODO: ADD A MATERIAL FOR COLLISION
 
 		this.type = type;
-		this.model = model;
+		this.model = modelForItemType[type];
 		this.heldBy = null;
 
 		this.radius = 0.5;

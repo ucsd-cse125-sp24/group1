@@ -176,17 +176,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(plane);
 
 		let posIndex = Math.floor(Math.random() * 4);
-		let axe = new Item(this, "axe", startingToolLocations[posIndex], [{ modelId: "axe", scale: 0.5 }], "tool");
+		let axe = new Item(this, "axe", startingToolLocations[posIndex], "tool");
 		this.#registerEntity(axe);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let pick = new Item(this, "pickaxe", startingToolLocations[posIndex], [{ modelId: "pickaxe", scale: 0.5 }], "tool");
+		let pick = new Item(this, "pickaxe", startingToolLocations[posIndex], "tool");
 		this.#registerEntity(pick);
 
 		posIndex == 3 ? (posIndex = 0) : posIndex++;
 		console.log(posIndex);
-		let shears = new Item(this, "shears", startingToolLocations[posIndex], [{ modelId: "shears", scale: 0.5 }], "tool");
+		let shears = new Item(this, "shears", startingToolLocations[posIndex], "tool");
 		this.#registerEntity(shears);
 
 		let Furnace = new CraftingTable(
@@ -244,10 +244,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		]);
 		this.#registerEntity(mushroomSpawner);
 
-		let sampleIorn = new Item(this, "knife", [5, 0, 5], [{ modelId: "knife", scale: 0.5 }], "resource");
+		let sampleIorn = new Item(this, "knife", [5, 0, 5], "resource");
 		this.#registerEntity(sampleIorn);
 
-		let sampleIorn2 = new Item(this, "raw_iron", [7, 0, 5], [{ modelId: "raw_iron", scale: 0.5 }], "resource");
+		let sampleIorn2 = new Item(this, "raw_iron", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
 	}
 
@@ -565,7 +565,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 						modelId,
 						// Max: (25, 20) Min: (-24, -17)
 						player.entity.body.position.vadd(new phys.Vec3(0, 2, 0)).toArray(),
-						[{ modelId, offset: [0, -0.5, 0], scale: 0.5 }],
 						"resource",
 					),
 				);
