@@ -94,7 +94,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 		case "camera-lock":
 			cameraLockTarget = data.entityId;
 			isFirstPerson = data.pov === "first-person";
-			camera.canRotate = isFirstPerson;
+			camera.canRotate = isFirstPerson && data.freeRotation;
 			break;
 		case "sound":
 			if (sounds[data.sound]) {

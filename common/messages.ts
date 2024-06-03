@@ -104,6 +104,10 @@ export type CameraLock = {
 	 */
 	entityId: EntityId;
 	/**
+	 * Whether to allow the camera to rotate freely. `pov` must be `first-person`.
+	 */
+	freeRotation: boolean;
+	/**
 	 * Camera point of view directive. In first-person mode, the camera locks to
 	 * the POV of the entity and can rotate freely. In top-down mode, the camera
 	 * locks to a point above the entity and has fixed rotation looking downward.

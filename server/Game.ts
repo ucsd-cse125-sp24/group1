@@ -464,6 +464,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				conn.send({
 					type: "camera-lock",
 					entityId: player.entity.id,
+					freeRotation: true,
 					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
 			}
@@ -540,6 +541,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					conn.send({
 						type: "camera-lock",
 						entityId: player.entity.id,
+						freeRotation: true,
 						pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 					});
 				}
