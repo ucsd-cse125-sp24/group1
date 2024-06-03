@@ -158,12 +158,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			endTime: Date.now() + CRAFT_STAGE_LENGTH,
 		};
 
-		// Move players
+		// Reset players
 		for (const player of this.#players.values()) {
 			if (player.entity) {
 				player.entity.body.position = new phys.Vec3(21, -1, 20);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
 				player.entity.health=player.entity.initHealth
+				if (player.entity instanceof HeroEntity) {
+					player.entity.isSabotaged=false
+					player.entity.isTrapped=false
+				}
 			}
 		}
 
@@ -612,6 +616,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					role: !p.entity ? "spectator" : p.entity instanceof BossEntity ? "boss" : "hero",
 					entityId: p.entity?.id,
 					online: p.online,
+					health:p.entity?.health,
 					me: p === player,
 				})),
 			});

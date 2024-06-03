@@ -83,6 +83,7 @@ export type PlayerEntry = {
 	role: Role;
 	entityId?: number;
 	online: boolean;
+	health?: number;
 	/** Whether this entry corresponds to the client */
 	me: boolean;
 };
@@ -204,6 +205,7 @@ export type SerializedEntity = {
 	// Client uses this state on camera locked entity to determine visual effects
 	isSabotaged?: boolean;
 	isTrapped?: boolean;
+	// NOTE: currently unused (PlayerEntity.health is used instead)
 	health?: number;
 };
 
