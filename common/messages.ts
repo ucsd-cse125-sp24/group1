@@ -78,7 +78,7 @@ export type EntireGameState = {
 export type PlayerEntry = {
 	name: string;
 	role: Role;
-	entityId?: number;
+	entityId?: EntityId;
 	online: boolean;
 	/** Whether this entry corresponds to the client */
 	me: boolean;

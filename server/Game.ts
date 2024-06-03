@@ -37,6 +37,7 @@ import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
+import { CameraEntity } from "../server/entities/CameraEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -118,6 +119,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#currentTick = 0;
 
+		this.#makeLobby();
+
 		this.#server = BROWSER ? new WebWorker(this) : new (require("./net/WsServer").WsServer)(this);
 		this.#server.listen(2345);
 	}
@@ -144,9 +147,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	/**
-	 * A function that sets up the base state for the game
+	 * A function that sets up the game in the Lobby state
 	 */
-	async setup() {}
+	async #makeLobby() {
+		let camera = new CameraEntity(this, [1000, 1005, 1000], [0, -10, 0], "lobby-camera");
+		this.#registerEntity(camera);
+	}
 
 	/**
 	 * State transition from "lobby" to "crafting"
@@ -378,10 +384,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.online = true;
 			if (player.entity) {
 				conn.send({
-					type: "camera-lock",
-					entityId: player.entity.id,
-					freeRotation: true,
-					pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
+				 	type: "camera-lock",
+				 	entityId: player.entity.id,
+				 	freeRotation: true,
+				 	pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
 				});
 			}
 		} else {
@@ -397,6 +403,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				name: `Player ${conn.id.slice(0, 6)}`,
 			};
 			this.#players.set(conn.id, player);
+		}
+		if (this.#currentStage.type === "lobby") {
+			conn.send({
+				type: "camera-lock",
+				entityId: "lobby-camera",
+				pov: "first-person",
+				freeRotation: false
+			});
 		}
 	}
 
