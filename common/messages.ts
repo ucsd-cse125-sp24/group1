@@ -172,14 +172,18 @@ export type EntityModelObject = {
 	/** Scales evenly in all directions */
 	scale?: number;
 };
+export type TextModelFont = {
+	color?: string;
+	family?: string;
+	weight?: string;
+};
 export type TextModelObject = {
 	text: string;
 	offset?: Vector3;
 	rotation?: Quaternion;
 	height?: number;
 	resolution?: number;
-	color?: Vector3;
-	font?: string;
+	font?: TextModelFont;
 };
 export type EntityModel = ModelId | EntityModelObject | TextModelObject;
 

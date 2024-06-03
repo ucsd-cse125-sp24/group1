@@ -305,17 +305,20 @@ const tempEntities: ClientEntity[] = [
 	warmLight,
 	whiteLight,
 	new ClientEntity(engine, [
-		{ model: new TextModel(engine, "hey 羊 Â", 1, 64, [1, 0, 0.1], '"Comic Sans MS"'), transform: mat4.create() },
+		{
+			model: new TextModel(engine, "hey 羊 Â", 1, 64, { color: "red", family: '"Comic Sans MS"' }),
+			transform: mat4.create(),
+		},
 	]),
 	new ClientEntity(engine, [
 		{
-			model: new TextModel(engine, "bleh 😜", 1.5, 64, [1, 0, 0.1]),
+			model: new TextModel(engine, "bleh 😜", 1.5, 64, { color: "orange" }),
 			transform: mat4.fromTranslation(mat4.create(), [0, -1, 1]),
 		},
 	]),
 	new ClientEntity(engine, [
 		{
-			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, [1, 0, 0.1], "serif"),
+			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, { color: "cyan", family: "serif" }),
 			transform: mat4.fromYRotation(mat4.create(), Math.PI / 4),
 		},
 	]),

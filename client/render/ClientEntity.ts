@@ -61,9 +61,9 @@ export function deserialize(engine: GraphicsEngine, entity: SerializedEntity): C
 		engine,
 		entity.model.map((model) => {
 			if (typeof model !== "string" && "text" in model) {
-				const { text, offset = [0, 0, 0], rotation = [0, 0, 0, 1], height = 1, resolution = 64, color, font } = model;
-				const id = [text, height, resolution, color, font].join("\n");
-				textModelCache[id] ??= new TextModel(engine, text, height, resolution, color, font);
+				const { text, offset = [0, 0, 0], rotation = [0, 0, 0, 1], height = 1, resolution = 64, font } = model;
+				const id = [text, height, resolution, JSON.stringify(font)].join("\n");
+				textModelCache[id] ??= new TextModel(engine, text, height, resolution, font);
 				return {
 					model: textModelCache[id],
 					transform: mat4.fromRotationTranslation(mat4.create(), rotation, offset),
