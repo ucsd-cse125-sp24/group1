@@ -74,7 +74,7 @@ export class Spawner extends InteractableEntity {
 		item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));
 		item.canBeAbsorbedByCraftingTable = false;
 		this.game.addToCreateQueue(item);
-		item.throw(new phys.Vec3(...[10, 50, 10]));
+		item.throw(new phys.Vec3(...[10, 10, 10]));
 		this.previousTick = this.game.getCurrentTick();
 		console.log("sptting");
 		this.game.playSound("spawnerHarvest", this.getPos());

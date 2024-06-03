@@ -1,18 +1,22 @@
-import attackFail from "./attack-fail.mp3";
-import craftingEjectAll from "./crafting-eject-all.mp3";
-import craftingPickup from "./crafting-pickup.mp3";
-import craftingSuccess from "./crafting-success.mp3";
-import defaultHit1 from "./default-hit1.mp3";
-import defaultHit2 from "./default-hit2.mp3";
-import defaultHit3 from "./default-hit3.mp3";
+import attackFail from "./Miss 1.wav";
+import craftingEjectAll from "./Crafting Fail.wav";
+import craftingPickup from "./Crafting 1.wav";
+import craftingSuccess from "./Crafting Success.wav";
+import defaultHit1 from "./Hit 1.wav";
+import defaultHit2 from "./Hit 2.wav";
+import defaultHit3 from "./Hit 3.wav";
+import defaultHit4 from "./Hit 4.wav";
+import defaultHit5 from "./Hit 5.wav";
+import defaultHit6 from "./Hit 6.wav";
 import hit from "./hit.mp3";
-import jump from "./jump.mp3";
-import pickup from "./pickup.mp3";
-import popCraftingFail from "./pop-crafting-fail.mp3";
-import popCrafting from "./pop-crafting.mp3";
+import jump from "./Jump 1.wav";
+import pickup from "./Pick Up Wood.wav";
+import popCraftingFail from "./Crafting Popping Fail.wav";
+import popCrafting from "./Crafting Popping.wav";
+import running from "./LIttle Guy Running 1.wav";
 import spawnerHarvest from "./spawner-harvest.mp3";
 import spawnerReject from "./spawner-reject.mp3";
-import spore from "./spore.mp3";
+import spore from "./Spored.wav";
 import throwSound from "./throw.mp3";
 import trapDisarm from "./trap-disarm.mp3";
 import trapEscape from "./trap-escape.mp3";
@@ -20,7 +24,7 @@ import trapHit from "./trap-hit.mp3";
 import trapPlace from "./trap-place.mp3";
 import trapTriggered from "./trap-triggered.mp3";
 import useFail from "./use-fail.mp3";
-export { default as reverbImpulse } from "./reverb-impulse.mp3";
+export { default as reverbImpulse } from "./AndrewsChurchConvReverb2.wav";
 
 export const sounds = {
 	/** Player tries to attack but it's not aimed at anything. */
@@ -38,7 +42,7 @@ export const sounds = {
 	 * Player attacks an interactable object (e.g. item, crafter), which does a
 	 * little knockback.
 	 */
-	defaultHit: [defaultHit1, defaultHit2, defaultHit3],
+	defaultHit: [defaultHit1, defaultHit2, defaultHit3, defaultHit4, defaultHit5, defaultHit6],
 	/** Player attacks another player (currently just does knockback). */
 	hit,
 	/** Player jumps. */
@@ -49,6 +53,8 @@ export const sounds = {
 	popCraftingFail,
 	/** Removing an item stored in a crafter. */
 	popCrafting,
+	/** Running ambient sound */
+	running,
 	/** Correct tool used on a spawner, spawning an item. */
 	spawnerHarvest,
 	/** Incorrect tool used on a spawner. */

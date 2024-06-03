@@ -19,7 +19,7 @@ export type FreecamInputs = {
  * Extends the Camera class to handle looking around as a player.
  */
 export class PlayerCamera extends Camera {
-	#sensitivity: number = 1;
+	#sensitivity: number = 0.4;
 	canRotate: boolean = true;
 
 	// For freecam mode
