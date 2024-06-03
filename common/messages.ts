@@ -100,7 +100,7 @@ export type CameraLock = {
 	type: "camera-lock";
 	/**
 	 * Name of the entity to lock the camera to. If there is no entity with the
-	 * ID, the camera may stop moving.
+	 * ID, the camera will enter freecam mode to allow for spectating.
 	 */
 	entityId: EntityId;
 	/**

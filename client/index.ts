@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, quat, vec3, vec4 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { ClientMessage, EntireGameState, SerializedCollider, ServerMessage } from "../common/messages";
 import { EntityId } from "../server/entities/Entity";
@@ -356,24 +356,28 @@ const paint = () => {
 	}
 
 	const cameraTarget = entities.find((entity) => entity.data?.id === cameraLockTarget);
-	if (cameraTarget) {
+	if (cameraTarget && !freecam) {
+		camera.setFree(false);
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
 		coolLight.position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		sporeFilterStrength.setTarget(cameraTarget.data?.isSabotaged ? 1 : 0);
 		fov.setTarget(cameraTarget.data?.isTrapped ? Math.PI / 6 : Math.PI / 3);
-		if (!freecam) {
-			if (isFirstPerson) {
-				camera.setPosition(position);
-			} else {
-				const offset = vec3.fromValues(-20, 50, 20);
-				camera.setPosition(vec3.add(vec3.create(), position, offset));
-				camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
+		if (isFirstPerson) {
+			camera.setPosition(position);
+			if (!camera.canRotate) {
+				const [x, y, z] = vec4.transformMat4(vec4.create(), vec4.fromValues(0, 0, -1, 0), cameraTarget.transform);
+				camera.setForwardDir(vec3.fromValues(x, y, z));
 			}
+		} else {
+			const offset = vec3.fromValues(-20, 50, 20);
+			camera.setPosition(vec3.add(vec3.create(), position, offset));
+			camera.setForwardDir(vec3.normalize(offset, vec3.scale(offset, offset, -1)));
 		}
-	}
-	if (freecam) {
+	} else {
+		// Spectate
+		camera.setFree(true);
 		camera.updateFreecam(debugInputs);
 	}
 	// TODO: also call this when rotating camera?
