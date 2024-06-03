@@ -79,6 +79,7 @@ void main() {
       (u_has_texture_metallic_roughness == 1
            ? texture2D(u_texture_metallic_roughness, v_texcoord1).g
            : 1.0);
+  vec3 emissive_color = u_emissive;
 
   vec3 to_eye = normalize(u_eye_pos - v_position);
   vec4 base_specular = vec4(0.5, 0.5, 0.5, 1.0);
@@ -124,6 +125,8 @@ void main() {
 
     gl_FragColor += diffuse + (u_enable_tones == 1 ? specular : vec4(0.0));
   }
+
+  gl_FragColor += vec4(emissive_color, 0.0);
 
   if (base_color.a < u_alpha_cutoff) {
     discard;

@@ -278,8 +278,8 @@ export abstract class PlayerEntity extends Entity {
 				...Array.from(
 					{ length: this.health },
 					(_, i): EntityModel => ({
-						modelId: "donut",
-						scale: 0.3,
+						modelId: "healthCrystal",
+						scale: 0.05,
 						offset: [
 							Math.cos((i / this.health + Date.now() / 10000) * 2 * Math.PI) * 0.2 * (this.health - 1),
 							0.5 + Math.cos((i / this.health + Date.now() / 5000) * 2 * Math.PI) * 0.05,
