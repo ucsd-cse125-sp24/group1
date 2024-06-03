@@ -193,6 +193,7 @@ export type SerializedEntity = {
 	// Client uses this state on camera locked entity to determine visual effects
 	isSabotaged?: boolean;
 	isTrapped?: boolean;
+	health?: number;
 };
 
 export type SerializedBody = {
