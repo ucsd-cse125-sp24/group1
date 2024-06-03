@@ -123,39 +123,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	/**
-	 * Registers an entity in the physics world and in the game state
-	 * so that it can be interacted with. Unregistered entities do not
-	 * affect the game in any way
-	 * @param entity the constructed entity to register
-	 *
-	 * NOTE: After the world has been created, use `addToCreateQueue` to avoid
-	 * issues while creating or removing entities during a tick.
-	 */
-	#registerEntity(entity: Entity) {
-		this.#entities.set(entity.id, entity);
-		this.#bodyToEntityMap.set(entity.body, entity);
-
-		// this is one way to implement collision that uses bodyToEntityMap without passing Game reference to entities
-		entity.body.addEventListener(Body.COLLIDE_EVENT_NAME, (params: { body: Body; contact: any }) => {
-			const otherBody: Body = params.body;
-			const otherEntity: Entity | undefined = this.#bodyToEntityMap.get(otherBody);
-			if (otherEntity) entity.onCollide(otherEntity);
-		});
-
-		entity.addToWorld(this.#world);
-	}
-
-	/**
-	 * NOTE: After the world has been created, use `addToDeleteQueue` to avoid
-	 * issues while creating or removing entities during a tick.
-	 */
-	#unregisterEntity(entity: Entity) {
-		this.#entities.delete(entity.id);
-		this.#bodyToEntityMap.delete(entity.body);
-		entity.removeFromWorld(this.#world);
-	}
-
-	/**
 	 * Checks for objects intersecting a line segment (*not* a ray) from `start`
 	 * to `end`.
 	 *
@@ -282,6 +249,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(sampleIorn2);
 	}
 
+	// #region Gameplay Methods
 	/**
 	 * State transition from "crafting" to "combat"
 	 */
@@ -336,60 +304,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({ type: "particle", position });
 	}
 
-	updateGameState() {
-		for (let [id, player] of this.#players.entries()) {
-			if (!player.entity) {
-				continue;
-			}
-			let inputs = player.input.getInputs();
-			let posedge = player.input.getPosedge();
-
-			// Make dedicated movement information object to avoid letting the
-			// player entity
-			let movement: MovementInfo = {
-				forward: inputs.forward,
-				backward: inputs.backward,
-				right: inputs.right,
-				left: inputs.left,
-				jump: inputs.jump,
-				lookDir: inputs.lookDir,
-			};
-
-			player.entity.move(movement);
-
-			if (posedge.use) {
-				const used = player.entity.use();
-				if (!used) {
-					this.playSound("useFail", player.entity.getPos());
-				}
-			}
-			if (posedge.attack) {
-				const attacked = player.entity.attack();
-				this.playParticle(player.entity.getPos());
-				if (!attacked) {
-					this.playSound("attackFail", player.entity.getPos());
-				}
-			}
-			if (posedge.emote) {
-				// TEMP: using `emote` key (X) to spawn item above player
-				const modelId = itemModels[Math.floor(Math.random() * itemModels.length)];
-				this.addToCreateQueue(
-					// TODO: other parameters?
-					new Item(
-						this,
-						modelId,
-						// Max: (25, 20) Min: (-24, -17)
-						player.entity.body.position.vadd(new phys.Vec3(0, 2, 0)).toArray(),
-						[{ modelId, offset: [0, -0.5, 0], scale: 0.5 }],
-						"resource",
-					),
-				);
-				log(`Player ${player.id.slice(0, 6)} spawned ${modelId}`);
-			}
-		}
-		this.#nextTick();
-	}
-
 	sabotageHero(id: EntityId) {
 		const target = this.#getPlayerByEntityId(id);
 		if (target && target.entity instanceof HeroEntity) {
@@ -421,7 +335,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number) {
 		this.#registerEntity(new ArrowEntity(this, position, velocity, damage));
 	}
+	// #endregion
 
+	// #region Player management methods
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
 		for (const player of this.#players.values()) {
 			if (player.entity?.id === id) {
@@ -489,6 +405,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.online = false;
 		}
 	}
+	// #endregion
 
 	/**
 	 * Parses a raw websocket message, and then generates a response to the
@@ -556,6 +473,80 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
+	// #region Game State Methods
+	getCurrentTick = () => this.#currentTick;
+	getCurrentStage = () => this.#currentStage;
+
+	logTicks(ticks: number, totalDelta: number) {
+		if ("_debugGetActivePlayerCount" in this.#server) {
+			const server = this.#server as any;
+			log(`${
+				ticks
+			} ticks sampled. Average simulation time: ${
+				(totalDelta / ticks).toFixed(4)
+			}ms per tick. ${
+				server._debugGetConnectionCount()
+			} connection(s), ${
+				server._debugGetActivePlayerCount()
+			} of ${
+				server._debugGetPlayerCount()
+			} player(s) online`);
+		}
+	}
+	updateGameState() {
+		for (let [id, player] of this.#players.entries()) {
+			if (!player.entity) {
+				continue;
+			}
+			let inputs = player.input.getInputs();
+			let posedge = player.input.getPosedge();
+
+			// Make dedicated movement information object to avoid letting the
+			// player entity
+			let movement: MovementInfo = {
+				forward: inputs.forward,
+				backward: inputs.backward,
+				right: inputs.right,
+				left: inputs.left,
+				jump: inputs.jump,
+				lookDir: inputs.lookDir,
+			};
+
+			player.entity.move(movement);
+
+			if (posedge.use) {
+				const used = player.entity.use();
+				if (!used) {
+					this.playSound("useFail", player.entity.getPos());
+				}
+			}
+			if (posedge.attack) {
+				const attacked = player.entity.attack();
+				this.playParticle(player.entity.getPos());
+				if (!attacked) {
+					this.playSound("attackFail", player.entity.getPos());
+				}
+			}
+			if (posedge.emote) {
+				// TEMP: using `emote` key (X) to spawn item above player
+				const modelId = itemModels[Math.floor(Math.random() * itemModels.length)];
+				this.addToCreateQueue(
+					// TODO: other parameters?
+					new Item(
+						this,
+						modelId,
+						// Max: (25, 20) Min: (-24, -17)
+						player.entity.body.position.vadd(new phys.Vec3(0, 2, 0)).toArray(),
+						[{ modelId, offset: [0, -0.5, 0], scale: 0.5 }],
+						"resource",
+					),
+				);
+				log(`Player ${player.id.slice(0, 6)} spawned ${modelId}`);
+			}
+		}
+		this.#nextTick();
+	}
+
 	#nextTick() {
 		this.#currentTick++;
 		this.#world.nextTick();
@@ -581,30 +572,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
-	getCurrentTick() {
-		return this.#currentTick;
-	}
-
-	logTicks(ticks: number, totalDelta: number) {
-		if ("_debugGetActivePlayerCount" in this.#server) {
-			const server = this.#server as any;
-			log(
-				`${ticks} ticks sampled. Average simulation time: ${(totalDelta / ticks).toFixed(4)}ms per tick. ${server._debugGetConnectionCount()} connection(s), ${server._debugGetActivePlayerCount()} of ${server._debugGetPlayerCount()} player(s) online`,
-			);
-		}
-	}
-
-	getCurrentStage() {
-		return this.#currentStage;
-	}
-
 	broadcastState() {
+		let serial: SerializedEntity[] = [];
+
+		for (let [id, entity] of this.#entities.entries()) {
+			serial.push(entity.serialize());
+		}
+		let physicsBodies = this.#world.serialize();
+		
 		for (const player of this.#players.values()) {
 			player.conn.send({
 				type: "entire-game-state",
 				stage: this.#currentStage,
-				entities: this.serialize(),
-				physicsBodies: this.serializePhysicsBodies(),
+				entities: serial,
+				physicsBodies: physicsBodies,
 				players: Array.from(this.#players.values(), (p) => ({
 					name: p.name,
 					role: !p.entity ? "spectator" : p.entity instanceof BossEntity ? "boss" : "hero",
@@ -615,7 +596,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			});
 		}
 	}
+	// #endregion
 
+	// #region Entity Management Methods
 	addToDeleteQueue(sussyAndRemovable: EntityId) {
 		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
 		if (index !== -1) {
@@ -625,7 +608,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#toDeleteQueue.push(sussyAndRemovable);
 	}
-
 	addToCreateQueue(entity: Entity) {
 		// If entity was in delete queue, remove it from there instead (can happen
 		// if an entity is deleted then re-added in the same tick)
@@ -637,7 +619,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#toCreateQueue.push(entity);
 	}
-
 	clearEntityQueues() {
 		for (const entity of this.#toCreateQueue) {
 			this.#entities.set(entity.id, entity);
@@ -661,20 +642,39 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 		this.#toDeleteQueue = [];
 	}
+	/**
+	 * Registers an entity in the physics world and in the game state
+	 * so that it can be interacted with. Unregistered entities do not
+	 * affect the game in any way
+	 * @param entity the constructed entity to register
+	 *
+	 * NOTE: After the world has been created, use `addToCreateQueue` to avoid
+	 * issues while creating or removing entities during a tick.
+	 */
+	#registerEntity(entity: Entity) {
+		this.#entities.set(entity.id, entity);
+		this.#bodyToEntityMap.set(entity.body, entity);
 
-	serialize(): SerializedEntity[] {
-		let serial: SerializedEntity[] = [];
+		// this is one way to implement collision that uses bodyToEntityMap without passing Game reference to entities
+		entity.body.addEventListener(Body.COLLIDE_EVENT_NAME, (params: { body: Body; contact: any }) => {
+			const otherBody: Body = params.body;
+			const otherEntity: Entity | undefined = this.#bodyToEntityMap.get(otherBody);
+			if (otherEntity) entity.onCollide(otherEntity);
+		});
 
-		for (let [id, entity] of this.#entities.entries()) {
-			serial.push(entity.serialize());
-		}
-
-		return serial;
+		entity.addToWorld(this.#world);
 	}
 
-	serializePhysicsBodies(): SerializedBody[] {
-		return this.#world.serialize();
+	/**
+	 * NOTE: After the world has been created, use `addToDeleteQueue` to avoid
+	 * issues while creating or removing entities during a tick.
+	 */
+	#unregisterEntity(entity: Entity) {
+		this.#entities.delete(entity.id);
+		this.#bodyToEntityMap.delete(entity.body);
+		entity.removeFromWorld(this.#world);
 	}
+	// #endregion
 }
 
 /**
