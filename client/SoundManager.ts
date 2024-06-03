@@ -13,9 +13,11 @@ export type SoundObject = {
 export class SoundManager {
 	#audio: Record<string, SoundObject[]> = {};
 	#context: AudioContext;
+	#destination: AudioNode;
 
-	constructor(context: AudioContext) {
+	constructor(context: AudioContext, destination: AudioNode = context.destination) {
 		this.#context = context;
+		this.#destination = destination;
 	}
 
 	play(src: string): SoundObject {
@@ -29,6 +31,7 @@ export class SoundManager {
 			const audio = new Audio(src);
 			const panner = new PannerNode(this.#context, {
 				panningModel: "HRTF",
+				distanceModel: "inverse",
 			});
 			const track = this.#context.createMediaElementSource(audio);
 
@@ -37,7 +40,7 @@ export class SoundManager {
 				this.#audio[src].push({ audio, track, panner });
 			});
 
-			track.connect(panner).connect(this.#context.destination);
+			track.connect(panner).connect(this.#destination);
 
 			return { audio, track, panner };
 		}

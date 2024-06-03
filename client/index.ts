@@ -2,7 +2,7 @@ import { mat4, vec3 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { ClientMessage, EntireGameState, SerializedCollider, ServerMessage } from "../common/messages";
 import { EntityId } from "../server/entities/Entity";
-import { sounds } from "../assets/sounds";
+import { reverbImpulse, sounds } from "../assets/sounds";
 import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
 import gltfDebugLightFragmentSource from "./shaders/gltf_debug_light.frag";
 import gltfDebugUniqueShadowFragmentSource from "./shaders/gltf_debug_unique_shadow.frag";
@@ -126,7 +126,16 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 const connection = new Connection(wsUrl, handleMessage, document.getElementById("network-status"));
 
 const { gl, audioContext, lockPointer, unlockPointer } = getContexts();
-const sound = new SoundManager(audioContext);
+const convolver = audioContext.createConvolver();
+fetch(reverbImpulse)
+	.then((r) => r.arrayBuffer())
+	.then((buffer) => audioContext.decodeAudioData(buffer))
+	.then((buffer) => {
+		// convolver.normalize = false;
+		convolver.buffer = buffer;
+	});
+convolver.connect(audioContext.destination);
+const sound = new SoundManager(audioContext, convolver);
 
 // lockPointer();
 // inputListener.listen();

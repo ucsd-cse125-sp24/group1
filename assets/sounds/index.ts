@@ -20,6 +20,7 @@ import trapHit from "./trap-hit.mp3";
 import trapPlace from "./trap-place.mp3";
 import trapTriggered from "./trap-triggered.mp3";
 import useFail from "./use-fail.mp3";
+export { default as reverbImpulse } from "./reverb-impulse.mp3";
 
 export const sounds = {
 	/** Player tries to attack but it's not aimed at anything. */
