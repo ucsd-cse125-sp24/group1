@@ -87,8 +87,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#players: Map<string, NetworkedPlayer>;
 	#createdInputs: PlayerInput[];
-	#boss: BossEntity | null = null;
-	#heroes: HeroEntity[] = [];
 
 	#entities: Map<EntityId, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
@@ -261,15 +259,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#transitionToCombat() {
 		this.#currentStage = { type: "combat", startTime: Date.now(), endTime: Date.now() + COMBAT_STAGE_LENGTH };
 
-		for (const player of this.#players.values()) {
-			if (player.entity === null) {
-				continue;
-			} else if (this.#boss === null && player.entity.isBoss) {
-				this.#boss = player.entity as BossEntity;
-			} else if (!player.entity.isBoss) {
-				this.#heroes.push(player.entity as HeroEntity);
-			}
-		}
 	}
 
 	/**
@@ -277,18 +266,25 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	#checkGameOver() {
 		let isAnyHeroAlive = false;
-		for (const hero of this.#heroes) {
-			if (hero.health > 0) {
-				isAnyHeroAlive = true;
-				break;
+		let isAnyBossAlive = false;
+		for (const {entity} of this.#players.values()) {
+			if (entity&&entity.health > 0) {
+				if (entity instanceof BossEntity) {
+					isAnyBossAlive = true;
+				} else if (entity instanceof HeroEntity) {
+					isAnyHeroAlive = true;
+				}
+				if (isAnyBossAlive&&isAnyHeroAlive){
+					break
+				}
 			}
 		}
 		const endTime = this.#currentStage.type === "lobby" ? 0 : this.#currentStage.endTime;
-		if (this.#boss === null || this.#boss.health <= 0) {
+		if (!isAnyBossAlive) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
 			this.#currentStage = { type: "lobby", previousWinner: "hero" };
-		} else if (Date.now() > endTime || !isAnyHeroAlive) {
+		} else if (Date.now() >= endTime || !isAnyHeroAlive) {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 			this.#currentStage = { type: "lobby", previousWinner: "boss" };

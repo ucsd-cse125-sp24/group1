@@ -19,7 +19,10 @@
 	height: 40px;
 	padding: 0 20px;
 	border-radius: 40px;
-	&:hover {
+	&:not(:disabled):hover {
 		background-color: #facc15;
+	}
+	&:disabled {
+		opacity: 0.5;
 	}
 }

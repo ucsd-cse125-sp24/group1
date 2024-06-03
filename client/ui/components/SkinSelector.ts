@@ -24,5 +24,10 @@ export class SkinSelector {
 				this.element.classList.add(styles.hide);
 			}
 		}
+		const playerCount = state.players.filter((player) => player.role !== "spectator").length;
+		const previousPlayerCount = previous?.players.filter((player) => player.role !== "spectator").length;
+		if (playerCount !== previousPlayerCount) {
+			this.#startBtn.disabled = playerCount === 0;
+		}
 	}
 }

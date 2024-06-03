@@ -12,6 +12,7 @@ const COYOTE_FRAMES = 10;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
+	/** NOTE: Prefer using `player instanceof BossEntity` or `HeroEntity` */
 	isBoss: boolean = false;
 	initHealth: number = 0;
 	health: number = 0;
