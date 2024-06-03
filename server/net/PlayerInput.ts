@@ -1,73 +1,60 @@
+import { Vector3 } from "../../common/commontypes";
 import { ClientInputs } from "../../common/messages";
 
-export class PlayerInput {
-	#data: ClientInputs;
-	#posedge: ClientInputs;
+export type Keys = Omit<ClientInputs, "lookDir">;
 
-	constructor() {
-		this.#data = {
-			forward: false,
-			backward: false,
-			right: false,
-			left: false,
-			jump: false,
-			attack: false,
-			use: false,
-			emote: false,
-			lookDir: [0, 0, 0],
-		};
-		this.#posedge = {
-			forward: false,
-			backward: false,
-			right: false,
-			left: false,
-			jump: false,
-			attack: false,
-			use: false,
-			emote: false,
-			lookDir: [0, 0, 0],
-		};
-	}
+/**
+ * Runs `func` on every key and creates an object out of the results. Useful for
+ * looping over keys.
+ *
+ * Mostly exists as a TypeScript hack.
+ */
+function mapKeys<T>(func: (key: keyof Keys) => T): Record<keyof Keys, T> {
+	return {
+		forward: func("forward"),
+		backward: func("backward"),
+		right: func("right"),
+		left: func("left"),
+		jump: func("jump"),
+		attack: func("attack"),
+		use: func("use"),
+		emote: func("emote"),
+	};
+}
+
+export class PlayerInput {
+	#data = mapKeys(() => false);
+	#posedge = mapKeys(() => false);
+	#lookDir: Vector3 = [0, 0, 0];
 
 	/**
 	 * Called whenever the client sends new data about inputs
 	 * @param newData
 	 */
 	updateInputs(newData: ClientInputs) {
-		this.#data.lookDir = newData.lookDir;
-		for (let key of Object.keys(this.#data)) {
-			if (typeof this.#data[key] !== "boolean") continue;
-			// If the button wasn't pressed and now is, then mark the input
-			// as pressed for the next server tick regardless of its current value
+		this.#lookDir = newData.lookDir;
+		this.#data = mapKeys((key) => {
 			if (!this.#data[key] && newData[key]) {
 				this.#posedge[key] = true;
 			}
-			this.#data[key] = newData[key];
-		}
+			return newData[key];
+		});
 	}
 
 	// Don't let players use
 	getInputs(): ClientInputs {
-		let combined = { ...this.#data };
-		for (let key of Object.keys(this.#data)) {
-			if (typeof this.#data[key] !== "boolean") continue;
-			// If an input was pressed between server ticks, return that the input
-			// is pressed regardless of if it is released between server ticks for just that tick
-			combined[key] ||= this.#posedge[key];
-		}
-		return combined;
+		return { ...mapKeys((key) => this.#data[key] || this.#posedge[key]), lookDir: this.#lookDir };
 	}
 
 	// Getting posedge
-	getPosedge(): ClientInputs {
+	getPosedge(): Keys {
 		return this.#posedge;
 	}
 
 	// This function is called to update the player inputs
 	serverTick() {
-		for (let key of Object.keys(this.#posedge)) {
-			if (typeof this.#data[key] !== "boolean") continue;
+		mapKeys((key) => {
 			this.#posedge[key] = false;
-		}
+		});
 	}
 }

@@ -29,7 +29,9 @@ export class ShaderProgram {
 	}
 
 	uniform(name: string): WebGLUniformLocation | null {
-		this.#uniformLocations[name] ??= this.engine.gl.getUniformLocation(this.#program, name);
+		if (this.#uniformLocations[name] === undefined) {
+			this.#uniformLocations[name] = this.engine.gl.getUniformLocation(this.#program, name);
+		}
 		return this.#uniformLocations[name];
 	}
 

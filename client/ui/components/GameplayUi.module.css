@@ -1,0 +1,27 @@
+.wrapper {
+	position: fixed;
+	inset: 0;
+	user-select: none;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	transition: all 0.5s;
+}
+.hide {
+	opacity: 0;
+	visibility: hidden;
+}
+
+.crosshair {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+	user-select: none;
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}

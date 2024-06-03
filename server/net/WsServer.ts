@@ -1,12 +1,13 @@
 import http from "http";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+import { getRandomValues } from "crypto";
 import { WebSocket, WebSocketServer } from "ws";
 import express from "express";
 import { Game } from "../Game";
-import { getRandomValues } from "crypto";
 import { ClientControlMessage, ClientMessage, ServerControlMessage, ServerMessage } from "../../common/messages";
-import { Connection } from "./Server";
+import { BiMap } from "../../common/lib/BiMap";
+import { Connection, Server } from "./Server";
 import { log } from "./_tempDebugLog";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -22,7 +23,7 @@ const RECONNECT_TIMEOUT = 60 * 60 * 1000;
  * object of our entire game? In a way, yes. However, the server has limited
  * access to the game, so the game still retains most of the control.
  */
-export class WsServer {
+export class WsServer implements Server<ClientMessage, ServerMessage> {
 	#app = express();
 	#server = http.createServer(this.#app);
 	#wss = new WebSocketServer({ server: this.#server });
@@ -73,7 +74,7 @@ export class WsServer {
 			res.sendFile(path.join(__dirname, "../public/index.html"));
 		});
 
-		this.#wss.on("connection", this.#handleNewConnection.bind(this));
+		this.#wss.on("connection", this.#handleNewConnection);
 	}
 
 	// #createConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> {
@@ -90,7 +91,7 @@ export class WsServer {
 	// }
 
 	#getConnection(ws: WebSocket): Connection<ServerMessage | ServerControlMessage> | null {
-		const id = this.#playerConnections.rev_get(ws);
+		const id = this.#playerConnections.revGet(ws);
 		if (!id) {
 			return null;
 		}
@@ -107,29 +108,28 @@ export class WsServer {
 		};
 	}
 
-	#handleNewConnection(ws: WebSocket) {
+	#handleNewConnection = (ws: WebSocket) => {
 		this.#unhangServer();
 
 		ws.on("message", (rawData) => {
-			this.handleMessage(ws, rawData);
+			this.#handleMessage(ws, rawData);
 		});
 
 		ws.on("close", () => {
-			const wsId = this.#playerConnections.rev_get(ws);
+			const wsId = this.#playerConnections.revGet(ws);
 			if (!wsId) return;
 
 			log(`Player ${wsId.slice(0, 6)} disconnected`);
 
+			this.#game.handlePlayerDisconnect(wsId);
+
 			// Give players a while to reconnect
 			this.#disconnectTimeouts.set(
 				wsId,
-				setTimeout(
-					(() => {
-						this.deleteConnection(wsId);
-						log(`Player ${wsId.slice(0, 6)} discarded`);
-					}).bind(this),
-					RECONNECT_TIMEOUT,
-				),
+				setTimeout(() => {
+					this.#deleteConnection(wsId);
+					log(`Player ${wsId.slice(0, 6)} discarded`);
+				}, RECONNECT_TIMEOUT),
 			);
 
 			if (this.#wss.clients.size === 0) {
@@ -139,13 +139,13 @@ export class WsServer {
 				}).then(() => log("Simulation resumes"));
 			}
 		});
-	}
+	};
 
-	deleteConnection(id: string) {
+	#deleteConnection(id: string) {
 		this.#playerConnections.delete(id);
 	}
 
-	handleMessage(ws: WebSocket, rawData: unknown): void {
+	#handleMessage(ws: WebSocket, rawData: unknown): void {
 		const stringData = Array.isArray(rawData) ? rawData.join("") : String(rawData);
 
 		let data: ClientMessage | ClientControlMessage;
@@ -229,63 +229,5 @@ export class WsServer {
 	listen(port: number): void {
 		this.#server.listen(port);
 		console.log(`Listening on http://localhost:${port}/`);
-	}
-}
-
-class BiMap<K, V> {
-	#map = new Map<K, V>();
-	#pam = new Map<V, K>();
-	size: number;
-
-	constructor() {
-		this.size = 0;
-	}
-
-	get(v: K): V | undefined {
-		return this.#map.get(v);
-	}
-	has(k: K): boolean {
-		return this.#map.has(k);
-	}
-	rev_has(v: V) {
-		return this.#pam.has(v);
-	}
-	rev_get(v: V): K | undefined {
-		return this.#pam.get(v);
-	}
-
-	set(k: K, v: V): this {
-		this.#map.set(k, v);
-		this.#pam.set(v, k);
-		this.size++;
-		return this;
-	}
-
-	delete(k: K): boolean {
-		let v = this.#map.get(k);
-		if (v) {
-			this.#map.delete(k);
-			this.#pam.delete(v);
-			this.size--;
-			return true;
-		}
-		return false;
-	}
-	rev_delete(v: V) {
-		let k = this.#pam.get(v);
-		if (k) {
-			this.#map.delete(k);
-			this.#pam.delete(v);
-			this.size--;
-			return true;
-		}
-		return false;
-	}
-	entries(): IterableIterator<[K, V]> {
-		return this.#map.entries();
-	}
-
-	toString() {
-		return this.#map.toString();
 	}
 }

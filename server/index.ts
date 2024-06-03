@@ -1,14 +1,7 @@
 import { delay } from "../common/lib/delay";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { Game } from "./Game";
-import { WsServer } from "./net/WsServer";
 import { log } from "./net/_tempDebugLog";
-
-/**
- * Whether the server is being compiled for the browser. This is set by the
- * `esbuild` bundle options in `package.json`.
- */
-declare var BROWSER: boolean;
 
 const game = new Game();
 

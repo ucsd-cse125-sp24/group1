@@ -1,6 +1,6 @@
 import { mat4 } from "gl-matrix";
-import { Model } from "./Model";
 import { groupBy } from "../../../common/lib/groupBy";
+import { Model } from "./Model";
 
 export type ModelWithTransform = {
 	model: Model;

@@ -32,14 +32,11 @@ export class Connection {
 
 		this.#workerBtn.addEventListener("click", this.#connectWorker);
 		this.#retryBtn.addEventListener("click", () => this.connect(true));
-		document.addEventListener(
-			"keydown",
-			((e: any) => {
-				if (e.key === "h") {
-					this.#ws?.close();
-				}
-			}).bind(this),
-		);
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "h") {
+				this.#ws?.close();
+			}
+		});
 	}
 
 	connect(reconnecting = false) {
@@ -51,7 +48,7 @@ export class Connection {
 		}
 		try {
 			this.#ws = new WebSocket(this.url);
-			this.#ws.addEventListener("open", this.#handleOpen);
+			this.#ws.addEventListener("open", this.#handleWsOpen);
 			this.#ws.addEventListener("message", this.#handleRawMessage);
 			this.#ws.addEventListener("error", this.#handleError);
 			this.#ws.addEventListener("close", this.#handleClose);
@@ -63,7 +60,7 @@ export class Connection {
 		}
 	}
 
-	#handleOpen = () => {
+	#handleWsOpen = () => {
 		console.log("Connected :D");
 		this.#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 		if (this.#indicator) {
@@ -71,8 +68,7 @@ export class Connection {
 			this.#lastTime = performance.now();
 		}
 
-		let old_connection = localStorage.getItem(CONNECTION_ID);
-		this.send({ type: "join", id: old_connection ?? "" });
+		this.#handleOpen();
 
 		const queue = this.#sendQueue;
 		this.#sendQueue = [];
@@ -80,6 +76,11 @@ export class Connection {
 			this.send(message);
 		}
 	};
+
+	#handleOpen() {
+		let old_connection = localStorage.getItem(CONNECTION_ID);
+		this.send({ type: "join", id: old_connection ?? "" });
+	}
 
 	#handleRawMessage = async (e: MessageEvent<unknown>) => {
 		let data: ServerMessage | ServerControlMessage;
@@ -171,5 +172,6 @@ export class Connection {
 		}
 		this.#worker = new Worker("./worker/index.js");
 		this.#worker.addEventListener("message", this.#handleRawMessage);
+		this.#handleOpen();
 	};
 }

@@ -1,4 +1,3 @@
-import { vec3 } from "gl-matrix";
 import GraphicsEngine from "../../client/render/engine/GraphicsEngine";
 import { Model } from "../../client/render/model/Model";
 import { GltfModelWrapper } from "../../client/render/model/GltfModel";
@@ -24,6 +23,18 @@ import { shears } from "./shears";
 import { string } from "./string";
 import { sword } from "./sword";
 import { wood } from "./wood";
+import { furnace } from "./furnace";
+import { work_station } from "./work_station";
+import { table } from "./table";
+import { spider_web } from "./spider_web";
+import { ore_vein } from "./ore_vein";
+import { mushroom_guy } from "./mushroom_guy";
+import { mushroom_cluster } from "./mushroom_cluster";
+import { chair } from "./chair";
+import { bottle_table } from "./bottle_table";
+import { anvil } from "./anvil";
+import { armor } from "./armor";
+
 import { defaultCube } from "./default-cube";
 
 export const getModels = (engine: GraphicsEngine) =>
@@ -57,6 +68,18 @@ export const getModels = (engine: GraphicsEngine) =>
 		string: GltfModelWrapper.from(engine.gltfMaterial, string),
 		sword: GltfModelWrapper.from(engine.gltfMaterial, sword),
 		wood: GltfModelWrapper.from(engine.gltfMaterial, wood),
+
+		furnace: GltfModelWrapper.from(engine.gltfMaterial, furnace),
+		work_station: GltfModelWrapper.from(engine.gltfMaterial, work_station),
+		table: GltfModelWrapper.from(engine.gltfMaterial, table),
+		spider_web: GltfModelWrapper.from(engine.gltfMaterial, spider_web),
+		ore_vein: GltfModelWrapper.from(engine.gltfMaterial, ore_vein),
+		mushroom_guy: GltfModelWrapper.from(engine.gltfMaterial, mushroom_guy),
+		mushroom_cluster: GltfModelWrapper.from(engine.gltfMaterial, mushroom_cluster),
+		chair: GltfModelWrapper.from(engine.gltfMaterial, chair),
+		bottle_table: GltfModelWrapper.from(engine.gltfMaterial, bottle_table),
+		anvil: GltfModelWrapper.from(engine.gltfMaterial, anvil),
+		armor: GltfModelWrapper.from(engine.gltfMaterial, armor),
 	}) satisfies Record<string, Model>;
 
 export type ModelId = keyof ReturnType<typeof getModels>;

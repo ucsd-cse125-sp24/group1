@@ -17,6 +17,7 @@ export class InputListener<Inputs extends string> {
 	options: InputListenerOptions<Inputs>;
 	#inputs: Record<Inputs, boolean>;
 	#intervalID: number = 0;
+	enabled = true;
 
 	constructor(options: InputListenerOptions<Inputs>) {
 		this.options = options;
@@ -24,6 +25,9 @@ export class InputListener<Inputs extends string> {
 	}
 
 	#handleInput(codeButton: string | number, pressed: boolean): void {
+		if (pressed && !this.enabled) {
+			return;
+		}
 		const key: Inputs | null = this.options.keymap[codeButton] ?? null;
 		// Don't send anything if inputs don't change (e.g. if keydown is fired
 		// multiple times while repeating a key)

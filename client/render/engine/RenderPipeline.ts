@@ -1,7 +1,5 @@
-import { mat4 } from "gl-matrix";
 import filterVertexSource from "../../shaders/filter.vert";
 import noOpFilterFragmentSource from "../../shaders/filterNoOp.frag";
-import { ParticleSystem } from "../model/ParticleSystem";
 import GraphicsEngine from "./GraphicsEngine";
 import { ShaderProgram } from "./ShaderProgram";
 
@@ -28,8 +26,6 @@ export class RenderPipeline {
 	#imagePlanePositions: WebGLBuffer | null;
 	#imagePlaneTexCoords: WebGLBuffer | null;
 	filters: Filter[];
-
-	#reticle: ParticleSystem;
 
 	noOpFilter: ShaderProgram;
 
@@ -77,16 +73,6 @@ export class RenderPipeline {
 				engine.createShader("fragment", noOpFilterFragmentSource, "filterNoOp.frag"),
 			),
 		);
-
-		this.#reticle = new ParticleSystem(engine, 1, Number.POSITIVE_INFINITY, 1, {
-			size: 20,
-			color: [1, 1, 1],
-			mass: 0,
-			initialPosition: [0, 0, -0.5],
-			initialVelocity: [0, 0, 0],
-			ttl: Number.POSITIVE_INFINITY,
-		});
-		this.#reticle.enable();
 	}
 
 	#getFilters(): Filter[] {
@@ -144,8 +130,6 @@ export class RenderPipeline {
 
 		// Final draw to canvas
 		this.#drawToPlane(filters[filters.length - 1]);
-		this.#reticle.shader.use();
-		this.#reticle.draw([mat4.create()], mat4.create());
 	}
 
 	#drawToPlane({ shader, strength }: Filter): void {

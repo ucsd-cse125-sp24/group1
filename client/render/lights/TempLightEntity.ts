@@ -1,6 +1,5 @@
 import { vec3, mat4 } from "gl-matrix";
 import { ClientEntity } from "../ClientEntity";
-import GraphicsEngine from "../engine/GraphicsEngine";
 import { ShaderProgram } from "../engine/ShaderProgram";
 import { TempLightModel } from "./TempLightModel";
 import { PointLight } from "./PointLight";

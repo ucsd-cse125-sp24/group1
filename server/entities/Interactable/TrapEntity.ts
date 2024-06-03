@@ -5,7 +5,6 @@ import { Entity, EntityId } from "../Entity";
 import { PlayerEntity } from "../PlayerEntity";
 import { HeroEntity } from "../HeroEntity";
 import { InteractableEntity } from "./InteractableEntity";
-import { Item } from "./Item";
 
 export class TrapEntity extends InteractableEntity {
 	trappedPlayerId: EntityId | null;

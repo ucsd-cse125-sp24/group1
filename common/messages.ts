@@ -9,9 +9,17 @@ export type ServerMessage =
 	| EntireGameState
 	| CameraLock
 	| PlaySound
-	| SabotageHero;
+	| SabotageHero
+	| GameOver
+	| PlayParticle;
 
-export type ClientMessage = { type: "ping" } | { type: "pong" } | ClientInputMessage | DebugMessages;
+export type ClientMessage =
+	| { type: "ping" }
+	| { type: "pong" }
+	| ClientInputMessage
+	| ChangeDisplayName
+	| ChangeRole
+	| StartGame;
 
 export type ClientControlMessage = {
 	/**
@@ -35,8 +43,28 @@ export type ServerControlMessage = {
 	id: string;
 };
 
+export type GameStage =
+	| {
+			type: "lobby";
+			/** Null if no games have been played yet */
+			previousWinner: "hero" | "boss" | null;
+	  }
+	| {
+			type: "crafting";
+			startTime: number;
+			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
+			endTime: number;
+	  }
+	| {
+			type: "combat";
+			startTime: number;
+			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
+			endTime: number;
+	  };
+
 export type EntireGameState = {
 	type: "entire-game-state";
+	stage: GameStage;
 	entities: SerializedEntity[];
 	/**
 	 * All physics engine colliders to draw wireframes around for debug purposes.
@@ -44,6 +72,23 @@ export type EntireGameState = {
 	 * predict positions on these bodies.
 	 */
 	physicsBodies: SerializedBody[];
+	players: PlayerEntry[];
+};
+
+export type PlayerEntry = {
+	name: string;
+	role: Role;
+	entityId?: number;
+	online: boolean;
+	/** Whether this entry corresponds to the client */
+	me: boolean;
+};
+
+export type Role = "boss" | "hero" | "spectator";
+
+export type GameOver = {
+	type: "game-over";
+	winner: "heroes" | "boss";
 };
 
 /**
@@ -69,6 +114,11 @@ export type CameraLock = {
 export type PlaySound = {
 	type: "sound";
 	sound: SoundId;
+	position: Vector3;
+};
+
+export type PlayParticle = {
+	type: "particle";
 	position: Vector3;
 };
 
@@ -100,9 +150,19 @@ export type ClientInputMessage = {
 	type: "client-input";
 } & ClientInputs;
 
-export type DebugMessages = {
-	type: "--debug-switch-role";
-	keepBody: boolean;
+export type ChangeDisplayName = {
+	type: "change-name";
+	name: string;
+};
+
+export type ChangeRole = {
+	type: "change-role";
+	role: Role;
+	skin?: "red" | "yellow" | "green" | "blue";
+};
+
+export type StartGame = {
+	type: "start-game";
 };
 
 export type EntityModelObject = {
@@ -112,7 +172,16 @@ export type EntityModelObject = {
 	/** Scales evenly in all directions */
 	scale?: number;
 };
-export type EntityModel = ModelId | EntityModelObject;
+export type TextModelObject = {
+	text: string;
+	offset?: Vector3;
+	rotation?: Quaternion;
+	height?: number;
+	resolution?: number;
+	color?: Vector3;
+	font?: string;
+};
+export type EntityModel = ModelId | EntityModelObject | TextModelObject;
 
 export type SerializedEntity = {
 	id: EntityId;
@@ -124,6 +193,7 @@ export type SerializedEntity = {
 	// Client uses this state on camera locked entity to determine visual effects
 	isSabotaged?: boolean;
 	isTrapped?: boolean;
+	health?: number;
 };
 
 export type SerializedBody = {

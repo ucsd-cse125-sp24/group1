@@ -25,6 +25,11 @@ declare module "*.mp3" {
 	export default path;
 }
 
+declare module "*.module.css" {
+	const styles: Record<string, string>;
+	export default styles;
+}
+
 interface Element {
 	// lib.dom.d.ts is missing options parameter and Promise return type
 	requestPointerLock(options?: { unadjustedMovement?: boolean }): Promise<void>;

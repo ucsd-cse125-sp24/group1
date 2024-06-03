@@ -1,10 +1,10 @@
 import * as phys from "cannon-es";
 import { Quaternion, Vector3 } from "../../common/commontypes";
 import { q4, v3 } from "../PhysicsWorld";
-import { EntityModel, SerializedEntity } from "../../common/messages";
+import { EntityModel } from "../../common/messages";
 import { GroundMaterial } from "../materials/SourceMaterials";
-import { Entity } from "./Entity";
 import { Game } from "../Game";
+import { Entity } from "./Entity";
 
 export class PlaneEntity extends Entity {
 	// name: string;

@@ -10,7 +10,7 @@
 	"scripts": {
 		"build": "npm run build:server && npm run build:client",
 		"build:server": "esbuild server/index.ts --bundle --platform=node --packages=external --define:BROWSER=false --loader:.gltf=json --loader:.bin=file --outdir=dist --format=esm",
-		"build:server-worker": "esbuild server/index.ts --bundle --external:./server/net/WsServer.ts --external:./server/net/_tempDebugLog.ts --external:node:fs/promises --define:BROWSER=true --loader:.gltf=json --loader:.bin=file --outdir=public/worker/ --format=iife --minify --sourcemap",
+		"build:server-worker": "esbuild server/index.ts --bundle --external:./server/net/WsServer.ts --external:node:fs/promises --define:BROWSER=true --loader:.gltf=json --loader:.bin=file --outdir=public/worker/ --format=iife --minify --sourcemap",
 		"build:client": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --loader:.gltf=json --loader:.bin=file --loader:.png=file --loader:.mp3=file --outdir=public --supported:nesting=false --minify --sourcemap",
 		"dev": "esbuild client/index.ts --bundle --loader:.vert=text --loader:.frag=text --loader:.gltf=json --loader:.bin=file --loader:.png=file --loader:.mp3=file --outdir=public --servedir=public --sourcemap",
 		"format": "prettier -w . --log-level=warn",

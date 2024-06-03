@@ -1,7 +1,6 @@
 import { Vector3 } from "../../common/commontypes";
 import { EntityModel } from "../../common/messages";
 import { Game } from "../Game";
-import { Entity } from "./Entity";
 import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
 
@@ -22,6 +21,8 @@ const BOSS_JUMP_SPEED = 10;
 export class BossEntity extends PlayerEntity {
 	// Game properties
 	canPlaceTrap: boolean = true;
+	isBoss = true;
+	health = 30;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(

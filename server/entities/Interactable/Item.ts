@@ -1,13 +1,11 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel, SerializedEntity } from "../../../common/messages";
+import { EntityModel } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Tag } from "../Entity";
 import { ItemMaterial } from "../../materials/SourceMaterials";
-import { InteractableEntity } from "./InteractableEntity";
 import { Game } from "../../Game";
-import { HeroEntity } from "../HeroEntity";
-import { BossEntity } from "../BossEntity";
+import { InteractableEntity } from "./InteractableEntity";
 
 export type ItemType =
 	| "axe"
@@ -23,7 +21,26 @@ export type ItemType =
 	| "shears"
 	| "string"
 	| "sword"
+	| "armor"
 	| "wood";
+
+const colliderShapeForItemType: Record<ItemType, phys.Shape> = {
+	armor: new phys.Sphere(0.5),
+	axe: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
+	bow: new phys.Cylinder(0.5, 0.5, 1.0, 12),
+	gamer_bow: new phys.Cylinder(0.5, 0.5, 1.0, 12),
+	gamer_sword: new phys.Cylinder(0.5, 0.5, 1.0, 12),
+	iron: new phys.Cylinder(0.5, 0.5, 1.0, 12),
+	knife: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
+	magic_sauce: new phys.Sphere(0.5),
+	mushroom: new phys.Sphere(0.5),
+	pickaxe: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
+	raw_iron: new phys.Sphere(0.5),
+	shears: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
+	string: new phys.Sphere(0.5),
+	sword: new phys.Box(new phys.Vec3(0.3, 1, 0.1)),
+	wood: new phys.Cylinder(0.5, 0.5, 1.0, 12),
+};
 
 export class Item extends InteractableEntity {
 	type: ItemType;
@@ -59,64 +76,9 @@ export class Item extends InteractableEntity {
 			mass: 1.0,
 			position: new phys.Vec3(...pos),
 			material: ItemMaterial,
+			shape: colliderShapeForItemType[type],
 			collisionFilterGroup: this.getBitFlag(), // ALWAYS SET TAGS BEFORE THIS!!
 		});
-
-		let shape = new phys.Shape();
-
-		const hasFlatCollider: Record<ItemType, boolean | undefined> = {
-			axe: true,
-			knife: true,
-			pickaxe: true,
-			shears: true,
-			sword: true,
-
-			bow: false,
-			gamer_bow: false,
-			gamer_sword: false,
-			iron: false,
-			magic_sauce: false,
-			mushroom: false,
-			raw_iron: false,
-			string: false,
-			wood: false,
-		};
-
-		const hasSphereCollider: Record<ItemType, boolean | undefined> = {
-			raw_iron: true,
-			string: true,
-			magic_sauce: true,
-			mushroom: true,
-
-			axe: false,
-			knife: false,
-			pickaxe: false,
-			shears: false,
-			sword: false,
-
-			bow: false,
-			gamer_bow: false,
-			gamer_sword: false,
-			iron: false,
-			wood: false,
-		};
-
-		//everything else will have a cylindrical collider
-
-		let rot = new phys.Quaternion(0, 0, 0, 1);
-
-		if (hasFlatCollider[type]) {
-			shape = new phys.Box(new phys.Vec3(0.3, 1.0, 0.1));
-		} else if (hasSphereCollider[type]) {
-			shape = new phys.Sphere(0.5);
-		} else {
-			shape = new phys.Cylinder(0.5, 0.5, 1.0, 12);
-			rot.setFromEuler(0, 0, 1.5707);
-		}
-
-		this.body.addShape(shape, new phys.Vec3(0, 0.5, 0), rot);
-
-		this.body.position = new phys.Vec3(...pos);
 	}
 
 	/**
@@ -125,11 +87,13 @@ export class Item extends InteractableEntity {
 	bind(player: PlayerEntity) {
 		this.heldBy = player;
 		this.heldBy.itemInHands = this;
+		this.body.removeShape(colliderShapeForItemType[this.type]);
 	}
 
 	unbind() {
 		if (this.heldBy) this.heldBy.itemInHands = null;
 		this.heldBy = null;
+		this.body.addShape(colliderShapeForItemType[this.type]);
 	}
 
 	interact(player: PlayerEntity) {
@@ -148,14 +112,13 @@ export class Item extends InteractableEntity {
 		//if a hero, then makes the item's position locked into the player's hands
 		//turns collider off, possibly
 
-		if (player instanceof HeroEntity) {
-			console.log("touched an item, scandalous");
+		if (!player.isBoss) {
 			this.bind(player);
 			this.game.playSound("pickup", player.getPos());
 			// Should this be moved to `bind`?
 			this.canBeAbsorbedByCraftingTable = true;
 			// this.body.mass = 0;
-		} else if (player instanceof BossEntity) {
+		} else {
 		}
 
 		//if a boss, do some sabotage!
@@ -166,7 +129,7 @@ export class Item extends InteractableEntity {
 		//unlock it from the player's hands
 		let throwForce = direction;
 		throwForce.normalize();
-		this.body.applyImpulse(throwForce.scale(20));
+		this.body.applyImpulse(throwForce.scale(50 * this.body.mass));
 	}
 
 	toString(): string {

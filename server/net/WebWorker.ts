@@ -1,4 +1,4 @@
-import { Connection, Server } from "./Server";
+import { Connection, Server, ServerHandlers } from "./Server";
 
 /**
  * Create a fake "server" that can run in a
@@ -17,8 +17,13 @@ import { Connection, Server } from "./Server";
  * In the future, we could explore moving this to a service worker so it can
  * control multiple "clients" on different tabs.
  */
-export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendType> {
+export class WebWorker<ReceiveType, SendType> implements Server<ReceiveType, SendType> {
 	hasConnection = Promise.resolve();
+	#handler: ServerHandlers<ReceiveType, SendType>;
+
+	constructor(game: ServerHandlers<ReceiveType, SendType>) {
+		this.#handler = game;
+	}
 
 	broadcast(message: SendType): void {
 		self.postMessage(JSON.stringify(message));
@@ -26,15 +31,31 @@ export class WebWorker<ReceiveType, SendType> extends Server<ReceiveType, SendTy
 
 	listen(_port: number): void {
 		const connection: Connection<SendType> = {
+			id: "1234",
 			send(message) {
 				self.postMessage(JSON.stringify(message));
 			},
 		};
 
-		this.handleOpen(connection);
-
 		self.addEventListener("message", (e) => {
-			this.handleMessage(e.data, connection);
+			const data = JSON.parse(e.data);
+
+			switch (data.type) {
+				case "join":
+					// Tell the game that they joined
+					this.#handler.handlePlayerJoin(connection);
+
+					// Ok we believe u 🥰 you are the client you say you are
+					self.postMessage(
+						JSON.stringify({
+							type: "join-response",
+							id: "",
+						}),
+					);
+					return;
+			}
+
+			this.#handler.handleMessage(data, connection);
 		});
 	}
 }
