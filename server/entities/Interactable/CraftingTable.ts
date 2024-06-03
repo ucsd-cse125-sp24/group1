@@ -77,7 +77,6 @@ export class CraftingTable extends InteractableEntity {
 				const index = unused.indexOf(ingredient);
 				if (index === -1) {
 					missingIngredient = true;
-					break;
 				}
 				unused.splice(index, 1);
 			}
