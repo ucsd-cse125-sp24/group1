@@ -238,6 +238,7 @@ const particle = new ParticleSystem(engine, 10, 1000, 5, {
 });
 
 type DebugInputs = {
+	skipStage: boolean;
 	toggleFreecam: boolean;
 	cycleWireframe: boolean;
 	toggleTones: boolean;
@@ -250,6 +251,7 @@ const defaultDebugInputs = {
 	left: false,
 	jump: false,
 	freecamDown: false,
+	skipStage: false,
 	toggleFreecam: false,
 	cycleWireframe: false,
 	toggleTones: false,
@@ -279,6 +281,7 @@ const inputListener = new InputListener({
 		KeyX: "emote",
 		KeyT: "toggleTones",
 		KeyL: "cycleDebugGltf",
+		KeyI: "skipStage",
 	},
 	handleInputs: (inputs) => {
 		if (inputs.toggleFreecam && !debugInputs.toggleFreecam) {
@@ -294,6 +297,9 @@ const inputListener = new InputListener({
 		if (inputs.cycleDebugGltf && !debugInputs.cycleDebugGltf) {
 			engine.gltfMaterial._debugProgram =
 				debugGltfShaders[(debugGltfShaders.indexOf(engine.gltfMaterial._debugProgram) + 1) % debugGltfShaders.length];
+		}
+		if (inputs.skipStage && !debugInputs.skipStage) {
+			connection.send({ type: "--debug-skip-stage" });
 		}
 
 		debugInputs = { ...inputs };

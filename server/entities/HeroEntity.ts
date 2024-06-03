@@ -22,7 +22,7 @@ export class HeroEntity extends PlayerEntity {
 	isSabotaged: boolean = false;
 	isTrapped: boolean = false;
 	isBoss = false;
-	health = 3;
+	initHealth = 3;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(

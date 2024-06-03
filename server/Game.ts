@@ -163,6 +163,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (player.entity) {
 				player.entity.body.position = new phys.Vec3(21, -1, 20);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
+				player.entity.health=player.entity.initHealth
 			}
 		}
 
@@ -467,6 +468,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			case "start-game": {
 				if (this.#currentStage.type === "lobby") {
 					this.#startGame();
+				}
+				break;
+			}
+			case "--debug-skip-stage":{
+				switch (this.#currentStage.type) {
+					case 'lobby': {
+						this.#startGame()
+						break}case 'crafting':
+						{this.#transitionToCombat();break}case 'combat':{this.#currentStage = { type: "lobby", previousWinner: null };
+							break}
 				}
 				break;
 			}

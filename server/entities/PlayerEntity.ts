@@ -13,6 +13,7 @@ const COYOTE_FRAMES = 10;
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
 	isBoss: boolean = false;
+	initHealth: number = 0;
 	health: number = 0;
 	/** Timestamp of previous attack in milliseconds */
 	#previousAttackTime: number = 0;
@@ -209,7 +210,10 @@ export abstract class PlayerEntity extends Entity {
 			if (entity instanceof PlayerEntity) {
 				console.log("attack", entity.id);
 				if (this.game.getCurrentStage().type === "combat") {
-					if (this.isBoss !== entity.isBoss) {
+					if (this.isBoss) {
+						// Boss doesn't need weapons
+						entity.takeDamage(1);
+					} else if (entity.isBoss) {
 						entity.hitByWeapon(this.itemInHands);
 					}
 				}
@@ -276,14 +280,18 @@ export abstract class PlayerEntity extends Entity {
 					font: { weight: "bold" },
 				},
 				...Array.from(
-					{ length: this.health },
+					{ length: this.game.getCurrentStage().type === "combat" ? this.health : 0 },
 					(_, i): EntityModel => ({
 						modelId: "healthCrystal",
 						scale: 0.05,
 						offset: [
-							Math.cos((i / this.health + Date.now() / 10000) * 2 * Math.PI) * 0.2 * (this.health - 1),
-							0.5 + Math.cos((i / this.health + Date.now() / 5000) * 2 * Math.PI) * 0.05,
-							Math.sin((i / this.health + Date.now() / 10000) * 2 * Math.PI) * 0.2 * (this.health - 1),
+							Math.cos((i / this.health + Date.now() / (1000 + this.health * 1000)) * 2 * Math.PI) *
+								0.1 *
+								(this.health - 1),
+							0.5 + Math.cos((i / this.health + Date.now() / 20000) * 10 * Math.PI) * 0.05,
+							Math.sin((i / this.health + Date.now() / (1000 + this.health * 1000)) * 2 * Math.PI) *
+								0.1 *
+								(this.health - 1),
 						],
 					}),
 				),

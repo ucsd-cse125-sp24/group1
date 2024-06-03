@@ -19,7 +19,10 @@ export type ClientMessage =
 	| ClientInputMessage
 	| ChangeDisplayName
 	| ChangeRole
-	| StartGame;
+	| StartGame
+	| DebugMessages;
+
+export type DebugMessages = { type: "--debug-skip-stage" };
 
 export type ClientControlMessage = {
 	/**

@@ -22,7 +22,7 @@ export class BossEntity extends PlayerEntity {
 	// Game properties
 	canPlaceTrap: boolean = true;
 	isBoss = true;
-	health = 100;
+	initHealth = 100;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(

@@ -4,6 +4,15 @@ This is our group's 3D multiplayer video game for [CSE 125](https://cse125.ucsd.
 
 The game is currently deployed live at **[cse125.ucsd.edu:2345](http://cse125.ucsd.edu:2345/)**. There's also a local preview on [GitHub Pages](https://ucsd-cse125-sp24.github.io/group1/), but it does not support multiplayer.
 
+## Usage
+
+- `P` to toggle freecam
+- `K` to cycle wireframe views
+- `X` to spawn a random item somewhere
+- `T` to toggle cell shading
+- `L` to cycle debug shaders
+- `I` to skip the current stage
+
 ## Development
 
 This project requires [Node](https://nodejs.org/). This should also install [npm](https://www.npmjs.com/). Then, install the dependencies.
