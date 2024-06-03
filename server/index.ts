@@ -11,7 +11,6 @@ let totalDelta = 0;
 //what actually runs the game loop
 (async () => {
 	log("Server started");
-	await game.setup();
 	while (true) {
 		//check time at beginning of gamestep
 		let startTimeCheck = Date.now();
