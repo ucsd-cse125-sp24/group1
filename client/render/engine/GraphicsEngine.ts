@@ -15,7 +15,7 @@ import { WebGlUtils } from "./WebGlUtils";
 class GraphicsEngine extends WebGlUtils {
 	// Replaces `#define` lines in shader files
 	constants: Record<string, string> = {
-		MAX_LIGHTS: `${16 - 4}`,
+		MAX_LIGHTS: `${+this.gl.getParameter(this.gl.MAX_TEXTURE_IMAGE_UNITS) - 4}`,
 		NEAR: "0.001",
 		FAR: "100.0",
 	};

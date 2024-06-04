@@ -5,7 +5,7 @@ export type Contexts = {
 	audioContext: AudioContext;
 	/**
 	 * This must only be called on a user interaction event (e.g. clicking on the
-	 * page).
+	 * page). Locks the pointer if possible, otherwise enters fullscreen mode.
 	 */
 	lockPointer: () => void;
 	unlockPointer: () => void;

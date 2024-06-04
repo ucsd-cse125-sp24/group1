@@ -175,8 +175,12 @@ export class GltfModel implements Model {
 			let count = Infinity;
 			for (const vbo of vbos) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, vbo.buffer);
-				gl.enableVertexAttribArray(shader.attrib(vbo.attribName));
-				gl.vertexAttribPointer(shader.attrib(vbo.attribName), ...vbo.vertexAttribPointerArgs);
+				const location = shader.attribMaybe(vbo.attribName);
+				if (!location) {
+					continue;
+				}
+				gl.enableVertexAttribArray(location);
+				gl.vertexAttribPointer(location, ...vbo.vertexAttribPointerArgs);
 				if (vbo.count < count) {
 					count = vbo.count;
 				}

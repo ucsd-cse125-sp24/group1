@@ -10,42 +10,65 @@
 
 .optionsAnchor,
 .optionsPanel,
+.playerListAnchor,
 .playerList {
 	width: 20rem;
 }
+
+.optionsAnchor,
+.playerListAnchor {
+	position: relative;
+}
+
 .optionsPanel,
 .playerList {
-	background-color: rgba(0, 0, 0, 0.5);
-	box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-	backdrop-filter: blur(20px);
-}
-
-.optionsAnchor {
-	position: relative;
-	@media (max-width: 1200px) {
-		width: 0;
-	}
-}
-
-.optionsPanel {
 	position: absolute;
-	z-index: 1;
-	left: 0;
+	z-index: 2;
 	top: 0;
 	bottom: 0;
-	box-sizing: border-box;
+	overflow: auto;
 	display: flex;
 	flex-direction: column;
 	padding: 20px;
 	gap: 20px;
-	border-right: 1px solid rgba(0, 0, 0, 0.3);
+	background-color: rgba(0, 0, 0, 0.5);
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(20px);
 	transition: all 0.5s;
 }
-.optionsHidden,
-.hide .optionsPanel {
-	transform: translateX(-20rem);
+.optionsHidden .optionsPanel,
+.hide .optionsPanel,
+.hide .playerList {
 	box-shadow: none;
 	visibility: hidden;
+}
+
+.toggleBtn {
+	position: absolute;
+	z-index: 1;
+	bottom: 0;
+	margin: 20px;
+	background-color: #0f172a;
+	&:hover {
+		background-color: #020617;
+	}
+}
+.optionsAnchor .toggleBtn {
+	left: 0;
+}
+.playerListAnchor .toggleBtn {
+	right: 0;
+	display: none;
+}
+
+.optionsPanel {
+	left: 0;
+	box-sizing: border-box;
+	border-right: 1px solid rgba(0, 0, 0, 0.3);
+}
+.optionsHidden .optionsPanel,
+.hide .optionsPanel {
+	transform: translateX(-100%);
 }
 .optionsHeader {
 	display: flex;
@@ -60,16 +83,8 @@
 		background-color: #475569;
 	}
 }
-
-.optionsBtn {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	margin: 20px;
-	background-color: #0f172a;
-	&:hover {
-		background-color: #020617;
-	}
+.playerListAnchor .closeBtn {
+	display: none;
 }
 
 .column {
@@ -82,19 +97,23 @@
 
 .logo {
 	font-size: 6rem;
+	text-align: center;
 	font-weight: bold;
 	margin-top: 50px;
 }
 
 .playerList {
-	overflow: auto;
-	display: flex;
-	flex-direction: column;
-	box-sizing: border-box;
-	padding: 20px;
-	gap: 20px;
-	border-left: 1px solid rgba(0, 0, 0, 0.3);
-	transition: all 0.5s;
+	right: 0;
+}
+.hide .playerList {
+	transform: translateX(100%);
+}
+@media (max-width: 900px) {
+	.playerListHidden .playerList {
+		transform: translateX(100%);
+		box-shadow: none;
+		visibility: hidden;
+	}
 }
 
 .clickMessage {
@@ -118,10 +137,6 @@
 .hide {
 	opacity: 0;
 	visibility: hidden;
-
-	& .playerList {
-		transform: translateX(100%);
-	}
 }
 
 .winnerMessage {
@@ -134,4 +149,21 @@
 }
 .hero {
 	color: #3b82f6;
+}
+
+@media (max-width: 1200px) {
+	.optionsAnchor {
+		width: 0;
+	}
+}
+@media (max-width: 900px) {
+	.playerListAnchor {
+		width: 0;
+		.toggleBtn {
+			display: unset;
+		}
+		.closeBtn {
+			display: unset;
+		}
+	}
 }

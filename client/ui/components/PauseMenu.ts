@@ -18,20 +18,27 @@ export class PauseMenu {
 		classes: [styles.winnerMessage, styles.hide],
 		contents: ["The ", this.#winner, this.#winnerRest],
 	});
-	#closeBtn = elem("button", { classes: ["button", styles.closeBtn], textContent: "Close" });
-	#optionsBtn = elem("button", { classes: ["button", styles.optionsBtn, "trap-clicks"], textContent: "Options" });
+	#closeOptionsBtn = elem("button", { classes: ["button", styles.closeBtn], textContent: "Close" });
+	#closePlayerListBtn = elem("button", { classes: ["button", styles.closeBtn], textContent: "Close" });
+	#optionsBtn = elem("button", { classes: ["button", styles.toggleBtn, "trap-clicks"], textContent: "Options" });
+	#playerListBtn = elem("button", { classes: ["button", styles.toggleBtn, "trap-clicks"], textContent: "Players" });
 	options = new Options();
-	#optionsPanel = elem("div", {
-		classes: [styles.optionsPanel, styles.optionsHidden, "trap-clicks"],
-		contents: [
-			elem("h2", { className: styles.optionsHeader, contents: ["Options", this.#closeBtn] }),
-			...this.options.elements,
-		],
-	});
 	element = elem("div", {
-		classes: [styles.wrapper, styles.hide, styles.lobby],
+		classes: [styles.wrapper, styles.hide, styles.lobby, styles.optionsHidden, styles.playerListHidden],
 		contents: [
-			elem("div", { className: styles.optionsAnchor, contents: [this.#optionsPanel, this.#optionsBtn] }),
+			elem("div", {
+				classes: [styles.optionsAnchor, "trap-clicks"],
+				contents: [
+					elem("div", {
+						classes: [styles.optionsPanel],
+						contents: [
+							elem("h2", { className: styles.optionsHeader, contents: ["Options", this.#closeOptionsBtn] }),
+							...this.options.elements,
+						],
+					}),
+					this.#optionsBtn,
+				],
+			}),
 			elem("div", {
 				className: styles.column,
 				contents: [
@@ -42,8 +49,14 @@ export class PauseMenu {
 				],
 			}),
 			elem("div", {
-				classes: [styles.playerList, "trap-clicks"],
-				contents: [this.#playerList.element, this.#skinSelector.element],
+				classes: [styles.playerListAnchor, "trap-clicks"],
+				contents: [
+					elem("div", {
+						classes: [styles.playerList],
+						contents: [this.#closePlayerListBtn, this.#playerList.element, this.#skinSelector.element],
+					}),
+					this.#playerListBtn,
+				],
 			}),
 		],
 	});
@@ -54,10 +67,16 @@ export class PauseMenu {
 		this.#playerList.listen(connection);
 
 		this.#optionsBtn.addEventListener("click", () => {
-			this.#optionsPanel.classList.toggle(styles.optionsHidden);
+			this.element.classList.toggle(styles.optionsHidden);
 		});
-		this.#closeBtn.addEventListener("click", () => {
-			this.#optionsPanel.classList.add(styles.optionsHidden);
+		this.#closeOptionsBtn.addEventListener("click", () => {
+			this.element.classList.add(styles.optionsHidden);
+		});
+		this.#playerListBtn.addEventListener("click", () => {
+			this.element.classList.toggle(styles.playerListHidden);
+		});
+		this.#closePlayerListBtn.addEventListener("click", () => {
+			this.element.classList.add(styles.playerListHidden);
 		});
 	}
 

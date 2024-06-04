@@ -180,7 +180,7 @@ document.addEventListener("pointerlockchange", () => {
 	}
 });
 document.addEventListener("click", (e) => {
-	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks,.start-game-btn");
+	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn");
 	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
 	if ((!trapClick && gameState?.stage.type !== "lobby") || isStartBtn) {
 		lockPointer();

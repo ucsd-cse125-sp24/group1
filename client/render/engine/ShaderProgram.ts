@@ -55,9 +55,17 @@ export class ShaderProgram {
 	}
 
 	attrib(name: string): number {
+		const location = this.attribMaybe(name);
+		if (location === null) {
+			throw new ReferenceError(`Attribute ${name} not found`);
+		}
+		return location;
+	}
+
+	attribMaybe(name: string): number | null {
 		this.#attribLocations[name] ??= this.engine.gl.getAttribLocation(this.#program, name);
 		if (this.#attribLocations[name] === -1) {
-			throw new ReferenceError(`Attribute ${name} not found`);
+			return null;
 		}
 		return this.#attribLocations[name];
 	}
