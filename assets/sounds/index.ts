@@ -23,16 +23,16 @@ import trapHit from "./trap-hit.mp3"; // TODO:
 import trapPlace from "./trap-place.mp3"; // TODO:
 import trapTriggered from "./trap-triggered.mp3"; // TODO:
 import useFail from "./use-fail.mp3"; // TODO:
-import walkLeft1 from "./Step L 1.wav.wav";
-import walkLeft2 from "./Step L 2.wav.wav";
-import walkLeft3 from "./Step L 3.wav.wav";
-import walkLeft4 from "./Step L 4.wav.wav";
-import walkLeft5 from "./Step L 5.wav.wav";
-import walkRight1 from "./Step R 1.wav.wav";
-import walkRight2 from "./Step R 2.wav.wav";
-import walkRight3 from "./Step R 3.wav.wav";
-import walkRight4 from "./Step R 4.wav.wav";
-import walkRight5 from "./Step R 5.wav.wav";
+import walkLeft1 from "./Step L 1.wav";
+import walkLeft2 from "./Step L 2.wav";
+import walkLeft3 from "./Step L 3.wav";
+import walkLeft4 from "./Step L 4.wav";
+import walkLeft5 from "./Step L 5.wav";
+import walkRight1 from "./Step R 1.wav";
+import walkRight2 from "./Step R 2.wav";
+import walkRight3 from "./Step R 3.wav";
+import walkRight4 from "./Step R 4.wav";
+import walkRight5 from "./Step R 5.wav";
 export { default as reverbImpulse } from "./AndrewsChurchConvReverb2.wav";
 
 export const sounds = {
