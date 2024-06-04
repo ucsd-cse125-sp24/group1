@@ -56,7 +56,7 @@ export class PlayerCamera extends Camera {
 		// Add touch support
 		type DragState = { pointerId: number; lastX: number; lastY: number };
 		let dragState: DragState | null = null;
-		canvas.addEventListener("pointerdown", (e) => {
+		document.addEventListener("pointerdown", (e) => {
 			if (e.pointerType === "touch" && !dragState) {
 				dragState = { pointerId: e.pointerId, lastX: e.clientX, lastY: e.clientY };
 				try {

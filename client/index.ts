@@ -88,6 +88,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			pauseMenu.render(data, gameState);
 			if (data.stage.type === "lobby" && gameState?.stage.type !== "lobby") {
 				unlockPointer();
+				gameUi.hide();
+				pauseMenu.show();
+				inputListener.enabled = false;
 			}
 			gameState = data;
 			break;
@@ -180,10 +183,35 @@ document.addEventListener("pointerlockchange", () => {
 	}
 });
 document.addEventListener("click", (e) => {
-	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn");
+	const trapClick =
+		e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn, .mobile-open-pause");
 	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
-	if ((!trapClick && gameState?.stage.type !== "lobby") || isStartBtn) {
+	const isPauseBtn = trapClick instanceof Element && trapClick.classList.contains("mobile-open-pause");
+	if (isPauseBtn) {
+		gameUi.hide();
+		pauseMenu.show();
+		inputListener.enabled = false;
+	} else if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
 		lockPointer();
+	}
+});
+document.addEventListener("pointerdown", (e) => {
+	const trapClick =
+		e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn, .mobile-open-pause");
+	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
+	const isPauseBtn = trapClick instanceof Element && trapClick.classList.contains("mobile-open-pause");
+	if (isPauseBtn) {
+		return;
+	}
+	if (e.pointerType === "touch") {
+		gameUi.showMobile();
+		if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
+			gameUi.show();
+			pauseMenu.hide();
+			inputListener.enabled = true;
+		}
+	} else {
+		gameUi.hideMobile();
 	}
 });
 

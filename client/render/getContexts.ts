@@ -56,7 +56,7 @@ export function getContexts(): Contexts {
 		// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
 		if (!document.pointerLockElement) {
 			try {
-				await canvas.requestPointerLock({ unadjustedMovement: true });
+				// await canvas.requestPointerLock({ unadjustedMovement: true });
 			} catch (error) {
 				// Ignore these errors:
 				// - SecurityError: The user has exited the lock before this request was
