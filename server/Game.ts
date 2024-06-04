@@ -580,7 +580,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
-
+		for (let entity of this.#entities.values()) {
+			entity.tick();
+		}
 		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
 			this.clearEntityQueues();
 		}
