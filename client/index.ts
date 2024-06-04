@@ -162,10 +162,6 @@ raw.connect(convolver);
 convolver.connect(wet);
 const sound = new SoundManager(audioContext, raw);
 
-// lockPointer();
-// inputListener.listen();
-// camera.listen();
-
 const gameUi = new GameplayUi();
 const pauseMenu = new PauseMenu();
 document.body.append(gameUi.element, pauseMenu.element);
@@ -198,9 +194,8 @@ document.addEventListener("click", (e) => {
 			pauseMenu.hide();
 			inputListener.enabled = true;
 			// NOTE: Currently, can't switch to touch after using mouse
-		} else {
-			lockPointer();
 		}
+		lockPointer(lastPointerType === "touch");
 	}
 });
 document.addEventListener("pointerdown", (e) => {

@@ -7,7 +7,7 @@ export type Contexts = {
 	 * This must only be called on a user interaction event (e.g. clicking on the
 	 * page). Locks the pointer if possible, otherwise enters fullscreen mode.
 	 */
-	lockPointer: () => void;
+	lockPointer: (isTouch: boolean) => void;
 	unlockPointer: () => void;
 };
 
@@ -49,12 +49,12 @@ export function getContexts(): Contexts {
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-	const lockPointer = async () => {
+	const lockPointer = async (isTouch: boolean) => {
 		audioContext.resume();
 
 		// Lock pointer to canvas
 		// https://developer.mozilla.org/en-US/docs/Web/API/Pointer_Lock_API
-		if (!document.pointerLockElement) {
+		if (!isTouch && !document.pointerLockElement) {
 			try {
 				await canvas.requestPointerLock({ unadjustedMovement: true });
 			} catch (error) {
