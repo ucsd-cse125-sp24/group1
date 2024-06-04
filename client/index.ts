@@ -398,8 +398,6 @@ const debugGltfShaders = [
 	),
 ];
 
-const ambientLight = [0.5, 0.5, 0.5] as const;
-
 let previousStaticIds = "";
 const paint = () => {
 	engine._drawCalls = 0;
@@ -476,7 +474,7 @@ const paint = () => {
 	}
 
 	pipeline.startRender();
-	engine.clear(ambientLight);
+	engine.clear(pauseMenu.options.ambientLight);
 
 	// Set up lighting
 	const lightPositions: number[] = [];
@@ -499,7 +497,7 @@ const paint = () => {
 		engine.gltfMaterial.uniform("u_point_shadow_maps[0]"),
 		Array.from({ length: engine.MAX_LIGHTS }).map((_, i) => 4 + i),
 	);
-	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...ambientLight, 1);
+	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...pauseMenu.options.ambientLight, 1);
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_enable_tones"), +tones);
 	engine.gl.uniform1f(engine.gltfMaterial.uniform("u_tones"), 5);
 

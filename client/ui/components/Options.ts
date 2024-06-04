@@ -4,13 +4,18 @@ import styles from "./Options.module.css";
 
 const DEFAULT_FOV = 60;
 const DEFAULT_SENSITIVITY = 0.4;
+const DEFAULT_AMBIENT_LIGHT = 50;
 
 export class Options {
 	fov = DEFAULT_FOV;
+	ambientLight = [DEFAULT_AMBIENT_LIGHT / 100, DEFAULT_AMBIENT_LIGHT / 100, DEFAULT_AMBIENT_LIGHT / 100] as const;
+
 	#fovSlider = elem("input", { type: "range", min: "1", max: "179", name: "fov", value: `${this.fov}` });
 	#fovValue = elem("input", { type: "number", min: "1", max: "179", name: "fov-value", value: `${this.fov}` });
 	#sensitivitySlider = elem("input", { type: "range", min: "0", max: "2", step: "0.01", name: "sensitivity" });
 	#sensitivityValue = elem("input", { type: "number", step: "0.01", name: "sensitivity-value" });
+	#ambientSlider = elem("input", { type: "range", min: "0", max: "100", step: "1", name: "ambient-light" });
+	#ambientValue = elem("input", { type: "number", step: "1", name: "ambient-light-value" });
 	#resetBtn = elem("button", { classes: ["button", styles.resetBtn], textContent: "Reset" });
 	elements = [
 		elem("div", {
@@ -32,12 +37,24 @@ export class Options {
 				}),
 			],
 		}),
+		elem("div", {
+			className: styles.slider,
+			contents: [
+				elem("div", { className: styles.label, textContent: "Ambient light" }),
+				this.#ambientSlider,
+				elem("div", {
+					className: styles.input,
+					contents: [this.#ambientValue, elem("span", { textContent: "%" })],
+				}),
+			],
+		}),
 		this.#resetBtn,
 	];
 
 	listen(camera: PlayerCamera) {
 		this.#setFov(+localStorage["cse125.2024.g1.options.fov"], localStorage);
 		this.#setSensitivity(camera, +localStorage["cse125.2024.g1.options.sensitivity"], localStorage);
+		this.#setAmbientLight(+localStorage["cse125.2024.g1.options.ambientLight"], localStorage);
 
 		this.#fovSlider.addEventListener("input", () => {
 			this.#setFov(+this.#fovSlider.value, this.#fovSlider);
@@ -51,6 +68,13 @@ export class Options {
 		});
 		this.#sensitivityValue.addEventListener("input", () => {
 			this.#setSensitivity(camera, +this.#sensitivityValue.value, this.#sensitivityValue);
+		});
+
+		this.#ambientSlider.addEventListener("input", () => {
+			this.#setAmbientLight(+this.#ambientSlider.value, this.#ambientSlider);
+		});
+		this.#ambientValue.addEventListener("input", () => {
+			this.#setAmbientLight(+this.#ambientValue.value, this.#ambientValue);
 		});
 
 		this.#resetBtn.addEventListener("click", () => {
@@ -84,6 +108,20 @@ export class Options {
 		}
 		if (source !== this.#sensitivityValue) {
 			this.#sensitivityValue.value = `${sensitivity}`;
+		}
+	}
+
+	#setAmbientLight(ambientLight?: number, source?: unknown) {
+		ambientLight ||= DEFAULT_AMBIENT_LIGHT;
+		this.ambientLight = [ambientLight / 100, ambientLight / 100, ambientLight / 100];
+		if (source !== localStorage) {
+			localStorage["cse125.2024.g1.options.ambientLight"] = ambientLight === DEFAULT_AMBIENT_LIGHT ? "" : ambientLight;
+		}
+		if (source !== this.#ambientSlider) {
+			this.#ambientSlider.value = `${ambientLight}`;
+		}
+		if (source !== this.#ambientValue) {
+			this.#ambientValue.value = `${ambientLight}`;
 		}
 	}
 }
