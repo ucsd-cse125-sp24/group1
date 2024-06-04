@@ -552,6 +552,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			};
 
 			player.entity.move(movement);
+			let walkSoundIndex = player.entity.shouldPlayWalkingSound();
+			if (walkSoundIndex > 0) {
+				if (walkSoundIndex == 1) {
+					this.playSound("walkLeft", player.entity.getPos());
+				} else {
+					this.playSound("walkRight", player.entity.getPos());
+				}
+			}
 
 			const use = player.entity.use();
 			player.useAction = use?.type;

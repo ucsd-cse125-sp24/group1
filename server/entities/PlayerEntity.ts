@@ -10,6 +10,7 @@ import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { Animation, Animator } from "../lib/Animation";
 
 const COYOTE_FRAMES = 10;
+const WALK_STEP_DIST = 1;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -46,6 +47,11 @@ export abstract class PlayerEntity extends Entity {
 	// coyote countdown
 	#coyoteCounter: number;
 
+	// walking sound
+	#lastSoundPosition: phys.Vec3;
+	#lastSoundIsLeft: boolean;
+
+	// animator
 	animator: Animator;
 
 	constructor(
@@ -107,6 +113,9 @@ export abstract class PlayerEntity extends Entity {
 		this.body.addShape(this.#sphereBot, new phys.Vec3(0, -this.#cylinderHeight, 0));
 
 		this.#coyoteCounter = 0;
+
+		this.#lastSoundPosition = this.body.position;
+		this.#lastSoundIsLeft = false;
 	}
 
 	move(movement: MovementInfo): void {
@@ -343,5 +352,16 @@ export abstract class PlayerEntity extends Entity {
 
 	setSpeed(speed: number) {
 		this.walkSpeed = speed;
+	}
+
+	/** returns 0 if don't, 1 if left, 2 if right */
+	shouldPlayWalkingSound() {
+		if (!this.onGround) return 0;
+		if (this.body.position.distanceTo(this.#lastSoundPosition) > WALK_STEP_DIST) {
+			this.#lastSoundPosition = this.body.position;
+			this.#lastSoundIsLeft = !this.#lastSoundIsLeft;
+			return this.#lastSoundIsLeft ? 1 : 2;
+		}
+		return 0;
 	}
 }
