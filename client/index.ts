@@ -226,14 +226,16 @@ const fov = new Transition(Math.PI / 3);
 let result = vec3.create();
 vec3.add(result, camera.getPosition(), camera.getForwardDir());
 
-const particle = new ParticleSystem(engine, 100, 1000, 100, {
-	size: 1000,
-	color: [1, 0, 0, 0.5], // red color
-	mass: 1,
+const particle = new ParticleSystem(engine, 100, {
+	// spawnPeriod: 1000,
+	// spawnCount: 3,
+	// size: 1000,
+	// color: [1, 0, 0, 0.5], // red color
+	// mass: 1,
 	initialPosition: [0, 10, 0],
 	initialVelocity: [0, 2, 0],
 	initialVelocityRange: [1, 1, 1],
-	ttl: 5,
+	// ttl: 5,
 });
 
 type DebugInputs = {

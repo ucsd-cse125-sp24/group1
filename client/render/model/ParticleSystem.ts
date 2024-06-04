@@ -7,7 +7,17 @@ import { ShaderProgram } from "../engine/ShaderProgram";
 import { Model } from "./Model";
 
 export type ParticleOptions = {
-	/** Default: 16 */
+	/**
+	 * Length of time between particle spawns in milliseconds. Set to +inf to only
+	 * spawn particles one time when the `ParticleSystem` is (re-)enabled.
+	 * Default: Infinity
+	 */
+	spawnPeriod: number;
+	/**
+	 * Number of particles to create in each spawn batch. Default: 1
+	 */
+	spawnCount: number;
+	/** Default: 256 */
 	size: number;
 	/** Default: `[1, 1, 1]` (white) */
 	color: vec4;
@@ -66,15 +76,6 @@ export class ParticleSystem implements Model {
 	 */
 	#maxParticles: number;
 	/**
-	 * Length of time between particle spawns in milliseconds. Set to +inf to only
-	 * spawn particles one time when the `ParticleSystem` is (re-)enabled.
-	 */
-	spawnPeriod: number;
-	/**
-	 * Number of particles to create in each spawn batch.
-	 */
-	spawnCount: number;
-	/**
 	 * Parameters to give to each particle.
 	 */
 	options: ParticleOptions;
@@ -83,20 +84,16 @@ export class ParticleSystem implements Model {
 	 * @param maxParticles Maximum number of particles from this `ParticleSystem`
 	 * that can exist at once. This determines the size of the internal buffers
 	 * used to store particle attributes. Default: 10
-	 * @param spawnPeriod Length of time between particle spawns in milliseconds.
-	 * Set to +inf to only spawn particles one time when the `ParticleSystem` is
-	 * (re-)enabled. Default: 1000
-	 * @param spawnCount Number of particles to create in each spawn batch.
-	 * Default: 5
-	 * @param options Parameters to give to each particle.
+	 * @param options Parameters to give to each particle. These can be changed
+	 * after `ParticleSystem` is constructed.
 	 */
 	constructor(
 		engine: GraphicsEngine,
 		maxParticles = 10,
-		spawnPeriod = 1000,
-		spawnCount = 5,
 		{
-			size = 16,
+			spawnPeriod = Infinity,
+			spawnCount = 1,
+			size = 256,
 			color = [1, 1, 1, 1],
 			mass = 1,
 			initialPosition = [0, 0, 0],
@@ -117,9 +114,17 @@ export class ParticleSystem implements Model {
 			),
 		);
 		this.#maxParticles = maxParticles;
-		this.spawnPeriod = spawnPeriod;
-		this.spawnCount = spawnCount;
-		this.options = { size, color, mass, initialPosition, initialVelocity, initialVelocityRange, ttl };
+		this.options = {
+			spawnPeriod,
+			spawnCount,
+			size,
+			color,
+			mass,
+			initialPosition,
+			initialVelocity,
+			initialVelocityRange,
+			ttl,
+		};
 
 		this.#enabled = false;
 		this.#lastSpawnTime = 0;
@@ -234,26 +239,27 @@ export class ParticleSystem implements Model {
 	 */
 	#spawnBatch(): void {
 		const gl = this.shader.engine.gl;
-		const numToSpawn = Math.min(this.spawnCount, this.#maxParticles);
+		const numToSpawn = Math.min(this.options.spawnCount, this.#maxParticles);
 		const availableBufferLength = this.#maxParticles - this.#nextParticleIndex;
+		console.log(numToSpawn);
 
-		const newPositions = Float32Array.from(new Array(numToSpawn).fill(this.options.initialPosition).flat());
-		const newVelocities = Float32Array.from(
-			new Array(numToSpawn)
-				.fill(this.options.initialVelocity)
-				.map((v: [number, number, number]) => {
-					const range = this.options.initialVelocityRange;
-					if (range === undefined) {
-						return v;
-					}
-					const r0 = Math.random() * range[0] - range[0] / 2;
-					const r1 = Math.random() * range[1] - range[1] / 2;
-					const r2 = Math.random() * range[2] - range[2] / 2;
-					return [v[0] + r0, v[1] + r1, v[2] + r2];
-				})
-				.flat(),
+		const newPositions = Float32Array.from(
+			Array.from({ length: numToSpawn }, () => [...this.options.initialPosition]).flat(),
 		);
-		const newTtls = Float32Array.from(new Array(numToSpawn).fill(this.options.ttl));
+		const newVelocities = Float32Array.from(
+			Array.from({ length: numToSpawn }, () => {
+				const v = this.options.initialVelocity;
+				const range = this.options.initialVelocityRange;
+				if (range === undefined) {
+					return [...v];
+				}
+				const r0 = Math.random() * range[0] - range[0] / 2;
+				const r1 = Math.random() * range[1] - range[1] / 2;
+				const r2 = Math.random() * range[2] - range[2] / 2;
+				return [v[0] + r0, v[1] + r1, v[2] + r2];
+			}).flat(),
+		);
+		const newTtls = Float32Array.from(Array.from({ length: numToSpawn }, () => this.options.ttl));
 
 		gl.bindVertexArray(this.#VAOs[this.#currentVAOIndex]);
 
@@ -310,7 +316,7 @@ export class ParticleSystem implements Model {
 		if (!this.#enabled) {
 			return;
 		}
-		if (Date.now() - this.#lastSpawnTime >= this.spawnPeriod) {
+		if (Date.now() - this.#lastSpawnTime >= this.options.spawnPeriod) {
 			this.#spawnBatch();
 		}
 
