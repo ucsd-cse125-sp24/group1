@@ -226,13 +226,13 @@ const fov = new Transition(Math.PI / 3);
 let result = vec3.create();
 vec3.add(result, camera.getPosition(), camera.getForwardDir());
 
-const particle = new ParticleSystem(engine, 10, 1000, 5, {
-	size: 16,
-	color: [1, 0, 0], // red color
+const particle = new ParticleSystem(engine, 100, 1000, 100, {
+	size: 100,
+	color: [1, 0, 0, 0.5], // red color
 	mass: 1,
-	initialPosition: result,
-	initialVelocity: [0, 1, 0],
-	initialVelocityRange: undefined,
+	initialPosition: [0, 10, 0],
+	initialVelocity: [0, 2, 0],
+	initialVelocityRange: [1, 1, 1],
 	ttl: 5,
 });
 

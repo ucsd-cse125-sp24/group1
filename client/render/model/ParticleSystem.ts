@@ -1,4 +1,4 @@
-import { mat4, vec3 } from "gl-matrix";
+import { mat4, vec3, vec4 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
 import particleVertexSource from "../../shaders/particle.vert";
 import particleFragmentSource from "../../shaders/particle.frag";
@@ -10,7 +10,7 @@ export type ParticleOptions = {
 	/** Default: 16 */
 	size: number;
 	/** Default: `[1, 1, 1]` (white) */
-	color: vec3;
+	color: vec4;
 	/** Can be positive, 0, or negative. Default: 1 */
 	mass: number;
 	/** Default: `[0, 0, 0]` */
@@ -97,7 +97,7 @@ export class ParticleSystem implements Model {
 		spawnCount = 5,
 		{
 			size = 16,
-			color = [1, 1, 1],
+			color = [1, 1, 1, 1],
 			mass = 1,
 			initialPosition = [0, 0, 0],
 			initialVelocity = [0, 1, 0],
@@ -323,7 +323,7 @@ export class ParticleSystem implements Model {
 
 		gl.uniformMatrix4fv(this.shader.uniform("u_view"), false, view);
 		gl.uniform1f(this.shader.uniform("u_size"), this.options.size);
-		gl.uniform3fv(this.shader.uniform("u_color"), this.options.color);
+		gl.uniform4fv(this.shader.uniform("u_color"), this.options.color);
 		gl.uniform1f(this.shader.uniform("u_mass"), this.options.mass);
 		gl.uniform1f(this.shader.uniform("u_dt"), dt / 1000);
 
