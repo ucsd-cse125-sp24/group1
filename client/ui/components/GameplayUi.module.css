@@ -44,6 +44,20 @@
 	background-repeat: no-repeat;
 	background-size: 24px;
 }
-.desktop .pauseBtn {
-	display: none;
+
+.joystick {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	margin: 20px;
+	width: 200px;
+	height: 200px;
+	background-color: rgba(255, 0, 0, 0.5);
+}
+
+.desktop {
+	.pauseBtn,
+	.joystick {
+		display: none;
+	}
 }

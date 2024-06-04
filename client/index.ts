@@ -182,6 +182,7 @@ document.addEventListener("pointerlockchange", () => {
 		inputListener.enabled = false;
 	}
 });
+let lastPointerType = "mouse";
 document.addEventListener("click", (e) => {
 	const trapClick =
 		e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn, .mobile-open-pause");
@@ -192,24 +193,20 @@ document.addEventListener("click", (e) => {
 		pauseMenu.show();
 		inputListener.enabled = false;
 	} else if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
-		lockPointer();
-	}
-});
-document.addEventListener("pointerdown", (e) => {
-	const trapClick =
-		e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn, .mobile-open-pause");
-	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
-	const isPauseBtn = trapClick instanceof Element && trapClick.classList.contains("mobile-open-pause");
-	if (isPauseBtn) {
-		return;
-	}
-	if (e.pointerType === "touch") {
-		gameUi.showMobile();
-		if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
+		if (lastPointerType === "touch") {
 			gameUi.show();
 			pauseMenu.hide();
 			inputListener.enabled = true;
+			// NOTE: Currently, can't switch to touch after using mouse
+		} else {
+			lockPointer();
 		}
+	}
+});
+document.addEventListener("pointerdown", (e) => {
+	lastPointerType = e.pointerType;
+	if (e.pointerType === "touch") {
+		gameUi.showMobile();
 	} else {
 		gameUi.hideMobile();
 	}
@@ -575,6 +572,7 @@ connection.connect();
 inputListener.listen();
 inputListener.enabled = false;
 camera.listen();
+gameUi.listen(inputListener, { forward: "forward", backward: "backward", right: "right", left: "left" });
 pauseMenu.listen(connection);
 pauseMenu.options.listen(camera);
 paint();
