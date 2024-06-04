@@ -328,7 +328,7 @@ const tempLightShader = new ShaderProgram(
 );
 const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
 const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30));
-const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 5));
+const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 2));
 const tempEntities: ClientEntity[] = [
 	coolLight,
 	warmLight,
@@ -370,12 +370,12 @@ const debugGltfShaders = [
 	),
 ];
 
-const ambientLight = [0.2, 0.2, 0.2] as const;
+const ambientLight = [0.5, 0.5, 0.5] as const;
 
 const paint = () => {
-	warmLight.color = vec3.fromValues(27 / 360, 0.9, (100 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
+	warmLight.color = vec3.fromValues(27 / 360, 0.9, (50 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
 	warmLight.position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
-	whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 2, Math.sin(Date.now() / 3000) * 15);
+	whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 10, Math.sin(Date.now() / 3000) * 15);
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
@@ -408,6 +408,7 @@ const paint = () => {
 		// Spectate
 		camera.setFree(true);
 		camera.updateFreecam(debugInputs);
+		coolLight.position = camera.getPosition();
 	}
 	// TODO: also call this when rotating camera?
 	camera.moveAudioListener(audioContext.listener);

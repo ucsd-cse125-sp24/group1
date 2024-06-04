@@ -36,6 +36,7 @@ import { anvil } from "./anvil";
 import { armor } from "./armor";
 import { defaultCube } from "./default-cube";
 import { healthCrystal } from "./health-crystal";
+import { map } from "./map";
 
 export const getModels = (engine: GraphicsEngine) =>
 	({
@@ -47,7 +48,7 @@ export const getModels = (engine: GraphicsEngine) =>
 		donut: GltfModelWrapper.from(engine.gltfMaterial, donut),
 		// twoTextureTest: GltfModelWrapper.from(engine.gltfMaterial, twoTextureTest),
 		healthCrystal: GltfModelWrapper.from(engine.gltfMaterial, healthCrystal),
-		sampleMap: GltfModelWrapper.from(engine.gltfMaterial, sampleMap),
+		// sampleMap: GltfModelWrapper.from(engine.gltfMaterial, sampleMap),
 		samplePlayer: GltfModelWrapper.from(engine.gltfMaterial, samplePlayer),
 		// box1: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
 		// box2: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
@@ -81,6 +82,8 @@ export const getModels = (engine: GraphicsEngine) =>
 		bottle_table: GltfModelWrapper.from(engine.gltfMaterial, bottle_table),
 		anvil: GltfModelWrapper.from(engine.gltfMaterial, anvil),
 		armor: GltfModelWrapper.from(engine.gltfMaterial, armor),
+
+		map: GltfModelWrapper.from(engine.gltfMaterial, map),
 	}) satisfies Record<string, Model>;
 
 export type ModelId = keyof ReturnType<typeof getModels>;

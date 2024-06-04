@@ -158,7 +158,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		// Reset players
 		for (const player of this.#players.values()) {
 			if (player.entity) {
-				player.entity.body.position = new phys.Vec3(21, -1, 20);
+				player.entity.body.position = new phys.Vec3(0, -1, 0);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
 				player.entity.health = player.entity.initHealth;
 				if (player.entity instanceof HeroEntity) {
@@ -169,7 +169,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 
 		const mapColliders = getColliders(await sampleMapColliders);
-		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
+		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "map" }]);
 		this.#registerEntity(mapEntity);
 
 		let plane = new PlaneEntity(this, [0, -10, 0], [-1, 0, 0, 1], []);
