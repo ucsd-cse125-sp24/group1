@@ -44,20 +44,20 @@ export class RenderPipeline {
 		this.#textureHeight = 0;
 		// Textures will be allocated and bound to framebuffer before first frame
 		this.#colorTexture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, this.#colorTexture);
+		engine.bindTexture(0, "2d", this.#colorTexture);
 		// Disable mips
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		this.#filteredTexture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, this.#filteredTexture);
+		engine.bindTexture(0, "2d", this.#filteredTexture);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		this.#depthTexture = gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, this.#depthTexture);
+		engine.bindTexture(0, "2d", this.#depthTexture);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -102,13 +102,12 @@ export class RenderPipeline {
 
 	resizeTextures(width: number, height: number): void {
 		const gl = this.#engine.gl;
-		gl.bindTexture(gl.TEXTURE_2D, this.#colorTexture);
+		this.#engine.bindTexture(0, "2d", this.#colorTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
-		gl.bindTexture(gl.TEXTURE_2D, this.#filteredTexture);
+		this.#engine.bindTexture(0, "2d", this.#filteredTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
-		gl.bindTexture(gl.TEXTURE_2D, this.#depthTexture);
+		this.#engine.bindTexture(0, "2d", this.#depthTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, width, height, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
-		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
 
 	draw(): void {
@@ -137,10 +136,8 @@ export class RenderPipeline {
 		this.#engine.clear();
 		shader.use();
 		// Set uniforms
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, this.#colorTexture);
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, this.#depthTexture);
+		this.#engine.bindTexture(0, "2d", this.#colorTexture);
+		this.#engine.bindTexture(1, "2d", this.#depthTexture);
 		const { width, height } = this.#engine.gl.canvas;
 		gl.uniform2f(shader.uniform("u_resolution"), width, height);
 		gl.uniform1i(shader.uniform("u_texture_color"), 0);
@@ -164,9 +161,7 @@ export class RenderPipeline {
 		gl.disableVertexAttribArray(positionAttribLoc);
 		gl.disableVertexAttribArray(texCoordAttribLoc);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-		gl.activeTexture(gl.TEXTURE1);
-		gl.bindTexture(gl.TEXTURE_2D, null);
+		this.#engine.bindTexture(0, "2d", null);
+		this.#engine.bindTexture(1, "2d", null);
 	}
 }

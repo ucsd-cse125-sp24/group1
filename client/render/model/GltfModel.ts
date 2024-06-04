@@ -91,7 +91,7 @@ export class GltfModel implements Model {
 					gl.generateMipmap(gl.TEXTURE_2D);
 				};
 
-				gl.bindTexture(gl.TEXTURE_2D, texture);
+				shader.engine.bindTexture(0, "2d", texture);
 				if (image.width > shader.engine.maxTextureSize || image.height > shader.engine.maxTextureSize) {
 					// Temporarily use blue pixel while image loads
 					gl.texImage2D(
@@ -118,7 +118,7 @@ export class GltfModel implements Model {
 						),
 					}).then((resized) => {
 						console.timeEnd(`resizing texture ${source} (${this.name})`);
-						gl.bindTexture(gl.TEXTURE_2D, texture);
+						shader.engine.bindTexture(0, "2d", texture);
 						applyTextureParams(resized);
 					});
 				} else {
@@ -257,11 +257,11 @@ export class GltfModel implements Model {
 				gl.disable(gl.CULL_FACE);
 			}
 
+			// this.shader.engine.clearTextures();
 			let textureIndex = 0;
 			for (const { name, texture } of meshTextures) {
 				if (texture) {
-					gl.activeTexture(gl.TEXTURE0 + textureIndex);
-					gl.bindTexture(gl.TEXTURE_2D, texture);
+					this.shader.engine.bindTexture(textureIndex, "2d", texture);
 					gl.uniform1i(material.uniform(`u_${name}`), textureIndex);
 					textureIndex++;
 					gl.uniform1i(material.uniform(`u_has_${name}`), 1);

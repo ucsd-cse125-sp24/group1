@@ -31,6 +31,8 @@ import { TextModel } from "./render/model/TextModel";
 import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
 
+const MAX_LIGHTS = 8;
+
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
 	listenErrors(errorWindow);
@@ -341,12 +343,26 @@ const staticLight3 = new TempLightEntity(
 	false,
 );
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 2));
+const hueLightCount = 4; // Math.floor(1 + Math.random() * 10);
 const tempEntities: ClientEntity[] = [
 	// coolLight,
 	// warmLight,
 	whiteLight,
 	staticLight2,
 	staticLight3,
+	...Array.from({ length: hueLightCount }, (_, i) => {
+		const radius = 5 + Math.random() * 15;
+		return new TempLightEntity(
+			tempLightShader,
+			vec3.fromValues(
+				Math.cos((i / hueLightCount) * 2 * Math.PI) * radius,
+				Math.random() * 30 - 10,
+				Math.sin((i / hueLightCount) * 2 * Math.PI) * radius,
+			),
+			vec3.fromValues(i / hueLightCount, Math.random(), Math.exp(Math.random() * 5 - 2)),
+			false,
+		);
+	}),
 	new ClientEntity(engine, [
 		{
 			model: new TextModel(engine, "hey 羊 Â", 1, 64, { color: "red", family: '"Comic Sans MS"' }),
@@ -447,7 +463,9 @@ const paint = () => {
 		recastStaticShadows = true;
 		console.time("Re-rendering static shadow map");
 	}
-	const lights = [...entities, ...tempEntities].flatMap((entity) => (entity.light ? [entity.light] : []));
+	const lights = [...entities, ...tempEntities]
+		.flatMap((entity) => (entity.light ? [entity.light] : []))
+		.slice(0, MAX_LIGHTS);
 	for (const light of lights) {
 		if (!light.willMove && !recastStaticShadows) {
 			// Avoid re-rendering shadow map if static entities did not change
@@ -470,8 +488,7 @@ const paint = () => {
 		lightColors.push(...light.color);
 		const shadowMap = light.getShadowMap();
 		// Bind up to 8 shadow maps to texture indices 4..11
-		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
-		engine.gl.bindTexture(engine.gl.TEXTURE_CUBE_MAP, shadowMap);
+		engine.bindTexture(4 + i, "cubemap", shadowMap);
 	}
 	engine.gltfMaterial.use();
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_eye_pos"), camera.getPosition());
@@ -480,7 +497,10 @@ const paint = () => {
 		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
 		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
 	}
-	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
+	engine.gl.uniform1iv(
+		engine.gltfMaterial.uniform("u_point_shadow_maps[0]"),
+		Array.from({ length: MAX_LIGHTS }).map((_, i) => 4 + i),
+	);
 	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...ambientLight, 1);
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_enable_tones"), +tones);
 	engine.gl.uniform1f(engine.gltfMaterial.uniform("u_tones"), 5);

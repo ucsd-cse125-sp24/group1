@@ -1,3 +1,5 @@
+export type TextureType = "2d" | "cubemap";
+
 /**
  * This class, the superclass of `GraphicsEngine`, exists mostly as a hack.
  *
@@ -13,6 +15,7 @@ export class WebGlUtils {
 	gl: WebGL2RenderingContext;
 	// On Nick's computer on Firefox, it's 2048, but fish1 has a 4096x4096 texture
 	maxTextureSize: number;
+	#textures: Record<number, { type: TextureType; texture: WebGLTexture } | null> = {};
 
 	constructor(gl: WebGL2RenderingContext) {
 		this.gl = gl;
@@ -108,6 +111,59 @@ export class WebGlUtils {
 				throw new RangeError("OUT_OF_MEMORY: Not enough memory is left to execute the command.");
 			case this.gl.CONTEXT_LOST_WEBGL:
 				throw new Error("CONTEXT_LOST_WEBGL: The WebGL context is lost.");
+		}
+	}
+
+	bindTexture(location: number, type: TextureType, texture: WebGLTexture | null): void {
+		if (!Number.isInteger(location) || location < 0 || location > 31) {
+			throw new RangeError(`${location} is not a valid texture unit. Only up to 32 texture units are supported.`);
+		}
+		// this.gl.activeTexture(this.gl.TEXTURE0);
+		// this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+		this.gl.activeTexture(this.gl.TEXTURE0 + location);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+		this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, null);
+		if (type === "2d") this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+		if (type === "cubemap") this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture);
+		// const current = this.#textures[location];
+		// if ((current?.texture ?? null) === texture) {
+		// 	return;
+		// }
+		// if (current && current.type !== type) {
+		// 	// Avoid "Two textures of different types use the same sampler location."
+		// 	if (current.type === "2d") {
+		// 		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+		// 	} else {
+		// 		this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, null);
+		// 	}
+		// }
+		// if (texture) {
+		// 	if (type === "2d") {
+		// 		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+		// 	} else {
+		// 		this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, texture);
+		// 	}
+		// }
+		this.#textures[location] = texture ? { type, texture } : null;
+	}
+
+	clearTextures(): void {
+		// for (const [location, texture] of Object.entries(this.#textures)) {
+		// 	if (!texture) {
+		// 		continue;
+		// 	}
+		// 	this.gl.activeTexture(this.gl.TEXTURE0 + +location);
+		// 	if (texture.type === "2d") {
+		// 		this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+		// 	} else {
+		// 		this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, null);
+		// 	}
+		// }
+		this.#textures = {};
+		for (let i = 0; i < 15; i++) {
+			this.gl.activeTexture(this.gl.TEXTURE0 + i);
+			this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+			this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, null);
 		}
 	}
 }

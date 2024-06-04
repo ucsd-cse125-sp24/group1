@@ -18,8 +18,7 @@ export class TextModel implements Model {
 
 	draw(models: mat4[]): void {
 		const { gl } = this.shader.engine;
-		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, this.#texture.texture);
+		this.shader.engine.bindTexture(0, "2d", this.#texture.texture);
 		gl.uniform1i(this.shader.uniform("u_texture"), 0);
 		gl.uniform2f(this.shader.uniform("u_size"), this.#texture.width * this.#scale, this.#texture.height * this.#scale);
 		gl.disable(gl.CULL_FACE);

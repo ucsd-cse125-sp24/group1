@@ -58,7 +58,7 @@ export class ShadowMapCamera extends Camera {
 		this.#framebuffer = framebuffer;
 
 		// Initialize cube map textures
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#shadowMap);
+		engine.bindTexture(0, "cubemap", this.#shadowMap);
 		for (let side = 0; side < 6; side++) {
 			gl.texImage2D(
 				gl.TEXTURE_CUBE_MAP_POSITIVE_X + side,
@@ -79,7 +79,7 @@ export class ShadowMapCamera extends Camera {
 		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		// Bind color attachment - even though we only care about depth, some
 		// devices still require the framebuffer to have a color attachment
-		gl.bindTexture(gl.TEXTURE_2D, colorTexture);
+		engine.bindTexture(0, "2d", colorTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, size, size, 0, gl.RED, gl.UNSIGNED_BYTE, null);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
@@ -104,13 +104,7 @@ export class ShadowMapCamera extends Camera {
 		const gl = this._engine.gl;
 		// Clear all textures to avoid "GL_INVALID_OPERATION: Feedback loop formed
 		// between Framebuffer and active Texture."
-		// TODO: this is pretty brute force. could minimize the textures needed to
-		// be unbound
-		for (let i = 0; i < 8; i++) {
-			gl.activeTexture(gl.TEXTURE0 + i);
-			gl.bindTexture(gl.TEXTURE_2D, null);
-			gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
-		}
+		this._engine.clearTextures();
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.#framebuffer);
 		gl.viewport(0, 0, this.#textureSize, this.#textureSize);
 		for (let side = 0; side < 6; side++) {
