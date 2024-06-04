@@ -227,7 +227,7 @@ let result = vec3.create();
 vec3.add(result, camera.getPosition(), camera.getForwardDir());
 
 const particle = new ParticleSystem(engine, 100, 1000, 100, {
-	size: 100,
+	size: 1000,
 	color: [1, 0, 0, 0.5], // red color
 	mass: 1,
 	initialPosition: [0, 10, 0],

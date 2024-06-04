@@ -24,5 +24,6 @@ void main() {
   v_position = a_position + v_velocity * u_dt;
   v_ttl = a_ttl - u_dt;
   gl_Position = u_view * u_model * vec4(v_position, 1.0);
-  gl_PointSize = u_size;
+  float distance = gl_Position.w;
+  gl_PointSize = u_size / distance;
 }
