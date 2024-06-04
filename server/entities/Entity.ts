@@ -3,6 +3,7 @@ import { PhysicsWorld } from "../PhysicsWorld";
 import { EntityModel, SerializedEntity } from "../../common/messages";
 import { Vector3 } from "../../common/commontypes";
 import { Game } from "../Game";
+import { Animator } from "../lib/Animation";
 
 export type Tag = "environment" | "interactable" | "player" | "resource" | "tool" | "item";
 
@@ -29,6 +30,8 @@ export abstract class Entity {
 	 */
 	isStatic = false;
 
+	animator: Animator;
+
 	constructor(game: Game, model: EntityModel[] = [], tags: Tag[] = [], id?: EntityId) {
 		this.game = game;
 		this.id = id ?? (++nextId).toString(16);
@@ -37,6 +40,7 @@ export abstract class Entity {
 		this.body = new phys.Body({
 			collisionFilterGroup: this.getBitFlag(),
 		});
+		this.animator = new Animator({}, model);
 	}
 
 	getPos(): Vector3 {
@@ -66,6 +70,8 @@ export abstract class Entity {
 		};
 	}
 
+	tick() {}
+
 	/**
 	 * Used for collisions and selecting items so that you can jump on both ramps
 	 * and crafting tables, as well as not pick up items through walls.
@@ -87,16 +93,3 @@ export abstract class Entity {
 		return `${this.constructor.name}${tag}(${this.getPos().map((n) => n.toFixed(0))})`;
 	}
 }
-
-/**
- * TO MAKE:
- * PLAYER ENTITY
- *     HERO ENTITY
- *     BOSS ENTITY
- * ITEM ENTITY
- *     RESOURCE ENTITY
- *     TOOL ENTITY
- * MAP ENTITY
- * DOOR ENTITY
- *
- */

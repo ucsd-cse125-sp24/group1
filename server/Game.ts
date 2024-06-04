@@ -580,7 +580,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
-
+		for (let entity of this.#entities.values()) {
+			entity.tick();
+		}
 		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
 			this.clearEntityQueues();
 		}
@@ -702,6 +704,30 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		entity.removeFromWorld(this.#world);
 	}
 	// #endregion
+
+	reset() {
+		this.#currentStage = {
+			type: "lobby",
+			previousWinner: null
+		}
+		for (let entity of [...this.#entities.values()]) {
+			this.#unregisterEntity(entity);
+		}
+
+		this.#world.removeAllBodies();
+		
+		// Set up new game
+		this.#makeLobby();
+		for (let player of this.#players.values()) {
+			player.conn.send({
+				type: "camera-lock",
+				entityId: "lobby-camera",
+				pov: "first-person",
+				freeRotation: false
+			});
+			player.entity = null;
+		}
+	}
 }
 
 /**

@@ -7,6 +7,7 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
+import { Animation, Animator } from "../lib/Animation";
 
 const COYOTE_FRAMES = 10;
 
@@ -45,6 +46,8 @@ export abstract class PlayerEntity extends Entity {
 	// coyote countdown
 	#coyoteCounter: number;
 
+	animator: Animator;
+
 	constructor(
 		game: Game,
 		pos: Vector3,
@@ -80,6 +83,20 @@ export abstract class PlayerEntity extends Entity {
 			material: PlayerMaterial,
 			collisionFilterGroup: this.getBitFlag(),
 		});
+
+		// prettier-ignore
+		this.animator = new Animator({
+			punch: new Animation([
+				{ model: ["chair"], duration: 5 },
+				{ model: ["donut"], duration: 5 },
+				{ model: ["fish1"], duration: 5 },
+			]),
+			jump: new Animation([
+				{ model: ["chair"], duration: 5 },
+				{ model: ["donut"], duration: 5 },
+				{ model: ["fish1"], duration: 5 },
+			]),
+		}, model);
 
 		this.#cylinder = new phys.Cylinder(this.#capsuleRadius, this.#capsuleRadius, this.#cylinderHeight, 12);
 		this.#sphereTop = new phys.Sphere(this.#capsuleRadius);
@@ -188,6 +205,7 @@ export abstract class PlayerEntity extends Entity {
 		if (Date.now() - this.#previousAttackTime < this.attackCooldown) {
 			return false;
 		}
+		this.animator.play("punch");
 		const lookDir = this.lookDir.unit();
 		if (!this.isBoss && this.itemInHands !== null) {
 			if (this.itemInHands.type === "bow" || this.itemInHands.type === "gamer_bow") {
@@ -301,6 +319,11 @@ export abstract class PlayerEntity extends Entity {
 			],
 			health: this.health,
 		};
+	}
+
+	tick() {
+		this.animator.tick();
+		this.model = this.animator.getModel();
 	}
 
 	setSpeed(speed: number) {
