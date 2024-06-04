@@ -26,6 +26,7 @@ export class TextModel implements Model {
 		for (const model of models) {
 			gl.uniformMatrix4fv(this.shader.uniform("u_model"), false, model);
 			gl.drawArrays(gl.TRIANGLES, 0, 6);
+			this.shader.engine._drawCalls++;
 		}
 		gl.enable(gl.CULL_FACE);
 	}

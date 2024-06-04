@@ -327,12 +327,26 @@ const tempLightShader = new ShaderProgram(
 	),
 );
 const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
-const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(-3, 0, 0), vec3.fromValues(0, 0, 30));
+const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(10, 20, -20), vec3.fromValues(0, 0, 30), false);
+const staticLight2 = new TempLightEntity(
+	tempLightShader,
+	vec3.fromValues(-15, 5, 15),
+	vec3.fromValues(27 / 360, 0.9, 50),
+	false,
+);
+const staticLight3 = new TempLightEntity(
+	tempLightShader,
+	vec3.fromValues(-10, -10, -10),
+	vec3.fromValues(0.5, 0.1, 10),
+	false,
+);
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 2));
 const tempEntities: ClientEntity[] = [
-	coolLight,
-	warmLight,
+	// coolLight,
+	// warmLight,
 	whiteLight,
+	staticLight2,
+	staticLight3,
 	new ClientEntity(engine, [
 		{
 			model: new TextModel(engine, "hey 羊 Â", 1, 64, { color: "red", family: '"Comic Sans MS"' }),
@@ -372,15 +386,17 @@ const debugGltfShaders = [
 
 const ambientLight = [0.5, 0.5, 0.5] as const;
 
+let previousStaticIds = "";
 const paint = () => {
+	engine._drawCalls = 0;
 	warmLight.color = vec3.fromValues(27 / 360, 0.9, (50 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
 	warmLight.position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
-	whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 10, Math.sin(Date.now() / 3000) * 15);
+	// whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 10, Math.sin(Date.now() / 3000) * 15);
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
 		for (const entity of entities) {
-			entity.visible = entity.data?.id !== cameraLockTarget;
+			entity.hasCamera = entity.data?.id === cameraLockTarget;
 		}
 	}
 
@@ -420,9 +436,27 @@ const paint = () => {
 	engine.clear();
 
 	// Cast shadows
+	const staticIds = JSON.stringify(
+		[...entities, ...tempEntities]
+			.filter((entity) => entity.data?.isStatic)
+			.map((entity) => [entity.data?.id, entity.data?.position]),
+	);
+	let recastStaticShadows = false;
+	if (staticIds !== previousStaticIds) {
+		previousStaticIds = staticIds;
+		recastStaticShadows = true;
+		console.time("Re-rendering static shadow map");
+	}
 	const lights = [...entities, ...tempEntities].flatMap((entity) => (entity.light ? [entity.light] : []));
 	for (const light of lights) {
+		if (!light.willMove && !recastStaticShadows) {
+			// Avoid re-rendering shadow map if static entities did not change
+			continue;
+		}
 		light.renderShadowMap([...entities, ...tempEntities]);
+	}
+	if (recastStaticShadows) {
+		console.timeEnd("Re-rendering static shadow map");
 	}
 
 	pipeline.startRender();
@@ -455,7 +489,7 @@ const paint = () => {
 	const view = camera.getViewProjectionMatrix();
 	drawModels(
 		view,
-		[...entities, ...tempEntities].flatMap((entity) => entity.getModels()),
+		[...entities, ...tempEntities].flatMap((entity) => entity.getModels("rendering")),
 	);
 
 	// Draw wireframes
@@ -500,3 +534,5 @@ camera.listen();
 pauseMenu.listen(connection);
 pauseMenu.options.listen(camera);
 paint();
+
+console.log(engine);

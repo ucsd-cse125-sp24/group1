@@ -308,6 +308,7 @@ export class GltfModel implements Model {
 			} else {
 				gl.drawArraysInstanced(mode ?? gl.TRIANGLES, 0, count, models.length);
 			}
+			this.shader.engine._drawCalls++;
 
 			gl.bindVertexArray(null);
 			if (materialOptions.doubleSided) {
