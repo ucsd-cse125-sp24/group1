@@ -9,7 +9,16 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ChangeRole, ClientMessage, GameStage, PlayerEntry, SerializedEntity, ServerMessage } from "../common/messages";
+import {
+	Attack,
+	ChangeRole,
+	ClientMessage,
+	GameStage,
+	PlayerEntry,
+	SerializedEntity,
+	ServerMessage,
+	Use,
+} from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { SoundId } from "../assets/sounds";
@@ -69,6 +78,8 @@ interface NetworkedPlayer {
 	input: PlayerInput;
 	/** `null` if spectating */
 	entity: PlayerEntity | null;
+	useAction?: Use;
+	attackAction?: Attack;
 	online: boolean;
 	id: string;
 	conn: Connection<ServerMessage>;
@@ -542,18 +553,24 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 			player.entity.move(movement);
 
+			const use = player.entity.use();
+			player.useAction = use?.type;
 			if (posedge.use) {
-				const used = player.entity.use();
-				if (!used) {
+				if (use) {
+					use.commit();
+				} else {
 					this.playSound("useFail", player.entity.getPos());
 				}
 			}
+			const attack = player.entity.attack();
+			player.attackAction = attack?.type;
 			if (posedge.attack) {
-				const attacked = player.entity.attack();
-				this.playParticle(player.entity.getPos());
-				if (!attacked) {
+				if (attack) {
+					attack.commit();
+				} else {
 					this.playSound("attackFail", player.entity.getPos());
 				}
+				this.playParticle(player.entity.getPos());
 			}
 			if (posedge.emote) {
 				// TEMP: using `emote` key (X) to spawn item above player
@@ -606,6 +623,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			name: player.name,
 			role: !player.entity ? "spectator" : player.entity instanceof BossEntity ? "boss" : "hero",
 			entityId: player.entity?.id,
+			useAction: player.useAction,
+			attackAction: player.attackAction,
 			online: player.online,
 			health: player.entity?.health,
 		};
@@ -708,14 +727,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	reset() {
 		this.#currentStage = {
 			type: "lobby",
-			previousWinner: null
-		}
+			previousWinner: null,
+		};
 		for (let entity of [...this.#entities.values()]) {
 			this.#unregisterEntity(entity);
 		}
 
 		this.#world.removeAllBodies();
-		
+
 		// Set up new game
 		this.#makeLobby();
 		for (let player of this.#players.values()) {
@@ -723,7 +742,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: false
+				freeRotation: false,
 			});
 			player.entity = null;
 		}

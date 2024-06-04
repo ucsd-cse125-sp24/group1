@@ -16,6 +16,8 @@ export class GameplayUi {
 	timer = new Timer();
 	#health = new Health();
 	#joystick = elem("div", { className: styles.joystick });
+	#attack = elem("div");
+	#use = elem("div");
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.desktop],
 		contents: [
@@ -24,6 +26,8 @@ export class GameplayUi {
 			this.#health.element,
 			elem("button", { classes: [styles.pauseBtn, "mobile-open-pause"], ariaLabel: "Open pause menu" }),
 			this.#joystick,
+			this.#attack,
+			this.#use,
 		],
 	});
 
@@ -66,6 +70,13 @@ export class GameplayUi {
 	render(state: EntireGameState, previous?: EntireGameState): void {
 		this.timer.render(state, previous);
 		this.#health.render(state, previous);
+
+		if (state.me.attackAction !== previous?.me.attackAction) {
+			this.#attack.textContent = state.me.attackAction ?? "none";
+		}
+		if (state.me.useAction !== previous?.me.useAction) {
+			this.#use.textContent = state.me.useAction ?? "none";
+		}
 	}
 
 	show() {

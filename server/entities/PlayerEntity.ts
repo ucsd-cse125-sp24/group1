@@ -1,7 +1,7 @@
 import * as phys from "cannon-es";
 import { mat4, quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import { EntityModel, SerializedEntity } from "../../common/messages";
+import { Action, Attack, EntityModel, SerializedEntity, Use } from "../../common/messages";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { Game } from "../Game";
 import { Entity } from "./Entity";
@@ -183,10 +183,9 @@ export abstract class PlayerEntity extends Entity {
 	 * call this (`super.use()`) and use the return value to determine whether to
 	 * perform subclass-unique actions.
 	 */
-	use(): boolean {
+	use(): Action<Use> | null {
 		if (this.itemInHands) {
-			this.itemInHands.interact(this);
-			return true;
+			return this.itemInHands.interact(this);
 		}
 		const entities = this.game.raycast(
 			this.body.position,
@@ -195,28 +194,33 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 		if (entities[0] instanceof InteractableEntity) {
-			entities[0].interact(this);
-			return true;
+			return entities[0].interact(this);
 		}
-		return false;
+		return null;
 	}
 
-	attack(): boolean {
+	attack(): Action<Attack> | null {
 		if (Date.now() - this.#previousAttackTime < this.attackCooldown) {
-			return false;
+			// TODO: should this cooldown be shown to the client? if it's shown, it
+			// might annoy the player more than if the cooldown were unnoticeable
+			return null;
 		}
 		this.animator.play("punch");
 		const lookDir = this.lookDir.unit();
 		if (!this.isBoss && this.itemInHands !== null) {
 			if (this.itemInHands.type === "bow" || this.itemInHands.type === "gamer_bow") {
 				const isGamer = this.itemInHands.type === "gamer_bow";
-				this.game.shootArrow(
-					this.body.position.vadd(lookDir.scale(2)),
-					lookDir.scale(isGamer ? 80 : 40),
-					isGamer ? 6 : 3,
-				);
-				this.#previousAttackTime = Date.now();
-				return false;
+				return {
+					type: "hero:shoot-arrow",
+					commit: () => {
+						this.game.shootArrow(
+							this.body.position.vadd(lookDir.scale(2)),
+							lookDir.scale(isGamer ? 80 : 40),
+							isGamer ? 6 : 3,
+						);
+						this.#previousAttackTime = Date.now();
+					},
+				};
 			}
 		}
 		const entities = this.game.raycast(
@@ -227,29 +231,40 @@ export abstract class PlayerEntity extends Entity {
 		);
 		for (const entity of entities) {
 			if (entity instanceof PlayerEntity) {
-				console.log("attack", entity.id);
-				if (this.game.getCurrentStage().type === "combat") {
-					if (this.isBoss) {
-						// Boss doesn't need weapons
-						entity.takeDamage(1);
-					} else if (entity.isBoss) {
-						entity.hitByWeapon(this.itemInHands);
-					}
-				}
-				// Apply knockback to player when attacked
-				entity.body.applyImpulse(
-					new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
-				);
-				this.game.playSound("hit", entity.getPos());
-				this.#previousAttackTime = Date.now();
-				return true;
+				return {
+					type: "damage",
+					commit: () => {
+						console.log("attack", entity.id);
+						if (this.game.getCurrentStage().type === "combat") {
+							if (this.isBoss) {
+								// Boss doesn't need weapons
+								entity.takeDamage(1);
+							} else if (entity.isBoss) {
+								entity.hitByWeapon(this.itemInHands);
+							}
+						}
+						// Apply knockback to player when attacked
+						entity.body.applyImpulse(
+							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
+						);
+						this.game.playSound("hit", entity.getPos());
+						this.#previousAttackTime = Date.now();
+					},
+				};
 			} else if (entities[0] instanceof InteractableEntity) {
-				entities[0].hit(this);
-				this.#previousAttackTime = Date.now();
-				return true;
+				const action = entities[0].hit(this);
+				return action
+					? {
+							...action,
+							commit: () => {
+								action.commit();
+								this.#previousAttackTime = Date.now();
+							},
+						}
+					: null;
 			}
 		}
-		return false;
+		return null;
 	}
 
 	hitByWeapon(weapon: Item | null): void {

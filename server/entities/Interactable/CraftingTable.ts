@@ -1,6 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel, SerializedEntity } from "../../../common/messages";
+import { Action, EntityModel, SerializedEntity, Use } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Entity } from "../Entity";
 import { Game } from "../../Game";
@@ -111,18 +111,23 @@ export class CraftingTable extends InteractableEntity {
 		item.throw(new phys.Vec3(-20, 30, -50));
 	}
 
-	interact(player: PlayerEntity) {
+	interact(player: PlayerEntity): Action<Use> | null {
 		//should spawn the top item in the array!
 
-		let item = this.itemList.pop();
+		return {
+			type: "pop-crafter",
+			commit: () => {
+				let item = this.itemList.pop();
 
-		if (item instanceof Item) {
-			this.#eject(item);
-			this.game.playSound("popCrafting", this.getPos());
-		} else {
-			// if there's no items in the array do nothing ig
-			this.game.playSound("popCraftingFail", this.getPos());
-		}
+				if (item) {
+					this.#eject(item);
+					this.game.playSound("popCrafting", this.getPos());
+				} else {
+					// if there's no items in the array do nothing ig
+					this.game.playSound("popCraftingFail", this.getPos());
+				}
+			},
+		};
 	}
 
 	onCollide(otherEntity: Entity): void {
@@ -143,15 +148,7 @@ export class CraftingTable extends InteractableEntity {
 				// Delete ingredients
 				this.itemList = [];
 				console.log("crafted ", result.output);
-				this.#eject(
-					new Item(
-						this.game,
-						result.output,
-						this.getPos(),
-						[{ modelId: result.output, scale: 0.5, offset: [0, -0.25, 0] }],
-						"resource",
-					),
-				);
+				this.#eject(new Item(this.game, result.output, this.getPos(), "resource"));
 				this.game.playSound("craftingSuccess", this.getPos());
 			} else if (result.type === "unsatisfiable") {
 				for (const item of this.itemList) {
