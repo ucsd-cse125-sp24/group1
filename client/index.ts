@@ -30,6 +30,7 @@ import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
 import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
+import { ensureName } from "./ui/components/NamePrompt";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -37,6 +38,9 @@ if (errorWindow instanceof HTMLDialogElement) {
 } else {
 	alert("Failed to get error window");
 }
+
+const playerName = await ensureName();
+console.log("hello", playerName);
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");

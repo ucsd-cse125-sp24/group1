@@ -88,18 +88,11 @@
 }
 
 .column {
-	margin: 0 auto;
+	margin: 50px auto 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	position: relative;
-}
-
-.logo {
-	font-size: 6rem;
-	text-align: center;
-	font-weight: bold;
-	margin-top: 50px;
 }
 
 .playerList {
