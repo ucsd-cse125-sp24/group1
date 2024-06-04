@@ -31,8 +31,6 @@ import { TextModel } from "./render/model/TextModel";
 import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
 
-const MAX_LIGHTS = 8;
-
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
 	listenErrors(errorWindow);
@@ -343,23 +341,23 @@ const staticLight3 = new TempLightEntity(
 	false,
 );
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 2));
-const hueLightCount = 4; // Math.floor(1 + Math.random() * 10);
+const hueLightCount = engine.MAX_LIGHTS; // Math.floor(1 + Math.random() * 10);
 const tempEntities: ClientEntity[] = [
 	// coolLight,
 	// warmLight,
-	whiteLight,
-	staticLight2,
-	staticLight3,
+	// whiteLight,
+	// staticLight2,
+	// staticLight3,
 	...Array.from({ length: hueLightCount }, (_, i) => {
 		const radius = 5 + Math.random() * 15;
 		return new TempLightEntity(
 			tempLightShader,
 			vec3.fromValues(
 				Math.cos((i / hueLightCount) * 2 * Math.PI) * radius,
-				Math.random() * 30 - 10,
+				Math.random() * 40 - 20,
 				Math.sin((i / hueLightCount) * 2 * Math.PI) * radius,
 			),
-			vec3.fromValues(i / hueLightCount, Math.random(), Math.exp(Math.random() * 5 - 2)),
+			vec3.fromValues(i / hueLightCount, Math.random(), Math.exp(Math.random() * 4 - 1)),
 			false,
 		);
 	}),
@@ -465,7 +463,7 @@ const paint = () => {
 	}
 	const lights = [...entities, ...tempEntities]
 		.flatMap((entity) => (entity.light ? [entity.light] : []))
-		.slice(0, MAX_LIGHTS);
+		.slice(0, engine.MAX_LIGHTS);
 	for (const light of lights) {
 		if (!light.willMove && !recastStaticShadows) {
 			// Avoid re-rendering shadow map if static entities did not change
@@ -499,7 +497,7 @@ const paint = () => {
 	}
 	engine.gl.uniform1iv(
 		engine.gltfMaterial.uniform("u_point_shadow_maps[0]"),
-		Array.from({ length: MAX_LIGHTS }).map((_, i) => 4 + i),
+		Array.from({ length: engine.MAX_LIGHTS }).map((_, i) => 4 + i),
 	);
 	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...ambientLight, 1);
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_enable_tones"), +tones);

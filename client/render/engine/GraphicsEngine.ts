@@ -13,6 +13,13 @@ import { WebGlUtils } from "./WebGlUtils";
  * Handles helper functions for interacting with WebGL.
  */
 class GraphicsEngine extends WebGlUtils {
+	// Replaces `#define` lines in shader files
+	constants: Record<string, string> = {
+		MAX_LIGHTS: `${16 - 4}`,
+		NEAR: "0.001",
+		FAR: "100.0",
+	};
+
 	wireframeMaterial = new ShaderProgram(
 		this,
 		this.createProgram(
@@ -37,6 +44,17 @@ class GraphicsEngine extends WebGlUtils {
 	models = getModels(this);
 
 	_drawCalls = 0;
+
+	createShader(type: "vertex" | "fragment", source: string, name?: string): WebGLShader {
+		for (const [name, value] of Object.entries(this.constants)) {
+			source = source.replace(new RegExp(`#define ${name} .+`, "g"), `#define ${name} ${value}`);
+		}
+		return super.createShader(type, source, name);
+	}
+
+	get MAX_LIGHTS(): number {
+		return +this.constants.MAX_LIGHTS;
+	}
 
 	/**
 	 * Draws a wireframe.
