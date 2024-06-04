@@ -30,11 +30,20 @@ export class ShadowMapCamera extends Camera {
 	#textureSize: number;
 	#shadowMap: WebGLTexture;
 	#framebuffer: WebGLFramebuffer;
+	#willMove: boolean;
 
-	constructor(position: vec3, nearBound: number, farBound: number, size: number, engine: GraphicsEngine) {
+	constructor(
+		position: vec3,
+		nearBound: number,
+		farBound: number,
+		size: number,
+		engine: GraphicsEngine,
+		willMove: boolean,
+	) {
 		super(position, vec3.fromValues(1, 0, 0), vec3.fromValues(0, 1, 0), Math.PI / 2, 1, nearBound, farBound, engine);
 		this.#perspective = mat4.perspective(mat4.create(), this._fovY, this._aspectRatio, this._nearBound, this._farBound);
 		this.#textureSize = size;
+		this.#willMove = willMove;
 		const gl = engine.gl;
 		const texture = gl.createTexture();
 		const colorTexture = gl.createTexture();
@@ -119,7 +128,7 @@ export class ShadowMapCamera extends Camera {
 			const view = this.getViewProjectionMatrix();
 			drawModels(
 				view,
-				entities.flatMap((entity) => entity.getModels(true)),
+				entities.flatMap((entity) => entity.getModels(this.#willMove ? null : "static-shadows")),
 			);
 		}
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);

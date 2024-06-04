@@ -337,6 +337,7 @@ export class ParticleSystem implements Model {
 			gl.uniformMatrix4fv(this.shader.uniform("u_model"), false, model);
 			gl.beginTransformFeedback(gl.POINTS);
 			gl.drawArrays(gl.POINTS, 0, this.#maxParticles);
+			this.shader.engine._drawCalls++;
 			gl.endTransformFeedback();
 		}
 

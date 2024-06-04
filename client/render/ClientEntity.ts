@@ -20,7 +20,7 @@ export class ClientEntity {
 	 * it like the anchor position and rotation of the entity.
 	 */
 	transform: mat4;
-	visible = true;
+	hasCamera = false;
 	light?: PointLight;
 
 	constructor(
@@ -37,9 +37,15 @@ export class ClientEntity {
 
 	/**
 	 * Get the entity's models.
+	 *
+	 * @param purpose Determines when to hide the entity:
+	 * - If `rendering`, the entity is invisible if `hasCamera` is true.
+	 * - If `static-shadows`, the entity is invisible if the entity is mobile
+	 *    (`data.isStatic` is false).
+	 * - If omitted, the entity is always visible.
 	 */
-	getModels(ignoreInvisible = false): ModelWithTransform[] {
-		if (!ignoreInvisible && !this.visible) {
+	getModels(purpose?: "rendering" | "static-shadows" | null): ModelWithTransform[] {
+		if ((purpose === "rendering" && this.hasCamera) || (purpose === "static-shadows" && !this.data?.isStatic)) {
 			return [];
 		}
 		return this.models.map(({ model, transform }) => ({

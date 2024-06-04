@@ -43,7 +43,7 @@
 }
 .optionsHidden,
 .hide .optionsPanel {
-	transform: translateX(-18rem);
+	transform: translateX(-20rem);
 	box-shadow: none;
 	visibility: hidden;
 }

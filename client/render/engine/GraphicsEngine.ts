@@ -36,6 +36,8 @@ class GraphicsEngine extends WebGlUtils {
 	);
 	models = getModels(this);
 
+	_drawCalls = 0;
+
 	/**
 	 * Draws a wireframe.
 	 *
@@ -65,7 +67,10 @@ class GraphicsEngine extends WebGlUtils {
 				(2 * Math.PI) / collider.numSegments,
 			);
 			this.gl.drawArrays(this.gl.TRIANGLES, 0, 12 + 6 * collider.numSegments);
+		} else {
+			return;
 		}
+		this._drawCalls++;
 	}
 }
 

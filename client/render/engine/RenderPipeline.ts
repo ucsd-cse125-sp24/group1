@@ -159,6 +159,7 @@ export class RenderPipeline {
 		gl.vertexAttribPointer(texCoordAttribLoc, 2, gl.FLOAT, false, 0, 0);
 		// Draw plane
 		gl.drawArrays(gl.TRIANGLES, 0, 6);
+		this.#engine._drawCalls++;
 		// Clean up
 		gl.disableVertexAttribArray(positionAttribLoc);
 		gl.disableVertexAttribArray(texCoordAttribLoc);

@@ -34,7 +34,6 @@ export const createTextTexture = (
 
 	document.fonts.ready.then(() => {
 		c.font = `${weight} ${height}px/1 ${family}`;
-		console.log(c.font);
 		result.width = 1 << Math.ceil(Math.log2(c.measureText(text).width));
 		canvas.width = result.width;
 		canvas.height = height;

@@ -6,6 +6,8 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 
 export class StaticEntity extends Entity {
+	isStatic = true;
+
 	constructor(
 		game: Game,
 		position: Vector3,

@@ -23,6 +23,11 @@ export abstract class Entity {
 	tags: Set<Tag>;
 	/** Whether the entity is a player. */
 	isPlayer = false;
+	/**
+	 * Whether the object is fixed and stationary and can't or won't move. If
+	 * true, the entity makes for a great candidate for pre-calculating shadows.
+	 */
+	isStatic = false;
 
 	constructor(game: Game, model: EntityModel[] = [], tags: Tag[] = [], id?: EntityId) {
 		this.game = game;
@@ -57,6 +62,7 @@ export abstract class Entity {
 			model: this.model,
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),
+			isStatic: this.isStatic,
 		};
 	}
 

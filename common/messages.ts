@@ -200,6 +200,11 @@ export type SerializedEntity = {
 	model: EntityModel[];
 	quaternion: Quaternion;
 	position: Vector3;
+	/**
+	 * Whether the object is fixed and stationary and can't or won't move. If
+	 * true, the entity makes for a great candidate for pre-calculating shadows.
+	 */
+	isStatic: boolean;
 	// for future reference we need to include velocity for movement prediction
 
 	// Client uses this state on camera locked entity to determine visual effects

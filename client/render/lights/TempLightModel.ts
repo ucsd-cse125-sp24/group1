@@ -17,6 +17,7 @@ export class TempLightModel implements Model {
 			gl.uniformMatrix4fv(this.shader.uniform("u_model"), false, model);
 			gl.uniform3fv(this.shader.uniform("u_color"), this.color);
 			gl.drawArrays(gl.TRIANGLES, 0, 36);
+			this.shader.engine._drawCalls++;
 		}
 	}
 }
