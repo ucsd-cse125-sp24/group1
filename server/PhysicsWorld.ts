@@ -57,6 +57,12 @@ export class PhysicsWorld {
 		this.#colliders.splice(this.#colliders.indexOf(body), 1);
 	}
 
+	removeAllBodies() {
+		for (let collider of this.#colliders) {
+			this.#world.removeBody(collider);
+		}
+	}
+
 	#time = 0;
 	nextTick() {
 		// console.log("box is at:", this.#colliders.box.position, "velocity:", this.#colliders.box.velocity);
