@@ -176,7 +176,7 @@ export class GltfModel implements Model {
 			for (const vbo of vbos) {
 				gl.bindBuffer(gl.ARRAY_BUFFER, vbo.buffer);
 				const location = shader.attribMaybe(vbo.attribName);
-				if (!location) {
+				if (location === null) {
 					continue;
 				}
 				gl.enableVertexAttribArray(location);
