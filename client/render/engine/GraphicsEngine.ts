@@ -56,6 +56,14 @@ class GraphicsEngine extends WebGlUtils {
 		return +this.constants.MAX_LIGHTS;
 	}
 
+	get LIGHT_NEAR(): number {
+		return +this.constants.NEAR;
+	}
+
+	get LIGHT_FAR(): number {
+		return +this.constants.FAR;
+	}
+
 	/**
 	 * Draws a wireframe.
 	 *
