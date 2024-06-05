@@ -1,4 +1,4 @@
-import { Quaternion, Vec3 } from "cannon-es";
+import { Box, Quaternion, Vec3 } from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
 import { Action, Attack, EntityModel, Use } from "../../common/messages";
 import { Game } from "../Game";
@@ -21,13 +21,14 @@ const MAX_BOSS_GROUND_SPEED_CHANGE = 2.5;
 const MAX_BOSS_AIR_SPEED_CHANGE = 1;
 const BOSS_JUMP_SPEED = 0;
 
+const BOSS_ATTACK_COOLDOWN = 50; // ticks
+
 export class BigBossEntity extends PlayerEntity {
 	isBoss = true;
 	initHealth = 100;
 
-    previousTick: number;
-
-    isCharge: boolean;
+    previousAttackTick: number;
+    chargeTicks: number;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
@@ -44,124 +45,78 @@ export class BigBossEntity extends PlayerEntity {
 			PLAYER_INTERACTION_RANGE,
 		);
 
-        this.isCharge = false;
-        this.previousTick = this.game.getCurrentTick();
+        this.previousAttackTick = this.game.getCurrentTick();
+        this.chargeTicks = 0;
 	}
 
-
     attack(): Action<Attack> | null {
-        return this.BigBossAttack();
-    }
-
-    //TODO: refactor this around the Action<Attack> change!
-    BigBossAttack(): Action<Attack> | null {//meleeAttack() {
-
-        console.log(this.game.getCurrentTick(), this.previousTick);
-        if (this.game.getCurrentTick() - this.previousTick < 50) {
+        if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
             return null;
         }
 
-        const lookDir = this.lookDir.unit();
+        this.previousAttackTick = this.game.getCurrentTick();
+        return {
+            type: "damage",
+            commit: () => {
+                const lookDir = this.lookDir.unit();
+                const rightDir = lookDir.cross(new Vec3(0, 1, 0)).unit();
 
-        let quat = new Quaternion(0, 0, 0, 1);
-        let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
-        let entities: Entity[] = [];
+                let quat = new Quaternion(0, 0, 0, 1);
+                let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
+                let entities: Entity[] = [];
 
-        //hopefully this shoots 5 rays cenetered on Lookdir
-        console.log(this.getPos());
-        for(let i = 0; i < 5; i++) {
-            quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
-            let dir = quat.vmult(lookDir.scale(this.interactionRange));
+                //hopefully this shoots 5 rays centered on Lookdir
+                for(let i = 0; i < 5; i++) {
+                    quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
+                    let dir = quat.vmult(lookDir.scale(this.interactionRange));
 
-            let betterDirection = this.body.position.vadd(dir);
+                    let betterDirection = this.body.position.vadd(dir);
 
-            //FOR TESTING
-            //console.log(betterDirection, i);
-            
-            entities.push(...this.game.raycast(
-                this.body.position,
-                dir,
-                {},
-                this,
-            ));
-
-        }
-            
-        for (const entity of entities) {
-            if (entity instanceof HeroEntity) {
-
-                return {
-					type: "damage",
-					commit: () => {
-						console.log("attack", entity.id);
-
+                    //FOR TESTING
+                    //console.log(betterDirection, i);
+                    
+                    entities.push(...this.game.raycast(
+                        this.body.position,
+                        dir,
+                        {},
+                        this,
+                    ));
+                }
+                    
+                for (const entity of entities) {
+                    if (entity instanceof HeroEntity) {
                         if (this.game.getCurrentStage().type === "combat") {
                             entity.takeDamage(1);
                         }
-                            // Apply knockback to player when attacked
+                        // Apply knockback to player when attacked
                         entity.body.applyImpulse(
                             new Vec3(this.lookDir.x * 300, Math.abs(this.lookDir.y) * 150 + 50, this.lookDir.z * 300),
                         );
-        
                         this.game.playSound("hit", entity.getPos());
                         this.animator.play("punch");
-                        this.previousTick = this.game.getCurrentTick();
-					},
-				};
-
-            } else if (entities[0] instanceof InteractableEntity) {
-				const action = entities[0].hit(this);
-				return action
-					? {
-							...action,
-							commit: () => {
-								action.commit();
-								this.animator.play("punch");
-								this.previousTick = this.game.getCurrentTick();
-							},
-						}
-					: null;
-			}
+                    } else if (entities[0] instanceof InteractableEntity) {
+                        entities[0].hit(this);
+                        this.animator.play("punch");
+                    }
+                }
+            }
         }
-        return null;
-        
     }
 
     use(): Action<Use> | null {
-        return this.throwingAttack();
-    }
-
-    //TODO: figure out how to refactor this around the Action change
-    throwingAttack(): Action<Use> | null {
-        if (this.game.getCurrentTick() - this.previousTick < 50) {
+        if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
             return null;
         }
-
-        //let attackArr = Action<Attack> = [];
-
-        const lookDir = this.lookDir.unit();
-        this.animator.play("punch");
-
-        let quat = new Quaternion(0, 0, 0, 1);
-        let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
-
-
-        for(let i = 0; i < 5; i++) {
-            quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
-            let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
-            let betterDirection = this.body.position.vadd(dir);
-            
-            this.game.shootArrow(
-                this.body.position.vadd(betterDirection),
-                dir.scale(60),
-                1,
-                [{modelId: "donut"}]
-            );
-        }
+        this.previousAttackTick = this.game.getCurrentTick();
 
         return {
             type: "bigboss:shoot-shroom",
             commit: () => {
+                const lookDir = this.lookDir.unit();
+
+                let quat = new Quaternion(0, 0, 0, 1);
+                let base = this.body.position.vadd(lookDir.scale(this.interactionRange));
+
                 for(let i = 0; i < 5; i++) {
                     quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
                     let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
@@ -175,19 +130,12 @@ export class BigBossEntity extends PlayerEntity {
                     );
                 }
                 this.animator.play("punch");
-                this.previousTick = this.game.getCurrentTick();
-            },
-        };
-        
-
+            }
+        }
     }
-
-
 
     //TODO
     charge() {
 
     }
-
-
 }

@@ -104,6 +104,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#toDeleteQueue: EntityId[];
 
 	#currentTick: number;
+	#bossTimer: number;
+
+	#currentBoss: BossEntity | null;
 	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
@@ -123,6 +126,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
+		this.#bossTimer = 0;
+
+		this.#currentBoss = null;
 
 		this.#makeLobby();
 
@@ -271,7 +277,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	// #region Gameplay Methods
+	// #region Gameplay
 	/**
 	 * State transition from "crafting" to "combat"
 	 */
@@ -362,9 +368,23 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number, mod: EntityModel[]) {
 		this.#registerEntity(new ArrowEntity(this, position, velocity, damage, mod));
 	}
+
+	spawnSmolBossWithDelay() {
+		if(this.#bossTimer == 0) {
+			//spawn the boss at [0, 0, 0] for now
+			if(this.#currentBoss) {
+				this.#currentBoss.walkSpeed = 20;
+				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
+			}
+		}
+	}
+
+	setBossTimer(delay: number) {
+		this.#bossTimer = delay;
+	}
 	// #endregion
 
-	// #region Player management methods
+	// #region Player
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
 		for (const player of this.#players.values()) {
 			if (player.entity?.id === id) {
@@ -374,7 +394,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		return undefined;
 	}
 
-	#createPlayerEntity(pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+		if (this.#currentStage.type === "lobby") {
+			pos = [1000,1005 + playerNum * 5, 1000];
+		}
 		switch (role) {
 			case "hero":
 				return new HeroEntity(this, pos, [
@@ -385,13 +408,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					},
 				]);
 			case "boss":
-				return new BossEntity(this, pos, [
+				let boss = new BossEntity(this, pos, [
 					{
 						modelId: "samplePlayer",
 						offset: [0, -0.75, 0],
 						scale: 0.2,
 					},
 				]);
+				this.#currentBoss = boss;
+				return boss;
 			default:
 				return null;
 		}
@@ -478,24 +503,30 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 			case "change-role": {
 				const player = this.#players.get(conn.id);
-				if (!player) {
-					return;
-				}
+				if (!player) return;
+
 				const oldEntity = player.entity;
 				if (oldEntity) {
 					this.addToDeleteQueue(oldEntity.id);
 				}
-				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [0, 0, 0], data);
+
+				player.entity = this.#createPlayerEntity(this.#createdInputs.indexOf(player.input), oldEntity?.getPos() ?? [0, 0, 0], data);
+
 				if (player.entity) {
 					this.addToCreateQueue(player.entity);
 					player.entity.displayName = player.name;
-					conn.send({
-						type: "camera-lock",
-						entityId: player.entity.id,
-						freeRotation: true,
-						pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
-					});
+
+					// Only lock the camera if you're not in the lobby
+					if (this.#currentStage.type !== "lobby") {
+						conn.send({
+							type: "camera-lock",
+							entityId: player.entity.id,
+							freeRotation: true,
+							pov: "first-person",
+						});
+					}
 				}
+
 				break;
 			}
 			case "start-game": {
@@ -526,7 +557,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
-	// #region Game State Methods
+	// #region Game State
 	getCurrentTick = () => this.#currentTick;
 	getCurrentStage = () => this.#currentStage;
 
@@ -609,6 +640,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
+		this.#bossTimer --;
+		
+		log(JSON.stringify(this.#bossTimer));
+		
+		this.spawnSmolBossWithDelay();
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
@@ -686,7 +722,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	// #region Entity Management Methods
+	// #region Entity	
 	addToDeleteQueue(sussyAndRemovable: EntityId) {
 		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
 		if (index !== -1) {
@@ -696,6 +732,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#toDeleteQueue.push(sussyAndRemovable);
 	}
+	
+
 	addToCreateQueue(entity: Entity) {
 		// If entity was in delete queue, remove it from there instead (can happen
 		// if an entity is deleted then re-added in the same tick)
