@@ -7,28 +7,26 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 
 export class CubeEntity extends Entity {
-	// name: string;
-	// type: string;
-	// body: phys.Body;
-	// model: ModelId[];
 
-	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
+	constructor(game: Game, pos: Vector3, halfExtents: [number, number, number], isStatic: boolean, model: EntityModel[] = []) {
 		super(game, model);
-		this.model = model;
 
 		this.body = new phys.Body({
 			mass: 1.0,
 			position: v3(...pos),
-			shape: new phys.Box(v3(1, 1, 2)),
+			shape: new phys.Box(v3(...halfExtents)),
 			material: SlipperyMaterial,
 			collisionFilterGroup: this.getBitFlag(),
+			type: isStatic ? phys.Body.STATIC : phys.Body.DYNAMIC
 		});
 	}
 
 	serialize(): SerializedEntity {
 		return {
+			isStatic: this.body.type === phys.Body.STATIC,
 			id: this.id,
 			model: this.model,
+
 			position: this.body.position.toArray(),
 			quaternion: this.body.quaternion.toArray(),
 		};
