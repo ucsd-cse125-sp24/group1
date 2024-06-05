@@ -214,7 +214,6 @@ export abstract class PlayerEntity extends Entity {
 			// might annoy the player more than if the cooldown were unnoticeable
 			return null;
 		}
-		this.animator.play("punch");
 		const lookDir = this.lookDir.unit();
 		if (!this.isBoss && this.itemInHands !== null) {
 			if (this.itemInHands.type === "bow" || this.itemInHands.type === "gamer_bow") {
@@ -227,6 +226,7 @@ export abstract class PlayerEntity extends Entity {
 							lookDir.scale(isGamer ? 80 : 40),
 							isGamer ? 6 : 3,
 						);
+						this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
 					},
 				};
@@ -257,6 +257,7 @@ export abstract class PlayerEntity extends Entity {
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
 						);
 						this.game.playSound("hit", entity.getPos());
+						this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
 					},
 				};
@@ -267,6 +268,7 @@ export abstract class PlayerEntity extends Entity {
 							...action,
 							commit: () => {
 								action.commit();
+								this.animator.play("punch");
 								this.#previousAttackTime = Date.now();
 							},
 						}
