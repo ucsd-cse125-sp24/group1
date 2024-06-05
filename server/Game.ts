@@ -368,6 +368,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number, mod: EntityModel[]) {
 		this.#registerEntity(new ArrowEntity(this, position, velocity, damage, mod));
 	}
+
 	spawnSmolBossWithDelay() {
 		if(this.#bossTimer <= 0) {
 			//spawn the boss at [0, 0, 0] for now
@@ -377,6 +378,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 		}
 	}
+
 	setBossTimer(delay: number) {
 		this.#bossTimer = delay;
 	}
@@ -392,7 +394,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		return undefined;
 	}
 
-	#createPlayerEntity(pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
 		switch (role) {
 			case "hero":
 				return new HeroEntity(this, pos, [
@@ -498,24 +500,30 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 			case "change-role": {
 				const player = this.#players.get(conn.id);
-				if (!player) {
-					return;
-				}
+				if (!player) return;
+
 				const oldEntity = player.entity;
 				if (oldEntity) {
 					this.addToDeleteQueue(oldEntity.id);
 				}
-				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [0, 0, 0], data);
+
+				player.entity = this.#createPlayerEntity(this.#createdInputs.indexOf(player.input), oldEntity?.getPos() ?? [0, 0, 0], data);
+
 				if (player.entity) {
 					this.addToCreateQueue(player.entity);
 					player.entity.displayName = player.name;
-					conn.send({
-						type: "camera-lock",
-						entityId: player.entity.id,
-						freeRotation: true,
-						pov: "first-person", // player.entity instanceof BossEntity ? "top-down" : "first-person",
-					});
+
+					// Only lock the camera if you're not in the lobby
+					if (this.#currentStage.type !== "lobby") {
+						conn.send({
+							type: "camera-lock",
+							entityId: player.entity.id,
+							freeRotation: true,
+							pov: "first-person",
+						});
+					}
 				}
+
 				break;
 			}
 			case "start-game": {
@@ -629,7 +637,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
-		this.#bossTimer = this.#bossTimer < 1 ? 0 : this.#bossTimer--;
+		if(this.#bossTimer <= 0) {
+			this.#bossTimer = 0;
+		} else {
+			this.#bossTimer --;
+		}
+		console.log(this.#bossTimer);
+		
 		this.spawnSmolBossWithDelay();
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
