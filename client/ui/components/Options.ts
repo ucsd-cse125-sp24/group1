@@ -4,7 +4,7 @@ import styles from "./Options.module.css";
 
 const DEFAULT_FOV = 60;
 const DEFAULT_SENSITIVITY = 0.4;
-const DEFAULT_AMBIENT_LIGHT = 50;
+const DEFAULT_AMBIENT_LIGHT = 10;
 
 export class Options {
 	fov = DEFAULT_FOV;
@@ -52,9 +52,9 @@ export class Options {
 	];
 
 	listen(camera: PlayerCamera) {
-		this.#setFov(+localStorage["cse125.2024.g1.options.fov"], localStorage);
-		this.#setSensitivity(camera, +localStorage["cse125.2024.g1.options.sensitivity"], localStorage);
-		this.#setAmbientLight(+localStorage["cse125.2024.g1.options.ambientLight"], localStorage);
+		this.#setFov(+(localStorage.getItem("cse125.2024.g1.options.fov") ?? 0), localStorage);
+		this.#setSensitivity(camera, +(localStorage.getItem("cse125.2024.g1.options.sensitivity") ?? 0), localStorage);
+		this.#setAmbientLight(+(localStorage.getItem("cse125.2024.g1.options.ambientLight") ?? 0), localStorage);
 
 		this.#fovSlider.addEventListener("input", () => {
 			this.#setFov(+this.#fovSlider.value, this.#fovSlider);
@@ -87,7 +87,7 @@ export class Options {
 		fov ||= DEFAULT_FOV;
 		this.fov = fov;
 		if (source !== localStorage) {
-			localStorage["cse125.2024.g1.options.fov"] = fov === DEFAULT_FOV ? "" : fov;
+			localStorage.setItem("cse125.2024.g1.options.fov", fov === DEFAULT_FOV ? "" : `${fov}`);
 		}
 		if (source !== this.#fovSlider) {
 			this.#fovSlider.value = `${fov}`;
@@ -101,7 +101,10 @@ export class Options {
 		sensitivity ||= DEFAULT_SENSITIVITY;
 		camera.sensitivity = sensitivity;
 		if (source !== localStorage) {
-			localStorage["cse125.2024.g1.options.sensitivity"] = sensitivity === DEFAULT_SENSITIVITY ? "" : sensitivity;
+			localStorage.setItem(
+				"cse125.2024.g1.options.sensitivity",
+				sensitivity === DEFAULT_SENSITIVITY ? "" : `${sensitivity}`,
+			);
 		}
 		if (source !== this.#sensitivitySlider) {
 			this.#sensitivitySlider.value = `${sensitivity}`;
@@ -115,7 +118,10 @@ export class Options {
 		ambientLight ||= DEFAULT_AMBIENT_LIGHT;
 		this.ambientLight = [ambientLight / 100, ambientLight / 100, ambientLight / 100];
 		if (source !== localStorage) {
-			localStorage["cse125.2024.g1.options.ambientLight"] = ambientLight === DEFAULT_AMBIENT_LIGHT ? "" : ambientLight;
+			localStorage.setItem(
+				"cse125.2024.g1.options.ambientLight",
+				ambientLight === DEFAULT_AMBIENT_LIGHT ? "" : `${ambientLight}`,
+			);
 		}
 		if (source !== this.#ambientSlider) {
 			this.#ambientSlider.value = `${ambientLight}`;

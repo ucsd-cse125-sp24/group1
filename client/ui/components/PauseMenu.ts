@@ -6,6 +6,7 @@ import { SkinSelector } from "./SkinSelector";
 import styles from "./PauseMenu.module.css";
 import { PlayerList } from "./PlayerList";
 import { Options } from "./Options";
+import { logo } from "./Logo";
 
 export class PauseMenu {
 	#roleSelector = new RoleSelector();
@@ -41,12 +42,7 @@ export class PauseMenu {
 			}),
 			elem("div", {
 				className: styles.column,
-				contents: [
-					elem("h2", { className: styles.logo, textContent: "Game Logo" }),
-					this.#winnerMessage,
-					this.#clickMessage,
-					this.#roleSelector.element,
-				],
+				contents: [logo(), this.#winnerMessage, this.#clickMessage, this.#roleSelector.element],
 			}),
 			elem("div", {
 				classes: [styles.playerListAnchor, "trap-clicks"],

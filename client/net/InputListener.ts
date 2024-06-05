@@ -24,11 +24,10 @@ export class InputListener<Inputs extends string> {
 		this.#inputs = { ...options.default };
 	}
 
-	#handleInput(codeButton: string | number, pressed: boolean): void {
+	handleInput(key: Inputs | null, pressed: boolean): void {
 		if (pressed && !this.enabled) {
 			return;
 		}
-		const key: Inputs | null = this.options.keymap[codeButton] ?? null;
 		// Don't send anything if inputs don't change (e.g. if keydown is fired
 		// multiple times while repeating a key)
 		if (!key || this.#inputs[key] === pressed) {
@@ -40,11 +39,11 @@ export class InputListener<Inputs extends string> {
 
 	#handleKeydown = (e: KeyboardEvent) => {
 		this.options._tempControls?.remove();
-		this.#handleInput(e.code, true);
+		this.handleInput(this.options.keymap[e.code], true);
 	};
-	#handleKeyup = (e: KeyboardEvent) => this.#handleInput(e.code, false);
-	#handleMousedown = (e: MouseEvent) => this.#handleInput(e.button, true);
-	#handleMouseup = (e: MouseEvent) => this.#handleInput(e.button, false);
+	#handleKeyup = (e: KeyboardEvent) => this.handleInput(this.options.keymap[e.code], false);
+	#handleMousedown = (e: MouseEvent) => this.handleInput(this.options.keymap[e.button], true);
+	#handleMouseup = (e: MouseEvent) => this.handleInput(this.options.keymap[e.button], false);
 
 	/** When the user leaves the page, unpress all keys  */
 	#handleBlur = () => {
@@ -63,7 +62,7 @@ export class InputListener<Inputs extends string> {
 			window.addEventListener("pointerdown", (e) => {
 				const button = e.target instanceof Element && e.target.closest(".mobile-key");
 				if (button instanceof HTMLElement && button.dataset.key) {
-					this.#handleInput(button.dataset.key, true);
+					this.handleInput(this.options.keymap[button.dataset.key], true);
 					try {
 						button.setPointerCapture(e.pointerId);
 					} catch (error) {
@@ -77,7 +76,7 @@ export class InputListener<Inputs extends string> {
 			window.addEventListener("pointerup", (e) => {
 				const button = e.target instanceof Element && e.target.closest(".mobile-key");
 				if (button instanceof HTMLElement && button.dataset.key) {
-					this.#handleInput(button.dataset.key, false);
+					this.handleInput(this.options.keymap[button.dataset.key], false);
 				}
 			});
 		}

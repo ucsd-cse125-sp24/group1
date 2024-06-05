@@ -48,7 +48,7 @@ export const getModels = (engine: GraphicsEngine) =>
 		donut: GltfModelWrapper.from(engine.gltfMaterial, donut),
 		// twoTextureTest: GltfModelWrapper.from(engine.gltfMaterial, twoTextureTest),
 		healthCrystal: GltfModelWrapper.from(engine.gltfMaterial, healthCrystal),
-		// sampleMap: GltfModelWrapper.from(engine.gltfMaterial, sampleMap),
+		sampleMap: GltfModelWrapper.from(engine.gltfMaterial, sampleMap),
 		samplePlayer: GltfModelWrapper.from(engine.gltfMaterial, samplePlayer),
 		// box1: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),
 		// box2: new BoxGeometry(engine.tempMaterial, vec3.fromValues(2, 2, 2)),

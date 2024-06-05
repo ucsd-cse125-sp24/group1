@@ -30,6 +30,7 @@ import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
 import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
+import { ensureName } from "./ui/components/NamePrompt";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -37,6 +38,9 @@ if (errorWindow instanceof HTMLDialogElement) {
 } else {
 	alert("Failed to get error window");
 }
+
+const playerName = await ensureName();
+console.log("hello", playerName);
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
@@ -88,6 +92,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			pauseMenu.render(data, gameState);
 			if (data.stage.type === "lobby" && gameState?.stage.type !== "lobby") {
 				unlockPointer();
+				gameUi.hide();
+				pauseMenu.show();
+				inputListener.enabled = false;
 			}
 			gameState = data;
 			break;
@@ -143,7 +150,7 @@ var mix = function (value: number) {
 	wet.gain.value = value;
 };
 
-mix(0.15);
+mix(0.05);
 
 fetch(reverbImpulse)
 	.then((r) => r.arrayBuffer())
@@ -158,10 +165,6 @@ raw.connect(convolver);
 
 convolver.connect(wet);
 const sound = new SoundManager(audioContext, raw);
-
-// lockPointer();
-// inputListener.listen();
-// camera.listen();
 
 const gameUi = new GameplayUi();
 const pauseMenu = new PauseMenu();
@@ -179,11 +182,32 @@ document.addEventListener("pointerlockchange", () => {
 		inputListener.enabled = false;
 	}
 });
+let lastPointerType = "mouse";
 document.addEventListener("click", (e) => {
-	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn");
+	const trapClick =
+		e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn, .mobile-open-pause");
 	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
-	if ((!trapClick && gameState?.stage.type !== "lobby") || isStartBtn) {
-		lockPointer();
+	const isPauseBtn = trapClick instanceof Element && trapClick.classList.contains("mobile-open-pause");
+	if (isPauseBtn) {
+		gameUi.hide();
+		pauseMenu.show();
+		inputListener.enabled = false;
+	} else if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
+		if (lastPointerType === "touch") {
+			gameUi.show();
+			pauseMenu.hide();
+			inputListener.enabled = true;
+			// NOTE: Currently, can't switch to touch after using mouse
+		}
+		lockPointer(lastPointerType === "touch");
+	}
+});
+document.addEventListener("pointerdown", (e) => {
+	lastPointerType = e.pointerType;
+	if (e.pointerType === "touch") {
+		gameUi.showMobile();
+	} else {
+		gameUi.hideMobile();
 	}
 });
 
@@ -547,6 +571,7 @@ connection.connect();
 inputListener.listen();
 inputListener.enabled = false;
 camera.listen();
+gameUi.listen(inputListener, { forward: "forward", backward: "backward", right: "right", left: "left" });
 pauseMenu.listen(connection);
 pauseMenu.options.listen(camera);
 paint();

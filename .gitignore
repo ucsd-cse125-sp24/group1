@@ -8,6 +8,7 @@ public/*.map
 public/*.bin
 public/*.png
 public/*.mp3
+public/*.wav
 public/worker/
 public/log.txt
 dist/

@@ -1,5 +1,5 @@
 import { Vector3 } from "../../common/commontypes";
-import { EntityModel } from "../../common/messages";
+import { Action, EntityModel, Use } from "../../common/messages";
 import { Game } from "../Game";
 import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
@@ -40,10 +40,10 @@ export class BossEntity extends PlayerEntity {
 		);
 	}
 
-	use(): boolean {
+	use(): Action<Use> | null {
 		const interacted = super.use();
 		if (interacted) {
-			return true;
+			return interacted;
 		}
 		const entities = this.game.raycast(
 			this.body.position,
@@ -52,16 +52,24 @@ export class BossEntity extends PlayerEntity {
 			this,
 		);
 		if (entities[0] instanceof HeroEntity && !entities[0].isSabotaged) {
-			this.game.sabotageHero(entities[0].id);
-			return true;
+			return {
+				type: "boss:spore",
+				commit: () => {
+					this.game.sabotageHero(entities[0].id);
+				},
+			};
 		} else if (this.canPlaceTrap) {
-			this.game.placeTrap(this.body.position.vadd(this.lookDir));
-			this.canPlaceTrap = false;
-			setTimeout(() => {
-				this.canPlaceTrap = true;
-			}, 5000);
-			return true;
+			return {
+				type: "boss:place-trap",
+				commit: () => {
+					this.game.placeTrap(this.body.position.vadd(this.lookDir));
+					this.canPlaceTrap = false;
+					setTimeout(() => {
+						this.canPlaceTrap = true;
+					}, 5000);
+				},
+			};
 		}
-		return false;
+		return null;
 	}
 }

@@ -112,7 +112,7 @@ void main() {
     if (u_enable_tones == 1) {
       distance = ceil(distance / u_tones) * u_tones;
     }
-    distance *= 0.2; // TEMP, but the point lights dont have much range rn
+    // distance *= 0.2; // TEMP, but the point lights dont have much range rn
     vec4 light_color =
         vec4(hsv2rgb(vec3(u_point_colors[i].xy,
                           u_point_colors[i].z / (distance * distance))),

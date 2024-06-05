@@ -1,6 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel } from "../../../common/messages";
+import { Action, EntityModel, Use } from "../../../common/messages";
 import { PlayerEntity } from "../PlayerEntity";
 import { Tag } from "../Entity";
 import { ItemMaterial } from "../../materials/SourceMaterials";
@@ -113,16 +113,21 @@ export class Item extends InteractableEntity {
 		this.body.addShape(colliderShapeForItemType[this.type]);
 	}
 
-	interact(player: PlayerEntity) {
+	interact(player: PlayerEntity): Action<Use> | null {
 		if (this.heldBy) {
 			const heldBy = this.heldBy;
-			this.unbind(); // You prob need some COFFEE
-			// this.body.mass = 1.0;
-			if (heldBy == player) {
-				this.throw(player.lookDir);
-				this.game.playSound("throw", player.getPos());
-				return;
-			}
+			return {
+				type: "throw-item",
+				commit: () => {
+					this.unbind(); // You prob need some COFFEE
+					// this.body.mass = 1.0;
+					if (heldBy == player) {
+						this.throw(player.lookDir);
+						this.game.playSound("throw", player.getPos());
+						return;
+					}
+				},
+			};
 		}
 		//checks the type of the player entity
 
@@ -130,16 +135,22 @@ export class Item extends InteractableEntity {
 		//turns collider off, possibly
 
 		if (!player.isBoss) {
-			this.bind(player);
-			this.game.playSound("pickup", player.getPos());
-			// Should this be moved to `bind`?
-			this.canBeAbsorbedByCraftingTable = true;
-			// this.body.mass = 0;
+			return {
+				type: "pickup-item",
+				commit: () => {
+					this.bind(player);
+					this.game.playSound("pickup", player.getPos());
+					// Should this be moved to `bind`?
+					this.canBeAbsorbedByCraftingTable = true;
+					// this.body.mass = 0;
+				},
+			};
 		} else {
 		}
 
 		//if a boss, do some sabotage!
 		//TBD
+		return null;
 	}
 
 	throw(direction: phys.Vec3) {
