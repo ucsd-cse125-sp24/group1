@@ -160,6 +160,8 @@ export class WsServer implements Server<ClientMessage, ServerMessage> {
 			case "join":
 				if (typeof data.id !== "string") return;
 
+				console.log(`Player ${data.id} attempting to connect`);
+
 				// True if this player is a reconnecting player (so they have an old ws)
 				const oldWs = this.#playerConnections.get(data.id);
 				let id = data.id;
@@ -192,6 +194,7 @@ export class WsServer implements Server<ClientMessage, ServerMessage> {
 				// Tell the game that they joined
 				this.#game.handlePlayerJoin(connection, data.name);
 
+				console.log(`Player ${id} joined!`);
 				// Ok we believe u 🥰 you are the client you say you are
 				connection.send({
 					type: "join-response",

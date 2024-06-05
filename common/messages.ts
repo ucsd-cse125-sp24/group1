@@ -65,6 +65,10 @@ export type GameStage =
 			startTime: number;
 			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
 			endTime: number;
+	  } | {
+			type: "gameover";
+			winner: "hero" | "boss",
+			endTime: number
 	  };
 
 export type EntireGameState = {

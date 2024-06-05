@@ -245,8 +245,11 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 
-		for (const entity of entities) {
+		for (const entity of entities) {	
 			if (entity instanceof PlayerEntity) {
+				if(entity.isBoss) {
+					this.game.setBossTimer(50);
+				}
 				return {
 					type: "damage",
 					commit: () => {

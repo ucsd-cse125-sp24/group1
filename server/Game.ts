@@ -41,6 +41,8 @@ import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
+import { Box } from "shapes/Box";
+import { CubeEntity } from "./entities/CubeEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -102,6 +104,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#toDeleteQueue: EntityId[];
 
 	#currentTick: number;
+	#bossTimer: number;
+
+	#currentBoss: BossEntity | null;
 	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
@@ -121,6 +126,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
+		this.#bossTimer = 0;
+
+		this.#currentBoss = null;
 
 		this.#makeLobby();
 
@@ -155,6 +163,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	async #makeLobby() {
 		let camera = new CameraEntity(this, [1000, 1005, 1000], [0, -10, 0], "lobby-camera");
 		this.#registerEntity(camera);
+
+		let lobbyFloor = new CubeEntity(this, [995, 1000, 995], [10,10,10], true);
+		this.#registerEntity(lobbyFloor);
 	}
 
 	// #region startGame
@@ -266,7 +277,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	// #region Gameplay Methods
+	// #region Gameplay
 	/**
 	 * State transition from "crafting" to "combat"
 	 */
@@ -359,7 +370,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	// #region Player management methods
+	// #region Player
 	#getPlayerByEntityId(id: EntityId): NetworkedPlayer | undefined {
 		for (const player of this.#players.values()) {
 			if (player.entity?.id === id) {
@@ -380,20 +391,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					},
 				]);
 			case "boss":
-				return new BossEntity(this, pos, [
+				let boss = new BossEntity(this, pos, [
 					{
 						modelId: "samplePlayer",
 						offset: [0, -0.75, 0],
 						scale: 0.2,
 					},
 				]);
+				this.#currentBoss = boss;
+				return boss;
 			default:
 				return null;
 		}
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>, name = `Player ${conn.id.slice(0, 6)}`) {
-		console.log("Player joining!", this.#players.size);
 		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
@@ -425,7 +437,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: false,
+				freeRotation: true,
 			});
 		}
 	}
@@ -522,7 +534,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
-	// #region Game State Methods
+	// #region Game State
 	getCurrentTick = () => this.#currentTick;
 	getCurrentStage = () => this.#currentStage;
 
@@ -605,6 +617,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
+		this.#bossTimer = this.#bossTimer < 1 ? 0 : this.#bossTimer--;
+		this.spawnSmolBossWithDelay();
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
@@ -656,9 +670,47 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			});
 		}
 	}
+
+	#reset() {
+		this.#currentStage = {
+			type: "lobby",
+			previousWinner: null,
+		};
+		for (let entity of [...this.#entities.values()]) {
+			this.#unregisterEntity(entity);
+		}
+
+		this.#world.removeAllBodies();
+
+		// Set up new game
+		this.#makeLobby();
+		for (let player of this.#players.values()) {
+			player.conn.send({
+				type: "camera-lock",
+				entityId: "lobby-camera",
+				pov: "first-person",
+				freeRotation: false,
+			});
+			player.entity = null;
+		}
+	}
 	// #endregion
 
-	// #region Entity Management Methods
+	// #region Entity
+	spawnSmolBossWithDelay() {
+		if(this.#bossTimer <= 0) {
+			//spawn the boss at [0, 0, 0] for now
+			if(this.#currentBoss) {
+				this.#currentBoss.walkSpeed = 20;
+				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
+			}
+		}
+	}
+
+	setBossTimer(delay: number) {
+		this.#bossTimer = delay;
+	}
+	
 	addToDeleteQueue(sussyAndRemovable: EntityId) {
 		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
 		if (index !== -1) {
@@ -668,6 +720,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#toDeleteQueue.push(sussyAndRemovable);
 	}
+	
+
 	addToCreateQueue(entity: Entity) {
 		// If entity was in delete queue, remove it from there instead (can happen
 		// if an entity is deleted then re-added in the same tick)
@@ -735,30 +789,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		entity.removeFromWorld(this.#world);
 	}
 	// #endregion
-
-	#reset() {
-		this.#currentStage = {
-			type: "lobby",
-			previousWinner: null,
-		};
-		for (let entity of [...this.#entities.values()]) {
-			this.#unregisterEntity(entity);
-		}
-
-		this.#world.removeAllBodies();
-
-		// Set up new game
-		this.#makeLobby();
-		for (let player of this.#players.values()) {
-			player.conn.send({
-				type: "camera-lock",
-				entityId: "lobby-camera",
-				pov: "first-person",
-				freeRotation: false,
-			});
-			player.entity = null;
-		}
-	}
 }
 
 /**
