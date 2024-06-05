@@ -8,20 +8,21 @@ import defaultHit3 from "./Hit 3.wav";
 import defaultHit4 from "./Hit 4.wav";
 import defaultHit5 from "./Hit 5.wav";
 import defaultHit6 from "./Hit 6.wav";
-import hit from "./hit.mp3"; // TODO:
+import hit from "./Hit Player.wav";
+import hitBig from "./Hit Player Big.wav";
 import jump from "./Jump 1.wav";
 import pickup from "./Pick Up Wood.wav";
 import popCraftingFail from "./Crafting Popping Fail.wav";
 import popCrafting from "./Crafting Popping.wav";
-import spawnerHarvest from "./spawner-harvest.mp3"; // TODO:
-import spawnerReject from "./spawner-reject.mp3"; // TODO:
+import spawnerHarvest from "./Spawn Item.wav";
+import spawnerReject from "./Spawn Item Fail.wav";
 import spore from "./Spored.wav";
-import throwSound from "./throw.mp3"; // TODO:
-import trapDisarm from "./trap-disarm.mp3"; // TODO:
-import trapEscape from "./trap-escape.mp3"; // TODO:
-import trapHit from "./trap-hit.mp3"; // TODO:
-import trapPlace from "./trap-place.mp3"; // TODO:
-import trapTriggered from "./trap-triggered.mp3"; // TODO:
+import throwSound from "./Throw.wav";
+import trapDisarm from "./Trap Disarm.wav";
+import trapEscape from "./Trap Escape.wav";
+import trapHit from "./Trap Hit.wav";
+import trapPlace from "./Trap Place.wav";
+import trapTriggered from "./Trap Trigger.wav";
 import useFail from "./use-fail.mp3"; // IGNORE: no feedback for failures
 import walkLeft1 from "./Step L 1.wav";
 import walkLeft2 from "./Step L 2.wav";
@@ -34,6 +35,7 @@ import walkRight3 from "./Step R 3.wav";
 import walkRight4 from "./Step R 4.wav";
 import walkRight5 from "./Step R 5.wav";
 export { default as reverbImpulse } from "./AndrewsChurchConvReverb2.wav";
+// TODO: boss swing, boss projectiles
 
 export const sounds = {
 	/** Player tries to attack but it's not aimed at anything. */

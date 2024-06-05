@@ -28,7 +28,7 @@ export class BigBossEntity extends PlayerEntity {
 	initHealth = 100;
 
     previousAttackTick: number;
-    isCharge: boolean;
+    chargeTicks: number;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
@@ -45,117 +45,78 @@ export class BigBossEntity extends PlayerEntity {
 			PLAYER_INTERACTION_RANGE,
 		);
 
-        this.isCharge = false;
         this.previousAttackTick = this.game.getCurrentTick();
+        this.chargeTicks = 0;
 	}
 
     attack(): Action<Attack> | null {
         if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
             return null;
         }
+
         this.previousAttackTick = this.game.getCurrentTick();
+        return {
+            type: "damage",
+            commit: () => {
+                const lookDir = this.lookDir.unit();
+                const rightDir = lookDir.cross(new Vec3(0, 1, 0)).unit();
 
-        const lookDir = this.lookDir.unit();
-        const rightDir = lookDir.cross(new Vec3(0, 1, 0)).unit();
+                let quat = new Quaternion(0, 0, 0, 1);
+                let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
+                let entities: Entity[] = [];
 
-        let quat = new Quaternion(0, 0, 0, 1);
-        let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
-        let entities: Entity[] = [];
+                //hopefully this shoots 5 rays centered on Lookdir
+                for(let i = 0; i < 5; i++) {
+                    quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
+                    let dir = quat.vmult(lookDir.scale(this.interactionRange));
 
-        //hopefully this shoots 5 rays centered on Lookdir
-        console.log(this.getPos());
-        for(let i = 0; i < 5; i++) {
-            quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
-            let dir = quat.vmult(lookDir.scale(this.interactionRange));
+                    let betterDirection = this.body.position.vadd(dir);
 
-            let betterDirection = this.body.position.vadd(dir);
-
-            //FOR TESTING
-            //console.log(betterDirection, i);
-            
-            entities.push(...this.game.raycast(
-                this.body.position,
-                dir,
-                {},
-                this,
-            ));
-
-        }
-            
-        for (const entity of entities) {
-            if (entity instanceof HeroEntity) {
-
-                return {
-					type: "damage",
-					commit: () => {
-						console.log("attack", entity.id);
-
+                    //FOR TESTING
+                    //console.log(betterDirection, i);
+                    
+                    entities.push(...this.game.raycast(
+                        this.body.position,
+                        dir,
+                        {},
+                        this,
+                    ));
+                }
+                    
+                for (const entity of entities) {
+                    if (entity instanceof HeroEntity) {
                         if (this.game.getCurrentStage().type === "combat") {
                             entity.takeDamage(1);
                         }
-                            // Apply knockback to player when attacked
+                        // Apply knockback to player when attacked
                         entity.body.applyImpulse(
                             new Vec3(this.lookDir.x * 300, Math.abs(this.lookDir.y) * 150 + 50, this.lookDir.z * 300),
                         );
-        
                         this.game.playSound("hit", entity.getPos());
                         this.animator.play("punch");
-                        this.previousAttackTick = this.game.getCurrentTick();
-					},
-				};
-
-            } else if (entities[0] instanceof InteractableEntity) {
-				const action = entities[0].hit(this);
-				return action
-					? {
-							...action,
-							commit: () => {
-								action.commit();
-								this.animator.play("punch");
-								this.previousAttackTick = this.game.getCurrentTick();
-							},
-						}
-					: null;
-			}
+                    } else if (entities[0] instanceof InteractableEntity) {
+                        entities[0].hit(this);
+                        this.animator.play("punch");
+                    }
+                }
+            }
         }
-        return null;
     }
 
     use(): Action<Use> | null {
-        return this.throwingAttack();
-    }
-
-    //TODO: figure out how to refactor this around the Action change
-    throwingAttack(): Action<Use> | null {
-        if (this.game.getCurrentTick() - this.previousAttackTick < 50) {
+        if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
             return null;
         }
-
-        //let attackArr = Action<Attack> = [];
-
-        const lookDir = this.lookDir.unit();
-        this.animator.play("punch");
-
-        let quat = new Quaternion(0, 0, 0, 1);
-        let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
-
-
-        for(let i = 0; i < 5; i++) {
-            quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
-            let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
-            let betterDirection = this.body.position.vadd(dir);
-            
-            this.game.shootArrow(
-                this.body.position.vadd(betterDirection),
-                dir.scale(60),
-                1,
-                [{modelId: "donut"}]
-            );
-        }
+        this.previousAttackTick = this.game.getCurrentTick();
 
         return {
             type: "bigboss:shoot-shroom",
             commit: () => {
+                const lookDir = this.lookDir.unit();
+
+                let quat = new Quaternion(0, 0, 0, 1);
+                let base = this.body.position.vadd(lookDir.scale(this.interactionRange));
+
                 for(let i = 0; i < 5; i++) {
                     quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
                     let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
@@ -169,19 +130,12 @@ export class BigBossEntity extends PlayerEntity {
                     );
                 }
                 this.animator.play("punch");
-                this.previousAttackTick = this.game.getCurrentTick();
-            },
-        };
-        
-
+            }
+        }
     }
-
-
 
     //TODO
     charge() {
 
     }
-
-
 }
