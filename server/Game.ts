@@ -243,7 +243,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "axe", [{ modelId: "chair", offset: [0, -1.1, 0] }]);
 		this.#registerEntity(woodSpawner);
 
-		let oreSpawner = new Spawner(this, [-13.5, 1, -26.5], "raw_iron", "pickaxe", [
+		let oreSpawner = new Spawner(this, [0, -17, -21.5], "raw_iron", "pickaxe", [
 			{ modelId: "ore_vein", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(oreSpawner);
