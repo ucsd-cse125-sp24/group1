@@ -11,6 +11,7 @@ import { InteractableEntity } from "./Interactable/InteractableEntity";
 
 const COYOTE_FRAMES = 10;
 const WALK_STEP_DIST = 1;
+const MAX_HEALTH_RING_SIZE = 25;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -331,19 +332,21 @@ export abstract class PlayerEntity extends Entity {
 				},
 				...Array.from(
 					{ length: this.game.getCurrentStage().type === "combat" ? this.health : 0 },
-					(_, i): EntityModel => ({
-						modelId: "healthCrystal",
-						scale: 0.05,
-						offset: [
-							Math.cos((i / this.health + Date.now() / (1000 + this.health * 1000)) * 2 * Math.PI) *
-								0.1 *
-								(this.health - 1),
-							0.5 + Math.cos((i / this.health + Date.now() / 20000) * 10 * Math.PI) * 0.05,
-							Math.sin((i / this.health + Date.now() / (1000 + this.health * 1000)) * 2 * Math.PI) *
-								0.1 *
-								(this.health - 1),
-						],
-					}),
+					(_, i): EntityModel => {
+						const ring = Math.floor(i / MAX_HEALTH_RING_SIZE);
+						const angle = (i % MAX_HEALTH_RING_SIZE) / Math.min(this.health, MAX_HEALTH_RING_SIZE);
+						const radius = 0.08 * (Math.min(this.health, MAX_HEALTH_RING_SIZE) - 1);
+						const revolutionSpeed = Math.sin(ring * 0.9) * 0.2 + 1;
+						return {
+							modelId: "healthCrystal",
+							scale: 0.1,
+							offset: [
+								Math.cos((angle + (Date.now() / radius) * 0.00005 * revolutionSpeed) * 2 * Math.PI) * radius,
+								0.6 + Math.cos((angle + Date.now() / 20000) * 10 * Math.PI) * 0.05 + ring * 0.4,
+								Math.sin((angle + (Date.now() / radius) * 0.00005 * revolutionSpeed) * 2 * Math.PI) * radius,
+							],
+						};
+					},
 				),
 			],
 			health: this.health,

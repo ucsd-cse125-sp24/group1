@@ -266,7 +266,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-
 	// #region Gameplay Methods
 	/**
 	 * State transition from "crafting" to "combat"
@@ -283,9 +282,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let isAnyBossAlive = false;
 		for (const { entity } of this.#players.values()) {
 			if (entity && entity.health > 0) {
-				if (entity instanceof BossEntity) {
+				if (entity.isBoss) {
 					isAnyBossAlive = true;
-				} else if (entity instanceof HeroEntity) {
+				} else {
 					isAnyHeroAlive = true;
 				}
 				if (isAnyBossAlive && isAnyHeroAlive) {
@@ -634,7 +633,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#serializeNetworkedPlayer(player: NetworkedPlayer): PlayerEntry {
 		return {
 			name: player.name,
-			role: !player.entity ? "spectator" : player.entity instanceof BossEntity ? "boss" : "hero",
+			role: !player.entity ? "spectator" : player.entity.isBoss ? "boss" : "hero",
 			entityId: player.entity?.id,
 			useAction: player.useAction,
 			attackAction: player.attackAction,
