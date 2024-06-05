@@ -7,7 +7,7 @@ export type ServerHandlers<ReceiveType, SendType> = {
 	/**
 	 * Handle a new connection and decide what messages to send to it.
 	 */
-	handlePlayerJoin: (conn: Connection<SendType>) => void;
+	handlePlayerJoin: (conn: Connection<SendType>, name?: string) => void;
 	/**
 	 * Handle a connection that has disconnected.
 	 */

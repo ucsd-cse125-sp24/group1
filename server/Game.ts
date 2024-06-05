@@ -41,6 +41,8 @@ import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
+import { Box } from "shapes/Box";
+import { CubeEntity } from "./entities/CubeEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -161,6 +163,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	async #makeLobby() {
 		let camera = new CameraEntity(this, [1000, 1005, 1000], [0, -10, 0], "lobby-camera");
 		this.#registerEntity(camera);
+
+		let lobbyFloor = new CubeEntity(this, [995, 1000, 995], [10,10,10], true);
+		this.#registerEntity(lobbyFloor);
 	}
 
 	// #region startGame
@@ -400,8 +405,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
-	handlePlayerJoin(conn: Connection<ServerMessage>) {
-		console.log("Player joining!", this.#players.size);
+	handlePlayerJoin(conn: Connection<ServerMessage>, name = `Player ${conn.id.slice(0, 6)}`) {
 		let player = this.#players.get(conn.id);
 		if (player) {
 			player.conn = conn;
@@ -424,7 +428,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				input: input,
 				entity: null,
 				online: true,
-				name: `Player ${conn.id.slice(0, 6)}`,
+				name,
 			};
 			this.#players.set(conn.id, player);
 		}
@@ -433,7 +437,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: false,
+				freeRotation: true,
 			});
 		}
 	}
@@ -579,7 +583,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (use) {
 					use.commit();
 				} else {
-					this.playSound("useFail", player.entity.getPos());
+					// this.playSound("useFail", player.entity.getPos());
 				}
 			}
 			const attack = player.entity.attack();
@@ -664,6 +668,30 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				).flat(),
 				me: this.#serializeNetworkedPlayer(player),
 			});
+		}
+	}
+
+	#reset() {
+		this.#currentStage = {
+			type: "lobby",
+			previousWinner: null,
+		};
+		for (let entity of [...this.#entities.values()]) {
+			this.#unregisterEntity(entity);
+		}
+
+		this.#world.removeAllBodies();
+
+		// Set up new game
+		this.#makeLobby();
+		for (let player of this.#players.values()) {
+			player.conn.send({
+				type: "camera-lock",
+				entityId: "lobby-camera",
+				pov: "first-person",
+				freeRotation: false,
+			});
+			player.entity = null;
 		}
 	}
 	// #endregion

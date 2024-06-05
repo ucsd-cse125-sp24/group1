@@ -2,6 +2,8 @@ import styles from "./NamePrompt.module.css";
 import { elem } from "../elem";
 import { logo } from "./Logo";
 
+export const NAME_KEY = "cse125.2024.g1.options.name";
+
 export class NamePrompt {
 	#input = elem("input", { type: "text", className: styles.input, name: "name" });
 	#form = elem("form", {
@@ -37,7 +39,7 @@ export class NamePrompt {
 }
 
 export async function ensureName(): Promise<string> {
-	let name = localStorage.getItem("cse125.2024.g1.options.name");
+	let name = localStorage.getItem(NAME_KEY);
 	if (!name) {
 		const prompt = new NamePrompt();
 		document.body.append(prompt.element);
@@ -45,7 +47,7 @@ export async function ensureName(): Promise<string> {
 			prompt.listen(resolve);
 		});
 		prompt.element.remove();
-		localStorage.setItem("cse125.2024.g1.options.name", name);
+		localStorage.setItem(NAME_KEY, name);
 	}
 	return name;
 }

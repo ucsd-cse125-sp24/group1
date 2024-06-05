@@ -39,6 +39,8 @@ export type ClientControlMessage = {
 	 * empty string. The server will generate a new one for you.
 	 */
 	id: string;
+	/** Preferred player name */
+	name?: string;
 };
 
 export type ServerControlMessage = {
@@ -63,6 +65,10 @@ export type GameStage =
 			startTime: number;
 			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
 			endTime: number;
+	  } | {
+			type: "gameover";
+			winner: "hero" | "boss",
+			endTime: number
 	  };
 
 export type EntireGameState = {

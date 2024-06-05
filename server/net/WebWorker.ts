@@ -43,7 +43,7 @@ export class WebWorker<ReceiveType, SendType> implements Server<ReceiveType, Sen
 			switch (data.type) {
 				case "join":
 					// Tell the game that they joined
-					this.#handler.handlePlayerJoin(connection);
+					this.#handler.handlePlayerJoin(connection, data.name);
 
 					// Ok we believe u 🥰 you are the client you say you are
 					self.postMessage(
