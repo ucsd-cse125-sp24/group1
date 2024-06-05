@@ -11,7 +11,7 @@ import { InteractableEntity } from "./Interactable/InteractableEntity";
 const PLAYER_INTERACTION_RANGE = 7.0;
 const BOSS_CAPSULE_HEIGHT = 4;
 const BOSS_CAPSULE_RADIUS = 1;
-const BOSS_WALK_SPEED = 5;
+const BOSS_WALK_SPEED = 8;
 /**
  * Maximum change in horizontal velocity that can be caused by the player in one
  * tick
@@ -127,11 +127,14 @@ export class BigBossEntity extends PlayerEntity {
         
     }
 
+    use(): Action<Use> | null {
+        return this.throwingAttack();
+    }
 
     //TODO: figure out how to refactor this around the Action change
-    throwingAttack() {
+    throwingAttack(): Action<Use> | null {
         if (this.game.getCurrentTick() - this.previousTick < 50) {
-            return false;
+            return null;
         }
 
         //let attackArr = Action<Attack> = [];
@@ -141,6 +144,8 @@ export class BigBossEntity extends PlayerEntity {
 
         let quat = new Quaternion(0, 0, 0, 1);
         let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
+
+
         for(let i = 0; i < 5; i++) {
             quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
             let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
@@ -153,11 +158,30 @@ export class BigBossEntity extends PlayerEntity {
                 [{modelId: "donut"}]
             );
         }
+
+        return {
+            type: "bigboss:shoot-shroom",
+            commit: () => {
+                for(let i = 0; i < 5; i++) {
+                    quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
+                    let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
+                    let betterDirection = this.body.position.vadd(dir);
+                    
+                    this.game.shootArrow(
+                        this.body.position.vadd(betterDirection),
+                        dir.scale(60),
+                        1,
+                        [{modelId: "donut"}]
+                    );
+                }
+                this.animator.play("punch");
+                this.previousTick = this.game.getCurrentTick();
+            },
+        };
         
 
-        this.previousTick = Date.now();
-        return false; 
     }
+
 
 
     //TODO

@@ -92,7 +92,7 @@ export type PlayerEntry = {
 export type Role = "boss" | "hero" | "spectator";
 export type Skin = "red" | "yellow" | "green" | "blue";
 
-export type Use = "throw-item" | "pickup-item" | "pop-crafter" | "boss:spore" | "boss:place-trap";
+export type Use = "bigboss:shoot-shroom" | "throw-item" | "pickup-item" | "pop-crafter" | "boss:spore" | "boss:place-trap" | "bigboss:";
 export type Attack = "hero:shoot-arrow" | "damage" | "disarm-trap" | "damage-trap" | "default-hit-entity";
 export type Action<ActionType> = {
 	/**
