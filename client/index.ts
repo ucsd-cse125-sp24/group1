@@ -150,7 +150,7 @@ var mix = function (value: number) {
 	wet.gain.value = value;
 };
 
-mix(0.15);
+mix(0.05);
 
 fetch(reverbImpulse)
 	.then((r) => r.arrayBuffer())
