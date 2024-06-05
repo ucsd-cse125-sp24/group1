@@ -8,22 +8,31 @@ import defaultHit3 from "./Hit 3.wav";
 import defaultHit4 from "./Hit 4.wav";
 import defaultHit5 from "./Hit 5.wav";
 import defaultHit6 from "./Hit 6.wav";
-import hit from "./hit.mp3";
+import hit from "./hit.mp3"; // TODO:
 import jump from "./Jump 1.wav";
 import pickup from "./Pick Up Wood.wav";
 import popCraftingFail from "./Crafting Popping Fail.wav";
 import popCrafting from "./Crafting Popping.wav";
-import running from "./LIttle Guy Running 1.wav";
-import spawnerHarvest from "./spawner-harvest.mp3";
-import spawnerReject from "./spawner-reject.mp3";
+import spawnerHarvest from "./spawner-harvest.mp3"; // TODO:
+import spawnerReject from "./spawner-reject.mp3"; // TODO:
 import spore from "./Spored.wav";
-import throwSound from "./throw.mp3";
-import trapDisarm from "./trap-disarm.mp3";
-import trapEscape from "./trap-escape.mp3";
-import trapHit from "./trap-hit.mp3";
-import trapPlace from "./trap-place.mp3";
-import trapTriggered from "./trap-triggered.mp3";
-import useFail from "./use-fail.mp3";
+import throwSound from "./throw.mp3"; // TODO:
+import trapDisarm from "./trap-disarm.mp3"; // TODO:
+import trapEscape from "./trap-escape.mp3"; // TODO:
+import trapHit from "./trap-hit.mp3"; // TODO:
+import trapPlace from "./trap-place.mp3"; // TODO:
+import trapTriggered from "./trap-triggered.mp3"; // TODO:
+import useFail from "./use-fail.mp3"; // TODO:
+import walkLeft1 from "./Step L 1.wav";
+import walkLeft2 from "./Step L 2.wav";
+import walkLeft3 from "./Step L 3.wav";
+import walkLeft4 from "./Step L 4.wav";
+import walkLeft5 from "./Step L 5.wav";
+import walkRight1 from "./Step R 1.wav";
+import walkRight2 from "./Step R 2.wav";
+import walkRight3 from "./Step R 3.wav";
+import walkRight4 from "./Step R 4.wav";
+import walkRight5 from "./Step R 5.wav";
 export { default as reverbImpulse } from "./AndrewsChurchConvReverb2.wav";
 
 export const sounds = {
@@ -53,8 +62,6 @@ export const sounds = {
 	popCraftingFail,
 	/** Removing an item stored in a crafter. */
 	popCrafting,
-	/** Running ambient sound */
-	running,
 	/** Correct tool used on a spawner, spawning an item. */
 	spawnerHarvest,
 	/** Incorrect tool used on a spawner. */
@@ -78,6 +85,9 @@ export const sounds = {
 	trapTriggered,
 	/** Player tries to use but it doesn't do anything. */
 	useFail,
+	/** Player walking sound */
+	walkLeft: [walkLeft1, walkLeft2, walkLeft3, walkLeft4, walkLeft5],
+	walkRight: [walkRight1, walkRight2, walkRight3, walkRight4, walkRight5],
 };
 
 export type SoundId = keyof typeof sounds;

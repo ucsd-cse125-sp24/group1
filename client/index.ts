@@ -30,6 +30,7 @@ import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
 import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
+import { ensureName } from "./ui/components/NamePrompt";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -37,6 +38,9 @@ if (errorWindow instanceof HTMLDialogElement) {
 } else {
 	alert("Failed to get error window");
 }
+
+const playerName = await ensureName();
+console.log("hello", playerName);
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");
@@ -88,6 +92,9 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			pauseMenu.render(data, gameState);
 			if (data.stage.type === "lobby" && gameState?.stage.type !== "lobby") {
 				unlockPointer();
+				gameUi.hide();
+				pauseMenu.show();
+				inputListener.enabled = false;
 			}
 			gameState = data;
 			break;
@@ -159,10 +166,6 @@ raw.connect(convolver);
 convolver.connect(wet);
 const sound = new SoundManager(audioContext, raw);
 
-// lockPointer();
-// inputListener.listen();
-// camera.listen();
-
 const gameUi = new GameplayUi();
 const pauseMenu = new PauseMenu();
 document.body.append(gameUi.element, pauseMenu.element);
@@ -179,11 +182,32 @@ document.addEventListener("pointerlockchange", () => {
 		inputListener.enabled = false;
 	}
 });
+let lastPointerType = "mouse";
 document.addEventListener("click", (e) => {
-	const trapClick = e.target instanceof Element && e.target.closest(".trap-clicks,.start-game-btn");
+	const trapClick =
+		e.target instanceof Element && e.target.closest(".trap-clicks, .start-game-btn, .mobile-open-pause");
 	const isStartBtn = trapClick instanceof Element && trapClick.classList.contains("start-game-btn");
-	if ((!trapClick && gameState?.stage.type !== "lobby") || isStartBtn) {
-		lockPointer();
+	const isPauseBtn = trapClick instanceof Element && trapClick.classList.contains("mobile-open-pause");
+	if (isPauseBtn) {
+		gameUi.hide();
+		pauseMenu.show();
+		inputListener.enabled = false;
+	} else if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
+		if (lastPointerType === "touch") {
+			gameUi.show();
+			pauseMenu.hide();
+			inputListener.enabled = true;
+			// NOTE: Currently, can't switch to touch after using mouse
+		}
+		lockPointer(lastPointerType === "touch");
+	}
+});
+document.addEventListener("pointerdown", (e) => {
+	lastPointerType = e.pointerType;
+	if (e.pointerType === "touch") {
+		gameUi.showMobile();
+	} else {
+		gameUi.hideMobile();
 	}
 });
 
@@ -341,12 +365,26 @@ const staticLight3 = new TempLightEntity(
 	false,
 );
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 2));
+const hueLightCount = engine.MAX_LIGHTS; // Math.floor(1 + Math.random() * 10);
 const tempEntities: ClientEntity[] = [
 	// coolLight,
 	// warmLight,
-	whiteLight,
-	staticLight2,
-	staticLight3,
+	// whiteLight,
+	// staticLight2,
+	// staticLight3,
+	...Array.from({ length: hueLightCount }, (_, i) => {
+		const radius = 5 + Math.random() * 15;
+		return new TempLightEntity(
+			tempLightShader,
+			vec3.fromValues(
+				Math.cos((i / hueLightCount) * 2 * Math.PI) * radius,
+				Math.random() * 40 - 20,
+				Math.sin((i / hueLightCount) * 2 * Math.PI) * radius,
+			),
+			vec3.fromValues(i / hueLightCount, Math.random(), Math.exp(Math.random() * 4 - 1)),
+			false,
+		);
+	}),
 	new ClientEntity(engine, [
 		{
 			model: new TextModel(engine, "hey 羊 Â", 1, 64, { color: "red", family: '"Comic Sans MS"' }),
@@ -383,8 +421,6 @@ const debugGltfShaders = [
 		engine.createShader("fragment", gltfDebugUniqueShadowFragmentSource, "gltf_debug.frag"),
 	),
 ];
-
-const ambientLight = [0.5, 0.5, 0.5] as const;
 
 let previousStaticIds = "";
 const paint = () => {
@@ -447,7 +483,9 @@ const paint = () => {
 		recastStaticShadows = true;
 		console.time("Re-rendering static shadow map");
 	}
-	const lights = [...entities, ...tempEntities].flatMap((entity) => (entity.light ? [entity.light] : []));
+	const lights = [...entities, ...tempEntities]
+		.flatMap((entity) => (entity.light ? [entity.light] : []))
+		.slice(0, engine.MAX_LIGHTS);
 	for (const light of lights) {
 		if (!light.willMove && !recastStaticShadows) {
 			// Avoid re-rendering shadow map if static entities did not change
@@ -460,7 +498,7 @@ const paint = () => {
 	}
 
 	pipeline.startRender();
-	engine.clear(ambientLight);
+	engine.clear(pauseMenu.options.ambientLight);
 
 	// Set up lighting
 	const lightPositions: number[] = [];
@@ -470,8 +508,7 @@ const paint = () => {
 		lightColors.push(...light.color);
 		const shadowMap = light.getShadowMap();
 		// Bind up to 8 shadow maps to texture indices 4..11
-		engine.gl.activeTexture(engine.gl.TEXTURE0 + 4 + i);
-		engine.gl.bindTexture(engine.gl.TEXTURE_CUBE_MAP, shadowMap);
+		engine.bindTexture(4 + i, "cubemap", shadowMap);
 	}
 	engine.gltfMaterial.use();
 	engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_eye_pos"), camera.getPosition());
@@ -480,8 +517,11 @@ const paint = () => {
 		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
 		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
 	}
-	engine.gl.uniform1iv(engine.gltfMaterial.uniform("u_point_shadow_maps[0]"), [4, 5, 6, 7, 8, 9, 10, 11]);
-	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...ambientLight, 1);
+	engine.gl.uniform1iv(
+		engine.gltfMaterial.uniform("u_point_shadow_maps[0]"),
+		Array.from({ length: engine.MAX_LIGHTS }).map((_, i) => 4 + i),
+	);
+	engine.gl.uniform4f(engine.gltfMaterial.uniform("u_ambient_light"), ...pauseMenu.options.ambientLight, 1);
 	engine.gl.uniform1i(engine.gltfMaterial.uniform("u_enable_tones"), +tones);
 	engine.gl.uniform1f(engine.gltfMaterial.uniform("u_tones"), 5);
 
@@ -531,6 +571,7 @@ connection.connect();
 inputListener.listen();
 inputListener.enabled = false;
 camera.listen();
+gameUi.listen(inputListener, { forward: "forward", backward: "backward", right: "right", left: "left" });
 pauseMenu.listen(connection);
 pauseMenu.options.listen(camera);
 paint();

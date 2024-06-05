@@ -18,7 +18,14 @@ export class PointLight {
 	constructor(engine: GraphicsEngine, position: vec3, color: vec3, willMove: boolean) {
 		this.#engine = engine;
 		this.color = color;
-		this.#shadowCamera = new ShadowMapCamera(position, 0.001, 100, this.#shadowMapSize, engine, willMove);
+		this.#shadowCamera = new ShadowMapCamera(
+			position,
+			engine.LIGHT_NEAR,
+			engine.LIGHT_FAR,
+			this.#shadowMapSize,
+			engine,
+			willMove,
+		);
 		this.willMove = willMove;
 	}
 

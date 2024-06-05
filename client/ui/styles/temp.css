@@ -1,8 +1,8 @@
 #network-status {
 	position: fixed;
-	bottom: 0;
+	top: 0;
 	left: 0;
-	margin: 10px;
+	z-index: 10;
 }
 
 #error-window {

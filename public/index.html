@@ -11,11 +11,11 @@
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
 		<link rel="stylesheet" href="./index.css" />
-		<script src="./index.js" defer></script>
+		<script src="./index.js" type="module"></script>
 	</head>
 	<body>
 		<canvas id="canvas"></canvas>
-		<div id="network-status" style="display: none">⏳ Not connected</div>
+		<div id="network-status" class="trap-clicks">⏳ Not connected</div>
 		<dialog id="error-window">
 			<form method="dialog">
 				<h2>Error :(</h2>

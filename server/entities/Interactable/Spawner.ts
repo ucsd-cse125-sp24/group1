@@ -1,6 +1,6 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../../common/commontypes";
-import { EntityModel } from "../../../common/messages";
+import { Action, EntityModel, Use } from "../../../common/messages";
 import { Entity } from "../Entity";
 import { Game } from "../../Game";
 import { InteractableEntity } from "./InteractableEntity";
@@ -63,13 +63,7 @@ export class Spawner extends InteractableEntity {
 			return;
 		}
 
-		let item = new Item(
-			this.game,
-			this.toSpawn,
-			[...this.getPos()],
-			[{ modelId: this.toSpawn, scale: 0.5 }],
-			"resource",
-		);
+		let item = new Item(this.game, this.toSpawn, [...this.getPos()], "resource");
 
 		item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));
 		item.canBeAbsorbedByCraftingTable = false;
@@ -80,5 +74,7 @@ export class Spawner extends InteractableEntity {
 		this.game.playSound("spawnerHarvest", this.getPos());
 	}
 
-	interact() {}
+	interact(): Action<Use> | null {
+		return null;
+	}
 }

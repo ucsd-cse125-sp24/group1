@@ -2,6 +2,11 @@
 	display: flex;
 	flex-direction: column;
 }
+.stage,
+.timer {
+	/* text-shadow `em` is apparently based on the element that defines it */
+	text-shadow: 0 0 1em black;
+}
 
 .timerWrapper {
 	display: flex;
@@ -48,6 +53,7 @@
 	height: 3px;
 	border-radius: 3px;
 	background-color: rgba(255, 255, 255, 0.3);
+	box-shadow: 0 0 30px black;
 	--percentage: 0;
 	&::before {
 		border-radius: 3px;

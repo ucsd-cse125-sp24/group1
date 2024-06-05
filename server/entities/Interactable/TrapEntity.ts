@@ -5,6 +5,7 @@ import { Entity, EntityId } from "../Entity";
 import { PlayerEntity } from "../PlayerEntity";
 import { HeroEntity } from "../HeroEntity";
 import { InteractableEntity } from "./InteractableEntity";
+import { Action, Attack, Use } from "../../../common/messages";
 
 export class TrapEntity extends InteractableEntity {
 	trappedPlayerId: EntityId | null;
@@ -31,22 +32,38 @@ export class TrapEntity extends InteractableEntity {
 		}
 	}
 
-	hit(player: PlayerEntity): void {
-		if (this.trappedPlayerId === null) {
-			this.game.addToDeleteQueue(this.id);
-			this.game.playSound("trapDisarm", this.getPos());
-			return;
-		} else if (player.id === this.trappedPlayerId) {
-			this.durability -= 1;
-			this.game.playSound("trapHit", this.getPos());
+	hit(player: PlayerEntity): Action<Attack> | null {
+		const trappedPlayerId = this.trappedPlayerId;
+		if (trappedPlayerId === null) {
+			return {
+				type: "disarm-trap",
+				commit: () => {
+					this.game.addToDeleteQueue(this.id);
+					this.game.playSound("trapDisarm", this.getPos());
+				},
+			};
 		} else {
-			this.durability = 0;
-		}
-		if (this.durability <= 0) {
-			this.game.freeHero(this.trappedPlayerId, this.id);
-			this.game.playSound("trapEscape", this.getPos());
+			return {
+				type: "damage-trap",
+				commit: () => {
+					if (player.id === trappedPlayerId) {
+						this.durability -= 1;
+					} else {
+						this.durability = 0;
+					}
+					// We could move this to the else branch if we want the sounds to be
+					// exclusive
+					this.game.playSound("trapHit", this.getPos());
+					if (this.durability <= 0) {
+						this.game.freeHero(trappedPlayerId, this.id);
+						this.game.playSound("trapEscape", this.getPos());
+					}
+				},
+			};
 		}
 	}
 
-	interact(player: PlayerEntity): void {}
+	interact(player: PlayerEntity): Action<Use> | null {
+		return null;
+	}
 }

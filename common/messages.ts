@@ -83,12 +83,29 @@ export type PlayerEntry = {
 	name: string;
 	role: Role;
 	entityId?: EntityId;
+	useAction?: Use;
+	attackAction?: Attack;
 	online: boolean;
 	health?: number;
 };
 
 export type Role = "boss" | "hero" | "spectator";
 export type Skin = "red" | "yellow" | "green" | "blue";
+
+export type Use = "throw-item" | "pickup-item" | "pop-crafter" | "boss:spore" | "boss:place-trap";
+export type Attack = "hero:shoot-arrow" | "damage" | "disarm-trap" | "damage-trap" | "default-hit-entity";
+export type Action<ActionType> = {
+	/**
+	 * The type of action that would be performed if the player activates it. This
+	 * is shown in the client as an available action.
+	 */
+	type: ActionType;
+	/**
+	 * Called when the player activates it. For example, for `Action<Use>`, this
+	 * is called when the player presses right click.
+	 */
+	commit: () => void;
+};
 
 export type GameOver = {
 	type: "game-over";
