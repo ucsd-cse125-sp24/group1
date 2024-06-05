@@ -392,7 +392,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 	}
 
-	handlePlayerJoin(conn: Connection<ServerMessage>) {
+	handlePlayerJoin(conn: Connection<ServerMessage>, name = `Player ${conn.id.slice(0, 6)}`) {
 		console.log("Player joining!", this.#players.size);
 		let player = this.#players.get(conn.id);
 		if (player) {
@@ -416,7 +416,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				input: input,
 				entity: null,
 				online: true,
-				name: `Player ${conn.id.slice(0, 6)}`,
+				name,
 			};
 			this.#players.set(conn.id, player);
 		}

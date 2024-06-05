@@ -1,4 +1,5 @@
 import { ServerControlMessage, ClientControlMessage, ServerMessage, ClientMessage } from "../../common/messages";
+import { NAME_KEY } from "../ui/components/NamePrompt";
 
 const CONNECTION_ID = "connection-id";
 
@@ -79,7 +80,7 @@ export class Connection {
 
 	#handleOpen() {
 		let old_connection = localStorage.getItem(CONNECTION_ID);
-		this.send({ type: "join", id: old_connection ?? "" });
+		this.send({ type: "join", id: old_connection ?? "", name: localStorage.getItem(NAME_KEY) ?? undefined });
 	}
 
 	#handleRawMessage = async (e: MessageEvent<unknown>) => {

@@ -190,7 +190,7 @@ export class WsServer implements Server<ClientMessage, ServerMessage> {
 				}
 
 				// Tell the game that they joined
-				this.#game.handlePlayerJoin(connection);
+				this.#game.handlePlayerJoin(connection, data.name);
 
 				// Ok we believe u 🥰 you are the client you say you are
 				connection.send({

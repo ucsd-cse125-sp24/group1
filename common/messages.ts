@@ -39,6 +39,8 @@ export type ClientControlMessage = {
 	 * empty string. The server will generate a new one for you.
 	 */
 	id: string;
+	/** Preferred player name */
+	name?: string;
 };
 
 export type ServerControlMessage = {

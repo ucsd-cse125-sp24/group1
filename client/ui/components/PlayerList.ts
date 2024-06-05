@@ -1,6 +1,7 @@
 import { EntireGameState } from "../../../common/messages";
 import { Connection } from "../../net/Connection";
 import { elem } from "../elem";
+import { NAME_KEY } from "./NamePrompt";
 import styles from "./PlayerList.module.css";
 
 export class PlayerList {
@@ -16,6 +17,7 @@ export class PlayerList {
 		this.#nameInput.addEventListener("change", () => {
 			if (this.#nameInput.value.length > 0) {
 				connection.send({ type: "change-name", name: this.#nameInput.value });
+				localStorage.setItem(NAME_KEY, this.#nameInput.value);
 			}
 		});
 	}
