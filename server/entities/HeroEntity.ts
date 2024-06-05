@@ -7,7 +7,7 @@ const PLAYER_INTERACTION_RANGE = 8.0; // TEMP, but 2 is too low IMO
 const HERO_CAPSULE_HEIGHT = 2;
 const HERO_CAPSULE_RADIUS = 0.5;
 
-const HERO_WALK_SPEED = 16;
+const HERO_WALK_SPEED = 20;
 /**
  * Maximum change in horizontal velocity that can be caused by the player in one
  * tick
