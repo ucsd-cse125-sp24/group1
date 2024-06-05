@@ -114,7 +114,7 @@ export abstract class PlayerEntity extends Entity {
 
 		this.#coyoteCounter = 0;
 
-		this.#lastSoundPosition = this.body.position;
+		this.#lastSoundPosition = this.body.position.clone();
 		this.#lastSoundIsLeft = false;
 	}
 
@@ -358,7 +358,7 @@ export abstract class PlayerEntity extends Entity {
 	shouldPlayWalkingSound() {
 		if (!this.onGround) return 0;
 		if (this.body.position.distanceTo(this.#lastSoundPosition) > WALK_STEP_DIST) {
-			this.#lastSoundPosition = this.body.position;
+			this.#lastSoundPosition = this.body.position.clone();
 			this.#lastSoundIsLeft = !this.#lastSoundIsLeft;
 			return this.#lastSoundIsLeft ? 1 : 2;
 		}
