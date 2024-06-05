@@ -157,7 +157,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(camera);
 	}
 
-	// #region game Start Method
+	// #region startGame
 	/**
 	 * State transition from "lobby" to "crafting"
 	 */
@@ -186,7 +186,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map" }]);
 		this.#registerEntity(mapEntity);
 
-		let plane = new PlaneEntity(this, [0, -10, 0], [-1, 0, 0, 1], []);
+		let plane = new PlaneEntity(this, [0, -20, 0], [-1, 0, 0, 1], []);
 		this.#registerEntity(plane);
 
 		let posIndex = Math.floor(Math.random() * 4);
@@ -205,7 +205,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let Furnace = new CraftingTable(
 			this,
-			[18, 0, 18],
+			[14, -3.5, 28],
 			[{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0] }],
 			[
 				{ ingredients: ["raw_iron", "wood"], output: "iron" },
@@ -216,7 +216,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let WeaponCrafter = new CraftingTable(
 			this,
-			[-18, 6, -18],
+			[-5, -3.5, -29.5],
 			[{ modelId: "anvil", offset: [0, -1.25, 0] }],
 			[
 				{ ingredients: ["iron", "iron", "wood"], output: "sword" },
@@ -230,7 +230,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let FletchingTable = new CraftingTable(
 			this,
-			[12, 0, 18],
+			[-19, -3, -24],
 			[{ modelId: "work_station", offset: [0, -1.25, 0] }],
 			[
 				{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
@@ -240,20 +240,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(FletchingTable);
 
-		let woodSpawner = new Spawner(this, [5, 0, 18], "wood", "axe", [{ modelId: "chair", offset: [0, -1.1, 0] }]);
+		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "axe", [{ modelId: "chair", offset: [0, -1.1, 0] }]);
 		this.#registerEntity(woodSpawner);
 
-		let oreSpawner = new Spawner(this, [-24, 0, 18], "raw_iron", "pickaxe", [
+		let oreSpawner = new Spawner(this, [0, -17, -21.5], "raw_iron", "pickaxe", [
 			{ modelId: "ore_vein", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(oreSpawner);
 
-		let stringSpawner = new Spawner(this, [21, 0, -11], "string", "shears", [
+		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "shears", [
 			{ modelId: "spider_web", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(stringSpawner);
 
-		let mushroomSpawner = new Spawner(this, [0, 0, -15], "mushroom", "knife", [
+		let mushroomSpawner = new Spawner(this, [-18, -17.5, 4], "mushroom", "knife", [
 			{ modelId: "mushroom_cluster", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(mushroomSpawner);
@@ -380,11 +380,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					},
 				]);
 			case "boss":
-				return new BigBossEntity(this, pos, [
+				return new BossEntity(this, pos, [
 					{
 						modelId: "samplePlayer",
 						offset: [0, -0.75, 0],
-						scale: 3,
+						scale: 0.2,
 					},
 				]);
 			default:
@@ -481,7 +481,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (oldEntity) {
 					this.addToDeleteQueue(oldEntity.id);
 				}
-				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [20, -1, 20], data);
+				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [0, 0, 0], data);
 				if (player.entity) {
 					this.addToCreateQueue(player.entity);
 					player.entity.displayName = player.name;
