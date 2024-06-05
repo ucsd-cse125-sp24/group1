@@ -9,7 +9,7 @@
 
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
-import { ChangeRole, ClientMessage, GameStage, PlayerEntry, SerializedEntity, ServerMessage } from "../common/messages";
+import { ChangeRole, ClientMessage, EntityModel, GameStage, PlayerEntry, SerializedEntity, ServerMessage } from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
 import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
 import { SoundId } from "../assets/sounds";
@@ -145,6 +145,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(camera);
 	}
 
+	// #region game Start Method
 	/**
 	 * State transition from "lobby" to "crafting"
 	 */
@@ -339,8 +340,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.playSound("trapEscape", hero.getPos());
 	}
 
-	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number) {
-		this.#registerEntity(new ArrowEntity(this, position, velocity, damage));
+	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number, mod: EntityModel[]) {
+		this.#registerEntity(new ArrowEntity(this, position, velocity, damage, mod));
 	}
 	// #endregion
 

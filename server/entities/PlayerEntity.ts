@@ -214,6 +214,7 @@ export abstract class PlayerEntity extends Entity {
 					this.body.position.vadd(lookDir.scale(2)),
 					lookDir.scale(isGamer ? 80 : 40),
 					isGamer ? 6 : 3,
+					[{modelId: "donut"}]
 				);
 				this.#previousAttackTime = Date.now();
 				return false;
@@ -225,6 +226,7 @@ export abstract class PlayerEntity extends Entity {
 			{},
 			this,
 		);
+
 		for (const entity of entities) {
 			if (entity instanceof PlayerEntity) {
 				console.log("attack", entity.id);

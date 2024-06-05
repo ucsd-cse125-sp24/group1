@@ -4,12 +4,15 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { BossEntity } from "./BossEntity";
 import { MapEntity } from "./map/MapEntity";
+import { Mode } from "fs";
+import { ModelId } from "../../assets/models";
+import { EntityModel } from "../../common/messages";
 
 export class ArrowEntity extends Entity {
 	damage: number;
 
-	constructor(game: Game, position: phys.Vec3, velocity: phys.Vec3, damage: number) {
-		super(game, ["donut"]);
+	constructor(game: Game, position: phys.Vec3, velocity: phys.Vec3, damage: number, modelId: EntityModel[]) {
+		super(game, modelId);
 		this.body = new phys.Body({
 			mass: 0.05,
 			position: position,
