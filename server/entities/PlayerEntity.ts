@@ -8,6 +8,7 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
+import { log } from "../net/_tempDebugLog";
 
 const COYOTE_FRAMES = 10;
 const WALK_STEP_DIST = 1.5;
@@ -250,6 +251,7 @@ export abstract class PlayerEntity extends Entity {
 				if(entity.isBoss) {
 					this.game.setBossTimer(50);
 					entity.walkSpeed = 0;
+					log("hit");
 					return null;
 				}
 				return {

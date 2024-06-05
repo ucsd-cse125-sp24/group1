@@ -396,7 +396,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
 		if (this.#currentStage.type === "lobby") {
-			//pos = 
+			pos = [1000,1005,1000];
 		}
 		switch (role) {
 			case "hero":
@@ -641,7 +641,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#nextTick() {
 		this.#currentTick++;
 		this.#bossTimer --;
-		console.log(this.#bossTimer);
+		
+		log(JSON.stringify(this.#bossTimer));
 		
 		this.spawnSmolBossWithDelay();
 		this.#world.nextTick();
