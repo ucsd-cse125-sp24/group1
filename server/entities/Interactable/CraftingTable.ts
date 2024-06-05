@@ -27,6 +27,7 @@ export class CraftingTable extends InteractableEntity {
 	body: phys.Body;
 	halfExtent: number;
 	model: EntityModel[];
+	isStatic = true;
 
 	/** Items stored in the crafting table */
 	itemList: Item[];
@@ -48,7 +49,7 @@ export class CraftingTable extends InteractableEntity {
 		this.halfExtent = 1.5;
 
 		this.body = new phys.Body({
-			mass: 0.0,
+			type: phys.Body.STATIC,
 			position: new phys.Vec3(...pos),
 			//material: depends on the item,
 			collisionFilterGroup: this.getBitFlag(),
