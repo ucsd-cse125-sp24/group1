@@ -25,7 +25,7 @@ export class SoundManager {
 		const sound = this.#audio[src].pop();
 		if (sound) {
 			sound.audio.currentTime = 0;
-			sound.audio.play();
+			sound.audio.play().catch(() => {});
 			return sound;
 		} else {
 			const audio = new Audio(src);
@@ -35,7 +35,7 @@ export class SoundManager {
 			});
 			const track = this.#context.createMediaElementSource(audio);
 
-			audio.play();
+			audio.play().catch(() => {});
 			audio.addEventListener("ended", () => {
 				this.#audio[src].push({ audio, track, panner });
 			});

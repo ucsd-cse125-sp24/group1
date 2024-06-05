@@ -160,6 +160,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * State transition from "lobby" to "crafting"
 	 */
 	async #startGame() {
+		this.#reset();
 		this.#currentStage = {
 			type: "crafting",
 			startTime: Date.now(),
@@ -180,7 +181,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		}
 
 		const mapColliders = getColliders(await sampleMapColliders);
-		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "map" }]);
+		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
 		this.#registerEntity(mapEntity);
 
 		let plane = new PlaneEntity(this, [0, -10, 0], [-1, 0, 0, 1], []);
@@ -732,7 +733,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	reset() {
+	#reset() {
 		this.#currentStage = {
 			type: "lobby",
 			previousWinner: null,
