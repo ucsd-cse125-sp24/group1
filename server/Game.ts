@@ -40,6 +40,7 @@ import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
+import { BigBossEntity } from "./entities/BigBossEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -263,6 +264,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let sampleIorn2 = new Item(this, "raw_iron", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
 	}
+	// #endregion
+
 
 	// #region Gameplay Methods
 	/**
@@ -378,11 +381,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					},
 				]);
 			case "boss":
-				return new BossEntity(this, pos, [
+				return new BigBossEntity(this, pos, [
 					{
 						modelId: "samplePlayer",
 						offset: [0, -0.75, 0],
-						scale: 0.2,
+						scale: 3,
 					},
 				]);
 			default:
