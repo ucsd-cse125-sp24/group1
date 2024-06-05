@@ -3,8 +3,8 @@ import { elem } from "../elem";
 import styles from "./Options.module.css";
 
 const DEFAULT_FOV = 60;
-const DEFAULT_SENSITIVITY = 0.1;
-const DEFAULT_AMBIENT_LIGHT = 50;
+const DEFAULT_SENSITIVITY = 0.4;
+const DEFAULT_AMBIENT_LIGHT = 10;
 
 export class Options {
 	fov = DEFAULT_FOV;
