@@ -8,7 +8,7 @@ import { PhysicsWorld } from "../PhysicsWorld";
 import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 
-const PLAYER_INTERACTION_RANGE = 2.0;
+const PLAYER_INTERACTION_RANGE = 7.0;
 const BOSS_CAPSULE_HEIGHT = 4;
 const BOSS_CAPSULE_RADIUS = 1;
 const BOSS_WALK_SPEED = 5;
@@ -67,14 +67,16 @@ export class BigBossEntity extends PlayerEntity {
         let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
         let entities: Entity[] = [];
 
-
         //hopefully this shoots 5 rays cenetered on Lookdir
+        console.log(this.getPos());
         for(let i = 0; i < 5; i++) {
             quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
-            let dir = quat.vmult(base);
+            let dir = quat.vmult(lookDir.scale(this.interactionRange));
+
+            let betterDirection = this.body.position.vadd(dir);
 
             //FOR TESTING
-            console.log(dir, i);
+            //console.log(betterDirection, i);
             
             entities.push(...this.game.raycast(
                 this.body.position,
@@ -82,11 +84,11 @@ export class BigBossEntity extends PlayerEntity {
                 {},
                 this,
             ));
+
         }
             
         for (const entity of entities) {
             if (entity instanceof HeroEntity) {
-
 
                 return {
 					type: "damage",
@@ -141,14 +143,12 @@ export class BigBossEntity extends PlayerEntity {
         let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
         for(let i = 0; i < 5; i++) {
             quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
-            let dir = quat.vmult(base);
-
-            //FOR TESTING
-            console.log(dir);
+            let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
+            let betterDirection = this.body.position.vadd(dir);
             
             this.game.shootArrow(
-                this.body.position.vadd(lookDir.scale(  2)),
-                lookDir.scale(60),
+                this.body.position.vadd(betterDirection),
+                dir.scale(60),
                 1,
                 [{modelId: "donut"}]
             );
