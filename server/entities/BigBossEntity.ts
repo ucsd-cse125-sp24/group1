@@ -28,7 +28,7 @@ export class BigBossEntity extends PlayerEntity {
 	initHealth = 100;
 
     previousAttackTick: number;
-    isCharge: boolean;
+    chargeTicks: number;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
 		super(
@@ -45,8 +45,8 @@ export class BigBossEntity extends PlayerEntity {
 			PLAYER_INTERACTION_RANGE,
 		);
 
-        this.isCharge = false;
         this.previousAttackTick = this.game.getCurrentTick();
+        this.chargeTicks = 0;
 	}
 
     attack(): Action<Attack> | null {

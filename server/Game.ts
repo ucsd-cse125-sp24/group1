@@ -370,7 +370,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	spawnSmolBossWithDelay() {
-		if(this.#bossTimer <= 0) {
+		if(this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
 			if(this.#currentBoss) {
 				this.#currentBoss.walkSpeed = 20;
@@ -395,6 +395,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+		if (this.#currentStage.type === "lobby") {
+			//pos = 
+		}
 		switch (role) {
 			case "hero":
 				return new HeroEntity(this, pos, [
@@ -637,11 +640,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
-		if(this.#bossTimer <= 0) {
-			this.#bossTimer = 0;
-		} else {
-			this.#bossTimer --;
-		}
+		this.#bossTimer --;
 		console.log(this.#bossTimer);
 		
 		this.spawnSmolBossWithDelay();
