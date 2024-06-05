@@ -22,7 +22,7 @@ import trapEscape from "./trap-escape.mp3"; // TODO:
 import trapHit from "./trap-hit.mp3"; // TODO:
 import trapPlace from "./trap-place.mp3"; // TODO:
 import trapTriggered from "./trap-triggered.mp3"; // TODO:
-import useFail from "./use-fail.mp3"; // TODO:
+import useFail from "./use-fail.mp3"; // IGNORE: no feedback for failures
 import walkLeft1 from "./Step L 1.wav";
 import walkLeft2 from "./Step L 2.wav";
 import walkLeft3 from "./Step L 3.wav";

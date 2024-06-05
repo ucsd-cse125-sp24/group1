@@ -10,7 +10,7 @@ import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 
 const COYOTE_FRAMES = 10;
-const WALK_STEP_DIST = 1;
+const WALK_STEP_DIST = 1.5;
 const MAX_HEALTH_RING_SIZE = 25;
 
 export abstract class PlayerEntity extends Entity {

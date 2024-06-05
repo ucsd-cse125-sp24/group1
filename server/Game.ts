@@ -571,7 +571,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (use) {
 					use.commit();
 				} else {
-					this.playSound("useFail", player.entity.getPos());
+					// this.playSound("useFail", player.entity.getPos());
 				}
 			}
 			const attack = player.entity.attack();
