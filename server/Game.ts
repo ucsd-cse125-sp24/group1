@@ -13,6 +13,7 @@ import {
 	Attack,
 	ChangeRole,
 	ClientMessage,
+	EntityModel,
 	GameStage,
 	PlayerEntry,
 	SerializedEntity,
