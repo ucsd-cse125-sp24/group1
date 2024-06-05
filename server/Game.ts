@@ -368,6 +368,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number, mod: EntityModel[]) {
 		this.#registerEntity(new ArrowEntity(this, position, velocity, damage, mod));
 	}
+	spawnSmolBossWithDelay() {
+		if(this.#bossTimer <= 0) {
+			//spawn the boss at [0, 0, 0] for now
+			if(this.#currentBoss) {
+				this.#currentBoss.walkSpeed = 20;
+				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
+			}
+		}
+	}
+	setBossTimer(delay: number) {
+		this.#bossTimer = delay;
+	}
 	// #endregion
 
 	// #region Player
@@ -696,21 +708,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	// #region Entity
-	spawnSmolBossWithDelay() {
-		if(this.#bossTimer <= 0) {
-			//spawn the boss at [0, 0, 0] for now
-			if(this.#currentBoss) {
-				this.#currentBoss.walkSpeed = 20;
-				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
-			}
-		}
-	}
-
-	setBossTimer(delay: number) {
-		this.#bossTimer = delay;
-	}
-	
+	// #region Entity	
 	addToDeleteQueue(sussyAndRemovable: EntityId) {
 		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
 		if (index !== -1) {

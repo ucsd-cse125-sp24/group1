@@ -249,6 +249,8 @@ export abstract class PlayerEntity extends Entity {
 			if (entity instanceof PlayerEntity) {
 				if(entity.isBoss) {
 					this.game.setBossTimer(50);
+					entity.walkSpeed = 0;
+					return null;
 				}
 				return {
 					type: "damage",

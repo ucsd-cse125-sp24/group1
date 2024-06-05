@@ -100,7 +100,6 @@ export class BigBossEntity extends PlayerEntity {
         
                         this.game.playSound("hit", entity.getPos());
                         this.animator.play("punch");
-                        this.previousAttackTick = this.game.getCurrentTick();
 					},
 				};
 
@@ -112,7 +111,6 @@ export class BigBossEntity extends PlayerEntity {
 							commit: () => {
 								action.commit();
 								this.animator.play("punch");
-								this.previousAttackTick = this.game.getCurrentTick();
 							},
 						}
 					: null;
@@ -122,14 +120,10 @@ export class BigBossEntity extends PlayerEntity {
     }
 
     use(): Action<Use> | null {
-        return this.throwingAttack();
-    }
-
-    //TODO: figure out how to refactor this around the Action change
-    throwingAttack(): Action<Use> | null {
-        if (this.game.getCurrentTick() - this.previousAttackTick < 50) {
+        if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
             return null;
         }
+        this.previousAttackTick = this.game.getCurrentTick();
 
         //let attackArr = Action<Attack> = [];
 
@@ -169,7 +163,6 @@ export class BigBossEntity extends PlayerEntity {
                     );
                 }
                 this.animator.play("punch");
-                this.previousAttackTick = this.game.getCurrentTick();
             },
         };
         
