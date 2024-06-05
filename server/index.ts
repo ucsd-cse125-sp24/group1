@@ -1,7 +1,7 @@
 import { delay } from "../common/lib/delay";
 import { SERVER_GAME_TICK } from "../common/constants";
 import { Game } from "./Game";
-import { log } from "./net/_tempDebugLog";
+import { errorOccurred, log } from "./net/_tempDebugLog";
 
 const game = new Game();
 
@@ -11,7 +11,7 @@ let totalDelta = 0;
 //what actually runs the game loop
 (async () => {
 	log("Server started");
-	while (true) {
+	while (!errorOccurred) {
 		//check time at beginning of gamestep
 		let startTimeCheck = Date.now();
 
