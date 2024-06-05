@@ -1,5 +1,5 @@
 import { Vector3 } from "../../common/commontypes";
-import { Action, EntityModel, Use } from "../../common/messages";
+import { Action, Attack, EntityModel, Use } from "../../common/messages";
 import { Game } from "../Game";
 import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
@@ -38,6 +38,11 @@ export class BossEntity extends PlayerEntity {
 			BOSS_JUMP_SPEED,
 			PLAYER_INTERACTION_RANGE,
 		);
+	}
+
+	attack(): Action<Attack> | null {
+		console.log("big spag");
+		return null;
 	}
 
 	use(): Action<Use> | null {
