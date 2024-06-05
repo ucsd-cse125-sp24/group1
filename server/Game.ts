@@ -481,7 +481,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (oldEntity) {
 					this.addToDeleteQueue(oldEntity.id);
 				}
-				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [20, -1, 20], data);
+				player.entity = this.#createPlayerEntity(oldEntity?.getPos() ?? [0, 0, 0], data);
 				if (player.entity) {
 					this.addToCreateQueue(player.entity);
 					player.entity.displayName = player.name;
