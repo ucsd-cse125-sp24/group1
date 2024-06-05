@@ -16,12 +16,11 @@ import {
 	EntityModel,
 	GameStage,
 	PlayerEntry,
-	SerializedEntity,
 	ServerMessage,
 	Use,
 } from "../common/messages";
 import { MovementInfo, Vector3 } from "../common/commontypes";
-import { sampleMapColliders } from "../assets/models/sample-map-colliders/server-mesh";
+import { mapColliders } from "../assets/models/map-colliders/server-mesh";
 import { SoundId } from "../assets/sounds";
 import { CameraEntity } from "../server/entities/CameraEntity";
 import { PlayerInput } from "./net/PlayerInput";
@@ -182,8 +181,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}
 		}
 
-		const mapColliders = getColliders(await sampleMapColliders);
-		const mapEntity = new MapEntity(this, [0, -5, 0], mapColliders, [{ modelId: "sampleMap" }]);
+		const colliders = getColliders(await mapColliders);
+		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map" }]);
 		this.#registerEntity(mapEntity);
 
 		let plane = new PlaneEntity(this, [0, -10, 0], [-1, 0, 0, 1], []);
