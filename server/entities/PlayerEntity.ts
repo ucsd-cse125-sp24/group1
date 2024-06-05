@@ -2,12 +2,12 @@ import * as phys from "cannon-es";
 import { mat4, quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
 import { Action, Attack, EntityModel, SerializedEntity, Use } from "../../common/messages";
+import { Animation, Animator } from "../lib/Animation";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
-import { Animation, Animator } from "../lib/Animation";
 
 const COYOTE_FRAMES = 10;
 const WALK_STEP_DIST = 1;
@@ -226,7 +226,7 @@ export abstract class PlayerEntity extends Entity {
 							this.body.position.vadd(lookDir.scale(2)),
 							lookDir.scale(isGamer ? 80 : 40),
 							isGamer ? 6 : 3,
-							[{modelId: "donut"}]
+							[{ modelId: "donut" }],
 						);
 						this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
@@ -314,7 +314,7 @@ export abstract class PlayerEntity extends Entity {
 			position: this.body.position.toArray(),
 			quaternion: quat.rotationTo(
 				quat.create(),
-				vec3.fromValues(1, 0, 0),
+				vec3.fromValues(-1, 0, 0),
 				this.lookDir
 					.vmul(new phys.Vec3(1, 0, 1))
 					.unit()
