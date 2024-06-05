@@ -1,4 +1,4 @@
-import { Quaternion, Vec3 } from "cannon-es";
+import { Box, Quaternion, Vec3 } from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
 import { Action, Attack, EntityModel, Use } from "../../common/messages";
 import { Game } from "../Game";
@@ -21,12 +21,13 @@ const MAX_BOSS_GROUND_SPEED_CHANGE = 2.5;
 const MAX_BOSS_AIR_SPEED_CHANGE = 1;
 const BOSS_JUMP_SPEED = 0;
 
+const BOSS_ATTACK_COOLDOWN = 50; // ticks
+
 export class BigBossEntity extends PlayerEntity {
 	isBoss = true;
 	initHealth = 100;
 
-    previousTick: number;
-
+    previousAttackTick: number;
     isCharge: boolean;
 
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
@@ -45,29 +46,23 @@ export class BigBossEntity extends PlayerEntity {
 		);
 
         this.isCharge = false;
-        this.previousTick = this.game.getCurrentTick();
+        this.previousAttackTick = this.game.getCurrentTick();
 	}
 
-
     attack(): Action<Attack> | null {
-        return this.BigBossAttack();
-    }
-
-    //TODO: refactor this around the Action<Attack> change!
-    BigBossAttack(): Action<Attack> | null {//meleeAttack() {
-
-        console.log(this.game.getCurrentTick(), this.previousTick);
-        if (this.game.getCurrentTick() - this.previousTick < 50) {
+        if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
             return null;
         }
+        this.previousAttackTick = this.game.getCurrentTick();
 
         const lookDir = this.lookDir.unit();
+        const rightDir = lookDir.cross(new Vec3(0, 1, 0)).unit();
 
         let quat = new Quaternion(0, 0, 0, 1);
         let base = this.body.position.vadd(lookDir.scale(this.interactionRange))
         let entities: Entity[] = [];
 
-        //hopefully this shoots 5 rays cenetered on Lookdir
+        //hopefully this shoots 5 rays centered on Lookdir
         console.log(this.getPos());
         for(let i = 0; i < 5; i++) {
             quat.setFromAxisAngle(new Vec3(0, 1, 0), - 2 * (Math.PI / 36) + (i * (Math.PI / 36)));
@@ -105,7 +100,7 @@ export class BigBossEntity extends PlayerEntity {
         
                         this.game.playSound("hit", entity.getPos());
                         this.animator.play("punch");
-                        this.previousTick = this.game.getCurrentTick();
+                        this.previousAttackTick = this.game.getCurrentTick();
 					},
 				};
 
@@ -117,14 +112,13 @@ export class BigBossEntity extends PlayerEntity {
 							commit: () => {
 								action.commit();
 								this.animator.play("punch");
-								this.previousTick = this.game.getCurrentTick();
+								this.previousAttackTick = this.game.getCurrentTick();
 							},
 						}
 					: null;
 			}
         }
         return null;
-        
     }
 
     use(): Action<Use> | null {
@@ -133,7 +127,7 @@ export class BigBossEntity extends PlayerEntity {
 
     //TODO: figure out how to refactor this around the Action change
     throwingAttack(): Action<Use> | null {
-        if (this.game.getCurrentTick() - this.previousTick < 50) {
+        if (this.game.getCurrentTick() - this.previousAttackTick < 50) {
             return null;
         }
 
@@ -175,7 +169,7 @@ export class BigBossEntity extends PlayerEntity {
                     );
                 }
                 this.animator.play("punch");
-                this.previousTick = this.game.getCurrentTick();
+                this.previousAttackTick = this.game.getCurrentTick();
             },
         };
         
