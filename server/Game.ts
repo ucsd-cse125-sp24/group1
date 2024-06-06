@@ -43,6 +43,7 @@ import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
 import { CubeEntity } from "./entities/CubeEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
+import { StaticLightEntity } from "./entities/StaticLightEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -275,6 +276,25 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let sampleIorn2 = new Item(this, "armor", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
+
+		const hueLightCount = 12;
+		for (let i = 0; i < hueLightCount; i++) {
+			const radius = 5 + Math.random() * 15;
+			this.#registerEntity(
+				new StaticLightEntity(
+					this,
+					[
+						Math.cos((i / hueLightCount) * 2 * Math.PI) * radius,
+						Math.random() * 40 - 20,
+						Math.sin((i / hueLightCount) * 2 * Math.PI) * radius,
+					],
+					{
+						color: [i / hueLightCount, Math.random(), Math.exp(Math.random() * 4 - 1)],
+						falloff: Math.random() * 10 + 0.1,
+					},
+				),
+			);
+		}
 	}
 	// #endregion
 

@@ -1,6 +1,6 @@
 import { mat4, vec3, vec4 } from "gl-matrix";
 import { SERVER_GAME_TICK } from "../common/constants";
-import { ClientMessage, EntireGameState, SerializedCollider, ServerMessage } from "../common/messages";
+import { ClientMessage, EntireGameState, SerializedCollider, SerializedLight, ServerMessage } from "../common/messages";
 import { EntityId } from "../server/entities/Entity";
 import { reverbImpulse, sounds } from "../assets/sounds";
 import gltfDebugDepthFragmentSource from "./shaders/gltf_debug_depth.frag";
@@ -32,6 +32,7 @@ import { TextModel } from "./render/model/TextModel";
 import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
 import { ensureName } from "./ui/components/NamePrompt";
+import { PointLight } from "./render/lights/PointLight";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -60,6 +61,12 @@ let freecam: boolean = false; // for debug purposes
 let wireframe = 0;
 let tones = false;
 
+type PointLightEntry = {
+	light: PointLight;
+	enabled: boolean;
+};
+let entityLights: Record<EntityId, PointLightEntry> = {};
+
 const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 	switch (data.type) {
 		case "ping":
@@ -87,6 +94,37 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 					),
 				}));
 			});
+
+			const newLights: Record<EntityId, PointLightEntry> = {};
+			for (const entity of Object.values(data.entities)) {
+				let light = entityLights[entity.id];
+				if (light) {
+					// When the entity loses its light, just disable it in case it gets
+					// reenabled later
+					light.enabled = !!entity.light;
+					if (entity.light) {
+						light.light.position = vec3.add(vec3.create(), entity.position, entity.light.offset ?? [0, 0, 0]);
+						light.light.color = vec3.fromValues(...entity.light.color);
+						light.light.falloff = entity.light.falloff ?? 1;
+						light.light.willMove = entity.light.willMove;
+					}
+				} else if (entity.light) {
+					light = {
+						light: new PointLight(engine, vec3.create(), vec3.create(), 1, false),
+						enabled: true,
+					};
+				} else {
+					continue;
+				}
+				if (entity.light) {
+					light.light.position = vec3.add(vec3.create(), entity.position, entity.light.offset ?? [0, 0, 0]);
+					light.light.color = vec3.fromValues(...entity.light.color);
+					light.light.falloff = entity.light.falloff ?? 1;
+					light.light.willMove = entity.light.willMove;
+				}
+				newLights[entity.id] = light;
+			}
+			entityLights = newLights;
 
 			gameUi.render(data, gameState);
 			pauseMenu.render(data, gameState);
@@ -371,17 +409,25 @@ const tempLightShader = new ShaderProgram(
 	),
 );
 const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
-const whiteLight = new TempLightEntity(tempLightShader, vec3.fromValues(10, 20, -20), vec3.fromValues(0, 0, 30), false);
+const whiteLight = new TempLightEntity(
+	tempLightShader,
+	vec3.fromValues(10, 20, -20),
+	vec3.fromValues(0, 0, 30),
+	5,
+	false,
+);
 const staticLight2 = new TempLightEntity(
 	tempLightShader,
 	vec3.fromValues(-15, 5, 15),
 	vec3.fromValues(27 / 360, 0.9, 50),
+	5,
 	false,
 );
 const staticLight3 = new TempLightEntity(
 	tempLightShader,
 	vec3.fromValues(-10, -10, -10),
 	vec3.fromValues(0.5, 0.1, 10),
+	5,
 	false,
 );
 const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 2));
@@ -392,37 +438,38 @@ const tempEntities: ClientEntity[] = [
 	// whiteLight,
 	// staticLight2,
 	// staticLight3,
-	...Array.from({ length: hueLightCount }, (_, i) => {
-		const radius = 5 + Math.random() * 15;
-		return new TempLightEntity(
-			tempLightShader,
-			vec3.fromValues(
-				Math.cos((i / hueLightCount) * 2 * Math.PI) * radius,
-				Math.random() * 40 - 20,
-				Math.sin((i / hueLightCount) * 2 * Math.PI) * radius,
-			),
-			vec3.fromValues(i / hueLightCount, Math.random(), Math.exp(Math.random() * 4 - 1)),
-			false,
-		);
-	}),
-	new ClientEntity(engine, [
-		{
-			model: new TextModel(engine, "hey 羊 Â", 1, 64, { color: "red", family: '"Comic Sans MS"' }),
-			transform: mat4.create(),
-		},
-	]),
-	new ClientEntity(engine, [
-		{
-			model: new TextModel(engine, "bleh 😜", 1.5, 64, { color: "orange" }),
-			transform: mat4.fromTranslation(mat4.create(), [0, -1, 1]),
-		},
-	]),
-	new ClientEntity(engine, [
-		{
-			model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, { color: "cyan", family: "serif" }),
-			transform: mat4.fromYRotation(mat4.create(), Math.PI / 4),
-		},
-	]),
+	// ...Array.from({ length: hueLightCount }, (_, i) => {
+	// 	const radius = 5 + Math.random() * 15;
+	// 	return new TempLightEntity(
+	// 		tempLightShader,
+	// 		vec3.fromValues(
+	// 			Math.cos((i / hueLightCount) * 2 * Math.PI) * radius,
+	// 			Math.random() * 40 - 20,
+	// 			Math.sin((i / hueLightCount) * 2 * Math.PI) * radius,
+	// 		),
+	// 		vec3.fromValues(i / hueLightCount, Math.random(), Math.exp(Math.random() * 4 - 1)),
+	// 		Math.random() * 10 + 0.1,
+	// 		false,
+	// 	);
+	// }),
+	// new ClientEntity(engine, [
+	// 	{
+	// 		model: new TextModel(engine, "hey 羊 Â", 1, 64, { color: "red", family: '"Comic Sans MS"' }),
+	// 		transform: mat4.create(),
+	// 	},
+	// ]),
+	// new ClientEntity(engine, [
+	// 	{
+	// 		model: new TextModel(engine, "bleh 😜", 1.5, 64, { color: "orange" }),
+	// 		transform: mat4.fromTranslation(mat4.create(), [0, -1, 1]),
+	// 	},
+	// ]),
+	// new ClientEntity(engine, [
+	// 	{
+	// 		model: new TextModel(engine, "soiduhfuidsfhd yugsdg", 0.5, 64, { color: "cyan", family: "serif" }),
+	// 		transform: mat4.fromYRotation(mat4.create(), Math.PI / 4),
+	// 	},
+	// ]),
 ];
 console.log(tempEntities[3]);
 
@@ -504,11 +551,11 @@ const paint = () => {
 		recastStaticShadows = true;
 		console.time("Re-rendering static shadow map");
 	}
-	const lights = [...entities, ...tempEntities]
-		.flatMap((entity) => (entity.light ? [entity.light] : []))
+	const lights = Object.values(entityLights)
+		.flatMap(({ light, enabled }) => (enabled ? [light] : []))
 		.slice(0, engine.MAX_LIGHTS);
 	for (const light of lights) {
-		if (!light.willMove && !recastStaticShadows) {
+		if (!recastStaticShadows && !light.shouldRecastShadows()) {
 			// Avoid re-rendering shadow map if static entities did not change
 			continue;
 		}
@@ -537,6 +584,10 @@ const paint = () => {
 	if (lights.length > 0) {
 		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_lights[0]"), lightPositions);
 		engine.gl.uniform3fv(engine.gltfMaterial.uniform("u_point_colors[0]"), lightColors);
+		engine.gl.uniform1fv(
+			engine.gltfMaterial.uniform("u_falloff[0]"),
+			Array.from(lights.values(), (light) => light.falloff),
+		);
 	}
 	engine.gl.uniform1iv(
 		engine.gltfMaterial.uniform("u_point_shadow_maps[0]"),

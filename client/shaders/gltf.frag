@@ -31,6 +31,7 @@ uniform vec3 u_point_lights[MAX_LIGHTS];
 // In HSV
 uniform vec3 u_point_colors[MAX_LIGHTS];
 uniform samplerCube u_point_shadow_maps[MAX_LIGHTS];
+uniform float u_falloff[MAX_LIGHTS];
 uniform vec4 u_ambient_light;
 uniform int u_enable_tones;
 uniform float u_tones;
@@ -112,7 +113,7 @@ void main() {
     if (u_enable_tones == 1) {
       distance = ceil(distance / u_tones) * u_tones;
     }
-    distance *= 0.2; // TEMP, but the point lights dont have much range rn
+    distance /= u_falloff[i];
     vec4 light_color =
         vec4(hsv2rgb(vec3(u_point_colors[i].xy,
                           u_point_colors[i].z / (distance * distance))),

@@ -16,11 +16,11 @@ export class TempLightEntity extends ClientEntity {
 		isStatic: false,
 	};
 
-	constructor(shader: ShaderProgram, position?: vec3, color?: vec3, willMove = true) {
+	constructor(shader: ShaderProgram, position?: vec3, color?: vec3, falloff = 1, willMove = true) {
 		const model = new TempLightModel(shader, vec3.create());
 		super(shader.engine, [{ model, transform: mat4.create() }]);
 		this.#model = model;
-		this.light = new PointLight(shader.engine, vec3.create(), vec3.create(), willMove);
+		this.light = new PointLight(shader.engine, vec3.create(), vec3.create(), falloff, willMove);
 		this.data.isStatic = !willMove;
 		if (position) {
 			this.position = position;

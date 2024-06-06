@@ -10,14 +10,17 @@ import { ClientEntity } from "../ClientEntity";
  */
 export class PointLight {
 	color: vec3;
+	falloff: number;
 	#shadowCamera: ShadowMapCamera;
 	#shadowMapSize = 1024;
 	#engine: GraphicsEngine;
-	readonly willMove: boolean;
+	willMove: boolean;
+	#lastLocation = vec3.create();
 
-	constructor(engine: GraphicsEngine, position: vec3, color: vec3, willMove: boolean) {
+	constructor(engine: GraphicsEngine, position: vec3, color: vec3, falloff: number, willMove: boolean) {
 		this.#engine = engine;
 		this.color = color;
+		this.falloff = falloff;
 		this.#shadowCamera = new ShadowMapCamera(
 			position,
 			engine.LIGHT_NEAR,
@@ -37,8 +40,16 @@ export class PointLight {
 		this.#shadowCamera.setPosition(position);
 	}
 
+	/**
+	 * Returns true if the light may move (`willMove` is true) or it has moved.
+	 */
+	shouldRecastShadows(): boolean {
+		return this.willMove || this.#lastLocation.join("\n") !== this.position.join("\n");
+	}
+
 	renderShadowMap(entities: ClientEntity[]): void {
 		this.#shadowCamera.renderShadowMap(entities);
+		this.#lastLocation = this.position;
 	}
 
 	getShadowMap(): WebGLTexture {

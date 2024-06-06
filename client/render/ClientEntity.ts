@@ -21,7 +21,6 @@ export class ClientEntity {
 	 */
 	transform: mat4;
 	hasCamera = false;
-	light?: PointLight;
 
 	constructor(
 		engine: GraphicsEngine,
