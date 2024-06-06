@@ -75,7 +75,7 @@ export class BigBossEntity extends PlayerEntity {
 
 				//hopefully this shoots 5 rays centered on Lookdir
 				for (let i = 0; i < 5; i++) {
-					quat.setFromAxisAngle(new Vec3(0, 1, 0), -2 * (Math.PI / 36) + i * (Math.PI / 36));
+					quat.setFromAxisAngle(new Vec3(0, 1, 0), -2 * (Math.PI / 30) + i * (Math.PI / 30));
 					let dir = quat.vmult(lookDir.scale(this.interactionRange));
 
 					let betterDirection = this.body.position.vadd(dir);
@@ -121,16 +121,15 @@ export class BigBossEntity extends PlayerEntity {
 
 				let quat = new Quaternion(0, 0, 0, 1);
 				let base = this.body.position.vadd(lookDir.scale(this.interactionRange));
-				console.log("wweeeeee");
 				for (let i = 0; i < 5; i++) {
-					quat.setFromAxisAngle(new Vec3(0, 1, 0), -2 * (Math.PI / 36) + i * (Math.PI / 36));
-					let dir = quat.vmult(lookDir.scale(this.interactionRange - 2));
+					quat.setFromAxisAngle(new Vec3(0, 1, 0), -2 * (Math.PI / 30) + i * (Math.PI / 30));
+					let dir = quat.vmult(lookDir.scale(6));
 					let betterDirection = this.body.position.vadd(dir);
+					
+                    this.game.shootArrow(betterDirection, dir.scale(30), 1, [{ modelId: "mushroom" }]);
+                    //console.log(dir, betterDirection, betterDirection.unit(), this.body.position.vadd(betterDirection.unit()), this.getPos());                  
 
-					this.game.shootArrow(this.body.position.vadd(betterDirection.unit()), dir.scale(40), 1, [
-						{ modelId: "donut" },
-					]);
-				}
+                }
 				this.animator.play("pee");
 				this.previousShootTick = this.game.getCurrentTick();
 			},

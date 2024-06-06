@@ -39,6 +39,9 @@ export class CraftingTable extends InteractableEntity {
 	// shape
 	box: phys.Box;
 
+	// eject direction
+	#ejectDir: phys.Vec3;
+
 	constructor(game: Game, pos: Vector3, model: EntityModel[] = [], recipes: Recipe[]) {
 		super(game, model);
 
@@ -58,6 +61,10 @@ export class CraftingTable extends InteractableEntity {
 		this.box = new phys.Box(new phys.Vec3(this.halfExtent, this.halfExtent, this.halfExtent));
 
 		this.body.addShape(this.box);
+
+		this.#ejectDir = new phys.Vec3(...pos).negate();
+		this.#ejectDir.set(this.#ejectDir.x, 0, this.#ejectDir.z);
+		this.#ejectDir.normalize();
 	}
 
 	/**
@@ -108,8 +115,12 @@ export class CraftingTable extends InteractableEntity {
 		// wherever it was before it got absorbed)
 		item.body.position = this.body.position.vadd(new phys.Vec3(0, 1, 0));
 		this.game.addToCreateQueue(item);
-		// TODO: randomize launch angle? or launch towards player?
-		item.throw(new phys.Vec3(-20, 30, -50));
+		// launch toward spawn but a little randomized
+		const dir = this.#ejectDir.clone();
+		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.6, (Math.random() - 0.5) * 0.2));
+		dir.normalize();
+
+		item.throw(dir.scale(60));
 	}
 
 	interact(player: PlayerEntity): Action<Use> | null {
