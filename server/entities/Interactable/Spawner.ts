@@ -71,10 +71,6 @@ export class Spawner extends InteractableEntity {
 		}
 
 		this.spawnItem();
-
-		this.previousTick = this.game.getCurrentTick();
-		console.log("sptting");
-		this.game.playSound("spawnerHarvest", this.getPos());
 	}
 
 	spawnItem() {
@@ -84,6 +80,10 @@ export class Spawner extends InteractableEntity {
 		item.canBeAbsorbedByCraftingTable = false;
 		this.game.addToCreateQueue(item);
 		item.throw(new phys.Vec3(...[10, 10, 10]));
+
+		this.previousTick = this.game.getCurrentTick();
+		console.log("sptting");
+		this.game.playSound("spawnerHarvest", this.getPos());
 	}
 
 	interact(): Action<Use> | null {
