@@ -4,8 +4,8 @@ import { EntityId } from "../server/entities/Entity";
 import { Vector2, Vector3, Quaternion, Vector4 } from "./commontypes";
 
 export type ServerMessage =
-	| { type: "ping" }
-	| { type: "pong" }
+	| { type: "ping"; time: number }
+	| { type: "pong"; time: number }
 	| EntireGameState
 	| CameraLock
 	| PlaySound

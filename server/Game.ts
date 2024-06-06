@@ -529,11 +529,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			case "ping":
 				conn.send({
 					type: "pong",
+					time: Date.now(),
 				});
 				break;
 			case "pong":
 				conn.send({
 					type: "ping",
+					time: Date.now(),
 				});
 				break;
 			case "client-input":

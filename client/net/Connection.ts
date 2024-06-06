@@ -12,7 +12,9 @@ export class Connection {
 	#ws: WebSocket | null = null;
 	#worker: Worker | null = null;
 
-	#lastTime = performance.now();
+	#lastPingTime = Date.now();
+	#pingInterval = -1;
+
 	#wsError = false;
 
 	#sendQueue: (ClientMessage | ClientControlMessage)[] = [];
@@ -66,7 +68,10 @@ export class Connection {
 		this.#reconnectAttempts = Connection.MAX_RECONNECT_ATTEMPTS;
 		if (this.#indicator) {
 			this.#indicator.textContent = "✅ Connected";
-			this.#lastTime = performance.now();
+			this.#pingInterval = window.setInterval(() => {
+				this.#lastPingTime = Date.now();
+				this.send({ type: "ping" });
+			}, 1000);
 		}
 
 		this.#handleOpen();
@@ -97,6 +102,14 @@ export class Connection {
 		}
 
 		switch (data.type) {
+			case "pong":
+				if (this.#indicator) {
+					const now = Date.now();
+					const upload = data.time - this.#lastPingTime;
+					const download = now - data.time;
+					this.#indicator.textContent = `✅ Connected (${now - this.#lastPingTime}ms roundtrip, ${upload}ms upload, ${download}ms download)`;
+				}
+				return;
 			case "join-response":
 				console.log(data);
 				localStorage.setItem(CONNECTION_ID, data.id);
@@ -106,12 +119,6 @@ export class Connection {
 		const response = this.handleMessage(data);
 		if (response) {
 			this.send(response);
-		}
-
-		if (this.#indicator) {
-			const now = performance.now();
-			this.#indicator.textContent = `✅ Connected (${(now - this.#lastTime).toFixed(3)}ms roundtrip)`;
-			this.#lastTime = now;
 		}
 	};
 
@@ -144,6 +151,7 @@ export class Connection {
 		if (this.#indicator && !this.#wsError) {
 			this.#indicator.textContent = "⛔ Connection closed. ";
 		}
+		clearInterval(this.#pingInterval);
 		this.#ws = null;
 		// Try to reconnect
 		if (this.#reconnectAttempts > 0) {
