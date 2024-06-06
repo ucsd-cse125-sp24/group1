@@ -61,7 +61,7 @@ export class Timer {
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
 		if (state.stage.type !== previous?.stage.type) {
-			if (state.stage.type === "lobby") {
+			if (state.stage.type === "lobby" || state.stage.type === "gameover") {
 				this.#timer.classList.add(styles.hide);
 				this.#targetTime = null;
 			} else {

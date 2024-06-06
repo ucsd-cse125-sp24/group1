@@ -15,6 +15,7 @@ import {
 	ClientMessage,
 	EntityModel,
 	GameStage,
+	ParticleOptions,
 	PlayerEntry,
 	ServerMessage,
 	Use,
@@ -164,7 +165,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let camera = new CameraEntity(this, [1000, 1005, 1000], [0, -10, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
-		let lobbyFloor = new CubeEntity(this, [995, 1000, 995], [10,10,10], true);
+		let lobbyFloor = new CubeEntity(this, [995, 1000, 995], [10, 10, 10], true);
 		this.#registerEntity(lobbyFloor);
 	}
 
@@ -185,11 +186,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (player.entity) {
 				player.entity.body.position = new phys.Vec3(0, -1, 0);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
-				player.entity.health = player.entity.initHealth;
-				if (player.entity instanceof HeroEntity) {
-					player.entity.isSabotaged = false;
-					player.entity.isTrapped = false;
-				}
+				player.entity.reset();
 			}
 		}
 
@@ -333,11 +330,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({ type: "sound", sound, position });
 	}
 
-	playParticle(position: phys.Vec3 | Vector3): void {
+	playParticle(position: phys.Vec3 | Vector3, options: Partial<ParticleOptions> = {}): void {
 		if (position instanceof phys.Vec3) {
 			position = position.toArray();
 		}
-		this.#server.broadcast({ type: "particle", position });
+		this.#server.broadcast({ type: "particle", position, options });
 	}
 
 	sabotageHero(id: EntityId) {
@@ -375,7 +372,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	resetBoss() {
 		if(this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
-			if(this.#currentBoss) {
+			if (this.#currentBoss) {
 				this.#currentBoss.walkSpeed = 20;
 				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
 			}
@@ -406,30 +403,34 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
 		if (this.#currentStage.type === "lobby") {
-			pos = [1000,1005 + playerNum * 5, 1000];
+			pos = [1000, 1005 + playerNum * 5, 1000];
 		}
+		let entity;
 		switch (role) {
 			case "hero":
-				return new HeroEntity(this, pos, [
+				entity = new HeroEntity(this, pos, [
 					{
 						modelId: `player_${skin}`,
 						offset: [0, -1.5, 0],
 						scale: 0.4,
 					},
 				]);
+				break;
 			case "boss":
-				let boss = new BossEntity(this, pos, [
+				entity = new BossEntity(this, pos, [
 					{
 						modelId: "mushroom_guy",
 						offset: [0, -0.75, 0],
 						scale: 0.2,
 					},
 				]);
-				this.#currentBoss = boss;
-				return boss;
+				this.#currentBoss = entity;
+				break;
 			default:
 				return null;
 		}
+		entity.reset();
+		return entity;
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>, name = `Player ${conn.id.slice(0, 6)}`) {
@@ -520,7 +521,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					this.addToDeleteQueue(oldEntity.id);
 				}
 
-				player.entity = this.#createPlayerEntity(this.#createdInputs.indexOf(player.input), oldEntity?.getPos() ?? [0, 0, 0], data);
+				player.entity = this.#createPlayerEntity(
+					this.#createdInputs.indexOf(player.input),
+					oldEntity?.getPos() ?? [0, 0, 0],
+					data,
+				);
 
 				if (player.entity) {
 					this.addToCreateQueue(player.entity);
@@ -731,7 +736,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	// #region Entity	
+	// #region Entity
 	addToDeleteQueue(sussyAndRemovable: EntityId) {
 		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
 		if (index !== -1) {
@@ -741,7 +746,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#toDeleteQueue.push(sussyAndRemovable);
 	}
-	
 
 	addToCreateQueue(entity: Entity) {
 		// If entity was in delete queue, remove it from there instead (can happen

@@ -247,7 +247,7 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 
-		for (const entity of entities) {	
+		for (const entity of entities) {
 			if (entity instanceof PlayerEntity) {
 				if(entity.isBoss) {
 					this.game.playerHitBoss(entity);
@@ -380,5 +380,9 @@ export abstract class PlayerEntity extends Entity {
 			return this.#lastSoundIsLeft ? 1 : 2;
 		}
 		return 0;
+	}
+
+	reset() {
+		this.health = this.initHealth;
 	}
 }
