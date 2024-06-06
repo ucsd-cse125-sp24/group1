@@ -1,7 +1,7 @@
 import { ModelId } from "../assets/models";
 import { SoundId } from "../assets/sounds";
 import { EntityId } from "../server/entities/Entity";
-import { Vector2, Vector3, Quaternion } from "./commontypes";
+import { Vector2, Vector3, Quaternion, Vector4 } from "./commontypes";
 
 export type ServerMessage =
 	| { type: "ping" }
@@ -65,10 +65,11 @@ export type GameStage =
 			startTime: number;
 			/** Timestamp (milliseconds since Unix epoch) of end of crafting stage */
 			endTime: number;
-	  } | {
+	  }
+	| {
 			type: "gameover";
-			winner: "hero" | "boss",
-			endTime: number
+			winner: "hero" | "boss";
+			endTime: number;
 	  };
 
 export type EntireGameState = {
@@ -98,7 +99,14 @@ export type PlayerEntry = {
 export type Role = "boss" | "hero" | "spectator";
 export type Skin = "red" | "yellow" | "green" | "blue";
 
-export type Use = "bigboss:shoot-shroom" | "throw-item" | "pickup-item" | "pop-crafter" | "boss:spore" | "boss:place-trap" | "bigboss:";
+export type Use =
+	| "bigboss:shoot-shroom"
+	| "throw-item"
+	| "pickup-item"
+	| "pop-crafter"
+	| "boss:spore"
+	| "boss:place-trap"
+	| "bigboss:";
 export type Attack = "hero:shoot-arrow" | "damage" | "disarm-trap" | "damage-trap" | "default-hit-entity";
 export type Action<ActionType> = {
 	/**
@@ -151,6 +159,37 @@ export type PlaySound = {
 export type PlayParticle = {
 	type: "particle";
 	position: Vector3;
+	options: Partial<ParticleOptions>;
+};
+export type ParticleOptions = {
+	/**
+	 * Length of time between particle spawns in milliseconds. Set to +inf to only
+	 * spawn particles one time when the `ParticleSystem` is (re-)enabled.
+	 * Default: Infinity
+	 */
+	spawnPeriod: number;
+	/**
+	 * Number of particles to create in each spawn batch. Default: 1
+	 */
+	spawnCount: number;
+	/** Default: 256 */
+	size: number;
+	/** Default: `[1, 1, 1, 1]` (opaque white) */
+	color: Vector4;
+	/** Can be positive, 0, or negative. Default: 1 */
+	mass: number;
+	/** Default: `[0, 0, 0]` */
+	initialPosition: Vector3;
+	/** Default: `[0, 1, 0]` */
+	initialVelocity: Vector3;
+	/**
+	 * If this property is set, then new particles will spawn with a random
+	 * initial velocity - each component i will be sampled from a uniform
+	 * distribution centered on initialVelocity[i].
+	 */
+	initialVelocityRange?: Vector3;
+	/** Remaining time to live in seconds. Default: 5 */
+	ttl: number;
 };
 
 /**

@@ -57,6 +57,12 @@ export class HeroEntity extends PlayerEntity {
 		}, 5000);
 	}
 
+	reset() {
+		super.reset();
+		this.isSabotaged = false;
+		this.isTrapped = false;
+	}
+
 	serialize(): SerializedEntity {
 		return {
 			...super.serialize(),

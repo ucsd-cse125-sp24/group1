@@ -24,13 +24,4 @@ export class CylinderEntity extends Entity {
 			collisionFilterGroup: this.getBitFlag(),
 		});
 	}
-
-	serialize(): SerializedEntity {
-		return {
-			id: this.id,
-			model: this.model,
-			position: this.body.position.toArray(),
-			quaternion: this.body.quaternion.toArray(),
-		};
-	}
 }

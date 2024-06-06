@@ -121,7 +121,7 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	move(movement: MovementInfo): void {
-		console.log(this.getPos());
+		//console.log(this.getPos());
 
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
@@ -379,5 +379,9 @@ export abstract class PlayerEntity extends Entity {
 			return this.#lastSoundIsLeft ? 1 : 2;
 		}
 		return 0;
+	}
+
+	reset() {
+		this.health = this.initHealth;
 	}
 }

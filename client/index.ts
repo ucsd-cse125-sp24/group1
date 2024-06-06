@@ -556,7 +556,7 @@ const paint = () => {
 
 	const modelMatrices = [mat4.create()];
 	particle.shader.use();
-	particle.options.initialPosition = result;
+	particle.options.initialPosition = [result[0], result[1], result[2]];
 	// Draw particles
 	particle.draw(modelMatrices, view);
 
