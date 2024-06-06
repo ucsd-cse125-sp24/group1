@@ -8,7 +8,11 @@ import {
 	PlayerSlipperyCM,
 	SlipperyGroundCM,
 	ItemPlayerCM,
+	ItemItemCM,
 	ItemGroundCM,
+	PlayerSpawnerCM,
+	ItemSpawnerCM,
+	SpawnerGroundCM,
 } from "./materials/ContactMaterials";
 import { serializeShape } from "./lib/serializeShape";
 
@@ -45,7 +49,11 @@ export class PhysicsWorld {
 		this.#world.addContactMaterial(SlipperyGroundCM);
 		this.#world.addContactMaterial(PlayerSlipperyCM);
 		this.#world.addContactMaterial(ItemPlayerCM);
+		this.#world.addContactMaterial(ItemItemCM);
 		this.#world.addContactMaterial(ItemGroundCM);
+		this.#world.addContactMaterial(PlayerSpawnerCM);
+		this.#world.addContactMaterial(ItemSpawnerCM);
+		this.#world.addContactMaterial(SpawnerGroundCM);
 	}
 
 	addBody(body: Body) {

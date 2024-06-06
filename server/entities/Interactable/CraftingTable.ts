@@ -6,6 +6,7 @@ import { Entity } from "../Entity";
 import { Game } from "../../Game";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item, ItemType } from "./Item";
+import { SpawnerMaterial } from "../../materials/SourceMaterials";
 
 export type Recipe = { ingredients: ItemType[]; output: ItemType };
 
@@ -54,7 +55,7 @@ export class CraftingTable extends InteractableEntity {
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
 			position: new phys.Vec3(...pos),
-			//material: depends on the item,
+			material: SpawnerMaterial, // temp fix, depends on the item,
 			collisionFilterGroup: this.getBitFlag(),
 		});
 
@@ -117,10 +118,10 @@ export class CraftingTable extends InteractableEntity {
 		this.game.addToCreateQueue(item);
 		// launch toward spawn but a little randomized
 		const dir = this.#ejectDir.clone();
-		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.6, (Math.random() - 0.5) * 0.2));
+		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.8, (Math.random() - 0.5) * 0.2));
 		dir.normalize();
 
-		item.throw(dir.scale(60));
+		item.throw(dir.scale(70));
 	}
 
 	interact(player: PlayerEntity): Action<Use> | null {

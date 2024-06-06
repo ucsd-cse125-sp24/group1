@@ -3,8 +3,12 @@ import { Vector3 } from "../../../common/commontypes";
 import { Action, EntityModel, Use } from "../../../common/messages";
 import { Entity } from "../Entity";
 import { Game } from "../../Game";
+import { SpawnerMaterial } from "../../materials/SourceMaterials";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item, ItemType } from "./Item";
+
+const TRIGGER_SPEED = 1;
+const COOLDOWN_FRAMES = 15;
 
 export class Spawner extends InteractableEntity {
 	body: phys.Body;
@@ -37,7 +41,7 @@ export class Spawner extends InteractableEntity {
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
 			position: new phys.Vec3(...pos),
-			//material: depends on the item,
+			material: SpawnerMaterial, // depends on the item?
 			collisionFilterGroup: this.getBitFlag(),
 		});
 
@@ -50,9 +54,11 @@ export class Spawner extends InteractableEntity {
 		let currentTick = this.game.getCurrentTick();
 
 		//have to wait 50 ticks
-		if (currentTick - this.previousTick < 50) {
+		if (currentTick - this.previousTick < COOLDOWN_FRAMES) {
 			return;
 		}
+
+		if (otherEntity.body.velocity.length() < TRIGGER_SPEED) return;
 
 		if (otherEntity instanceof Item) {
 			if (otherEntity.type != this.toolToHarvest) {
@@ -64,12 +70,17 @@ export class Spawner extends InteractableEntity {
 			return;
 		}
 
+		this.spawnItem();
+	}
+
+	spawnItem() {
 		let item = new Item(this.game, this.toSpawn, [...this.getPos()], "resource");
 
 		item.body.position = item.body.position.vadd(new phys.Vec3(0, 1, 0));
 		item.canBeAbsorbedByCraftingTable = false;
 		this.game.addToCreateQueue(item);
 		item.throw(new phys.Vec3(...[10, 10, 10]));
+
 		this.previousTick = this.game.getCurrentTick();
 		console.log("sptting");
 		this.game.playSound("spawnerHarvest", this.getPos());

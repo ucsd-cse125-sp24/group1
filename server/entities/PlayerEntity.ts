@@ -10,9 +10,12 @@ import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { BossEntity } from "./BossEntity";
 
-const COYOTE_FRAMES = 10;
-const WALK_STEP_DIST = 2.5;
+const COYOTE_FRAMES = 4;
+const UPWARD_FRAMES = 9;
+const WALK_STEP_DIST = 2.4;
 const MAX_HEALTH_RING_SIZE = 25;
+const BOOST_RATIO = 11.2;
+const KNOCKBACK_RATIO = 1.5;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -51,6 +54,7 @@ export abstract class PlayerEntity extends Entity {
 
 	// coyote countdown
 	#coyoteCounter: number;
+	#upwardCounter: number;
 
 	// walking sound
 	#lastSoundPosition: phys.Vec3;
@@ -121,9 +125,26 @@ export abstract class PlayerEntity extends Entity {
 		this.body.addShape(this.#sphereBot, new phys.Vec3(0, -this.#cylinderHeight, 0));
 
 		this.#coyoteCounter = 0;
+		this.#upwardCounter = 0;
 
 		this.#lastSoundPosition = this.body.position.clone();
 		this.#lastSoundIsLeft = false;
+	}
+
+	checkOnGround(): boolean {
+		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.5, 0, 0));
+		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.5, 0, 0));
+		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.5));
+		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.5));
+		const offset = new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0);
+
+		return (
+			this.game.raycast(this.body.position, this.body.position.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posFront, posFront.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posBack, posBack.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posLeft, posLeft.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posRight, posRight.vsub(offset), {}, this).length > 0
+		);
 	}
 
 	move(movement: MovementInfo): void {
@@ -131,15 +152,10 @@ export abstract class PlayerEntity extends Entity {
 
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
-		this.onGround =
-			this.game.raycast(
-				this.body.position,
-				this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
-				{},
-				this,
-			).length > 0;
+		this.onGround = this.checkOnGround();
 
-		if (this.onGround) this.#coyoteCounter = COYOTE_FRAMES;
+		if (this.#upwardCounter > 0) this.#coyoteCounter = 0;
+		else if (this.onGround) this.#coyoteCounter = COYOTE_FRAMES;
 		else if (this.#coyoteCounter > 0) this.#coyoteCounter -= 1;
 
 		const forwardVector = new phys.Vec3(movement.lookDir[0], 0, movement.lookDir[2]);
@@ -184,8 +200,8 @@ export abstract class PlayerEntity extends Entity {
 			);
 		}
 
-		if (movement.jump && this.#coyoteCounter > 0) {
-			if (!this.jumping && this.onGround) {
+		if (movement.jump) {
+			if (!this.jumping && this.#coyoteCounter > 0) {
 				this.game.playSound("jump", this.getPos());
 				this.game.playParticle({
 					spawnCount: 10,
@@ -194,11 +210,21 @@ export abstract class PlayerEntity extends Entity {
 					initialVelocityRange: [1, 1, 1],
 				});
 				this.jumping = true;
+				const boost = currentVelocity.clone();
+				if (boost.length() > 0) boost.normalize();
+				this.body.applyImpulse(boost.scale(this.body.mass).scale(BOOST_RATIO + (movement.backward ? 1 : 0))); // rewards backward bhop because funny
+				this.#upwardCounter = UPWARD_FRAMES;
 			}
-			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
-			this.body.applyImpulse(deltaVy.scale(this.body.mass));
+			if (this.#upwardCounter > 0) {
+				const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));
+				this.body.applyImpulse(deltaVy.scale(this.body.mass));
+				this.#upwardCounter -= 1;
+			} else {
+				this.jumping = false;
+			}
 		} else if (this.jumping) {
 			this.jumping = false;
+			this.#upwardCounter = 0;
 		}
 	}
 
@@ -293,7 +319,9 @@ export abstract class PlayerEntity extends Entity {
 						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
-							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
+							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100).scale(
+								KNOCKBACK_RATIO,
+							),
 						);
 						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
 							this.game.playSound("hitBig", entity.getPos());
