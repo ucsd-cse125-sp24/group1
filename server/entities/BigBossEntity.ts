@@ -1,10 +1,9 @@
-import { Box, Quaternion, Vec3 } from "cannon-es";
+import { Quaternion, Vec3 } from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
 import { Action, Attack, EntityModel, Use } from "../../common/messages";
 import { Game } from "../Game";
 import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
-import { PhysicsWorld } from "../PhysicsWorld";
 import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 
@@ -42,7 +41,7 @@ export class BigBossEntity extends PlayerEntity {
 					offset: [0, -5.5, 0],
                     rotation: new Quaternion(0, 0, 0, 1).setFromAxisAngle(new Vec3(0, 1, 0), Math.PI).toArray()
 				},
-			],  
+			],
 			10,
 			BOSS_CAPSULE_HEIGHT,
 			BOSS_CAPSULE_RADIUS,

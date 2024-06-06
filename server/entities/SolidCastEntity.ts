@@ -7,7 +7,13 @@ type CollisionCallback = (otherEntity: Entity) => void;
 export class SolidCastEntity extends Entity {
 	collisionCallback: CollisionCallback;
 
-	constructor(game: Game, position: phys.Vec3, orientation: phys.Quaternion, shape: phys.Shape, onCollide: CollisionCallback) {
+	constructor(
+		game: Game,
+		position: phys.Vec3,
+		orientation: phys.Quaternion,
+		shape: phys.Shape,
+		onCollide: CollisionCallback,
+	) {
 		super(game);
 		this.body = new phys.Body({
 			position,

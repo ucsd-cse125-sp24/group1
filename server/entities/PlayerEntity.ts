@@ -8,7 +8,6 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
-import { log } from "../net/_tempDebugLog";
 
 const COYOTE_FRAMES = 10;
 const WALK_STEP_DIST = 2.5;
@@ -278,7 +277,8 @@ export abstract class PlayerEntity extends Entity {
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
 						);
-						if (this.itemInHands?.type == "gamer_sword") this.game.playSound("hitBig", entity.getPos());
+						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
+							this.game.playSound("hitBig", entity.getPos());
 						else this.game.playSound("hit", entity.getPos());
 						this.animator.play("punch");
 						this.#previousAttackTime = Date.now();

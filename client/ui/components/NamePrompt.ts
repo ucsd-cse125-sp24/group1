@@ -1,5 +1,5 @@
-import styles from "./NamePrompt.module.css";
 import { elem } from "../elem";
+import styles from "./NamePrompt.module.css";
 import { logo } from "./Logo";
 
 export const NAME_KEY = "cse125.2024.g1.options.name";

@@ -1,11 +1,11 @@
-import { mat4, vec3, vec4 } from "gl-matrix";
+import { mat4 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
 import particleVertexSource from "../../shaders/particle.vert";
 import particleFragmentSource from "../../shaders/particle.frag";
 import GraphicsEngine from "../engine/GraphicsEngine";
 import { ShaderProgram } from "../engine/ShaderProgram";
-import { Model } from "./Model";
 import { ParticleOptions } from "../../../common/messages";
+import { Model } from "./Model";
 
 /**
  * Creates and draws particles using the particle shader. Several options can be

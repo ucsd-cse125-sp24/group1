@@ -4,8 +4,8 @@ import { Game } from "../../Game";
 import { Entity, EntityId } from "../Entity";
 import { PlayerEntity } from "../PlayerEntity";
 import { HeroEntity } from "../HeroEntity";
-import { InteractableEntity } from "./InteractableEntity";
 import { Action, Attack, Use } from "../../../common/messages";
+import { InteractableEntity } from "./InteractableEntity";
 
 export class TrapEntity extends InteractableEntity {
 	trappedPlayerId: EntityId | null;
@@ -13,7 +13,7 @@ export class TrapEntity extends InteractableEntity {
 	durability: number;
 
 	constructor(game: Game, position: phys.Vec3) {
-		super(game, [{ modelId: "trap", scale: 0.25, offset: [0, -.2, 0] }]); 
+		super(game, [{ modelId: "trap", scale: 0.25, offset: [0, -0.2, 0] }]);
 		this.body = new phys.Body({
 			mass: 100,
 			position,

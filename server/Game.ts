@@ -41,8 +41,6 @@ import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
-import { BigBossEntity } from "./entities/BigBossEntity";
-import { Box } from "shapes/Box";
 import { CubeEntity } from "./entities/CubeEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
@@ -223,7 +221,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(Furnace);
 
-		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI/2);
+		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let WeaponCrafter = new CraftingTable(
 			this,
 			[-5, -3.5, -29.5],
@@ -233,12 +231,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				{ ingredients: ["iron", "wood"], output: "knife" },
 				{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "gamer_armor" }, 
+				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "gamer_armor" },
 			],
 		);
 		this.#registerEntity(WeaponCrafter);
 
-		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI/4);
+		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 		let FletchingTable = new CraftingTable(
 			this,
 			[-19, -3, -24],
@@ -251,7 +249,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(FletchingTable);
 
-		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "axe", [{ modelId: "chair", offset: [0, -1.5, 0], rotation: fullSquat.toArray() }]);
+		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "axe", [
+			{ modelId: "chair", offset: [0, -1.5, 0], rotation: fullSquat.toArray() },
+		]);
 		this.#registerEntity(woodSpawner);
 
 		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "raw_iron", "pickaxe", [
@@ -372,7 +372,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	resetBoss() {
-		if(this.#bossTimer == 0) {
+		if (this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
 			if (this.#currentBoss) {
 				this.#currentBoss.walkSpeed = 20;
@@ -386,9 +386,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	playerHitBoss(boss: PlayerEntity) {
- 		if (this.getBossTimer() < 0) {
+		if (this.getBossTimer() < 0) {
 			boss.walkSpeed = 0;
-		
 		}
 	}
 	// #endregion
@@ -652,8 +651,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
-		this.#bossTimer --;
-		
+		this.#bossTimer--;
+
 		this.resetBoss();
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
