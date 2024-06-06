@@ -7,6 +7,7 @@ public/index.js
 public/*.map
 public/*.bin
 public/*.png
+public/*.svg
 public/*.mp3
 public/*.wav
 public/worker/

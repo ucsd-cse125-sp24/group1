@@ -82,7 +82,12 @@
 	font-size: 0.8em;
 	touch-action: none;
 	position: relative;
-	transition: all 0.2s;
+	background-size: cover;
+	background-position-y: calc(var(--icon) * -100%);
+	transition:
+		opacity 0.2s,
+		visibility 0.2s,
+		transform 0.2s;
 	&.hide {
 		transform: translateY(5px);
 	}
@@ -104,9 +109,15 @@
 	background-size: contain;
 	background-repeat: no-repeat;
 }
+.attack {
+	background-image: url("../assets/attacks.svg");
+}
 .attack::before {
 	background-image: url("../assets/mouse-left.svg");
 	left: 0;
+}
+.use {
+	background-image: url("../assets/uses.svg");
 }
 .use::before {
 	background-image: url("../assets/mouse-right.svg");

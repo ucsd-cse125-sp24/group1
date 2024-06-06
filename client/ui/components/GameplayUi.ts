@@ -14,6 +14,15 @@ type KeyMap<T> = {
 	use: T;
 };
 
+const attackIcons: Attack[] = [
+	"hero:shoot-arrow",
+	"crafting-stage:slap-player",
+	"combat:damage",
+	"disarm-trap",
+	"damage-trap",
+	"slap-non-player",
+	"hit-mini-boss",
+];
 const attackLabels: Record<Attack, string> = {
 	"hero:shoot-arrow": "Shoot",
 	"crafting-stage:slap-player": "Slap",
@@ -23,13 +32,23 @@ const attackLabels: Record<Attack, string> = {
 	"slap-non-player": "Slap",
 	"hit-mini-boss": "Slap",
 };
+
+const useIcons: Use[] = [
+	"bigboss:shoot-shroom",
+	"throw-item",
+	"pickup-item",
+	"pop-crafter",
+	"boss:spore",
+	"boss:place-trap",
+	"bigboss:",
+];
 const useLabels: Record<Use, string> = {
 	"bigboss:shoot-shroom": "Shroom Blast",
 	"throw-item": "Throw",
 	"pickup-item": "Pick Up",
 	"pop-crafter": "Remove",
-	"boss:spore": "Spore Attack",
-	"boss:place-trap": "Place Trap",
+	"boss:spore": "Spore",
+	"boss:place-trap": "Trap",
 	"bigboss:": "Unknown",
 };
 
@@ -136,6 +155,7 @@ export class GameplayUi {
 			if (state.me.attackAction) {
 				this.#attack.classList.remove(styles.hide);
 				this.#attack.textContent = attackLabels[state.me.attackAction] ?? "Mystery";
+				this.#attack.style.setProperty("--icon", `${attackIcons.indexOf(state.me.attackAction)}`);
 			} else {
 				this.#attack.classList.add(styles.hide);
 			}
@@ -144,6 +164,7 @@ export class GameplayUi {
 			if (state.me.useAction) {
 				this.#use.classList.remove(styles.hide);
 				this.#use.textContent = useLabels[state.me.useAction] ?? "Mystery";
+				this.#use.style.setProperty("--icon", `${useIcons.indexOf(state.me.useAction)}`);
 			} else {
 				this.#use.classList.add(styles.hide);
 			}
