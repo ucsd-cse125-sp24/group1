@@ -117,10 +117,10 @@ export class CraftingTable extends InteractableEntity {
 		this.game.addToCreateQueue(item);
 		// launch toward spawn but a little randomized
 		const dir = this.#ejectDir.clone();
-		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.6, (Math.random() - 0.5) * 0.2));
+		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.8, (Math.random() - 0.5) * 0.2));
 		dir.normalize();
 
-		item.throw(dir.scale(60));
+		item.throw(dir.scale(70));
 	}
 
 	interact(player: PlayerEntity): Action<Use> | null {

@@ -5,6 +5,7 @@ import { PlayerEntity } from "../PlayerEntity";
 
 import { Game } from "../../Game";
 
+const INTERACTABLE_KNOCKBACK_RATIO = 10;
 export abstract class InteractableEntity extends Entity {
 	constructor(game: Game, model: EntityModel[] = [], tags: Tag[] = []) {
 		super(game, model, ["interactable", ...tags]);
@@ -16,7 +17,9 @@ export abstract class InteractableEntity extends Entity {
 			type: "slap-non-player",
 			commit: () => {
 				this.body.applyImpulse(
-					new Vec3(player.lookDir.x * 5, Math.abs(player.lookDir.y) * 5 + 5, player.lookDir.z * 5),
+					new Vec3(player.lookDir.x, Math.abs(player.lookDir.y) * 0.5 + 0.5, player.lookDir.z).scale(
+						INTERACTABLE_KNOCKBACK_RATIO,
+					),
 				);
 				this.game.playSound("defaultHit", this.getPos());
 			},
