@@ -187,6 +187,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				player.entity.body.position = new phys.Vec3(0, -1, 0);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
 				player.entity.reset();
+				player.conn.send({
+					type: "camera-lock",
+					entityId: player.entity.id,
+					freeRotation: true,
+					pov: "first-person",
+				});
 			}
 		}
 
