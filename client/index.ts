@@ -41,6 +41,8 @@ if (errorWindow instanceof HTMLDialogElement) {
 	alert("Failed to get error window");
 }
 
+const positionElement = document.getElementById("client-position");
+
 const playerName = await ensureName();
 
 const params = new URL(window.location.href).searchParams;
@@ -617,6 +619,11 @@ const paint = () => {
 	// engine.checkError();
 
 	gameUi.timer.renderTime();
+
+	if (positionElement !== null) {
+		const cameraPos = camera.getPosition();
+		positionElement.textContent = `Camera position: ${cameraPos[0].toFixed(2)}, ${cameraPos[1].toFixed(2)}, ${cameraPos[2].toFixed(2)}`;
+	}
 
 	window.requestAnimationFrame(paint);
 };

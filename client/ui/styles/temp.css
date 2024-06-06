@@ -5,6 +5,13 @@
 	z-index: 10;
 }
 
+#client-position {
+	position: fixed;
+	top: 20px;
+	left: 0;
+	z-index: 10;
+}
+
 #error-window {
 	& form {
 		display: flex;
