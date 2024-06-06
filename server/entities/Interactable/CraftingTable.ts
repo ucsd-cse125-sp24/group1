@@ -6,6 +6,7 @@ import { Entity } from "../Entity";
 import { Game } from "../../Game";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item, ItemType } from "./Item";
+import { SpawnerMaterial } from "../../materials/SourceMaterials";
 
 export type Recipe = { ingredients: ItemType[]; output: ItemType };
 
@@ -54,7 +55,7 @@ export class CraftingTable extends InteractableEntity {
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
 			position: new phys.Vec3(...pos),
-			//material: depends on the item,
+			material: SpawnerMaterial, // temp fix, depends on the item,
 			collisionFilterGroup: this.getBitFlag(),
 		});
 
