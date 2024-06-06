@@ -60,14 +60,7 @@ export class ParticleSystem implements Model {
 	constructor(engine: GraphicsEngine, maxParticles = 10, options?: Partial<ParticleOptions>) {
 		const gl = engine.gl;
 
-		this.shader = new ShaderProgram(
-			engine,
-			engine.createProgram(
-				engine.createShader("vertex", particleVertexSource, "particle.vert"),
-				engine.createShader("fragment", particleFragmentSource, "particle.frag"),
-				["v_position", "v_velocity", "v_ttl"],
-			),
-		);
+		this.shader = engine.particleShader;
 		this.maxParticles = maxParticles;
 		this.options = this.#resolveOptions(options);
 
@@ -301,7 +294,6 @@ export class ParticleSystem implements Model {
 		gl.bindVertexArray(this.#VAOs[this.#currentVAOIndex]);
 		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, this.#transformFeedbacks[1 - this.#currentVAOIndex]);
 
-		gl.uniformMatrix4fv(this.shader.uniform("u_view"), false, view);
 		gl.uniform1f(this.shader.uniform("u_size"), this.options.size);
 		gl.uniform4fv(this.shader.uniform("u_color"), this.options.color);
 		gl.uniform1f(this.shader.uniform("u_mass"), this.options.mass);

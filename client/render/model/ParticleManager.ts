@@ -36,13 +36,13 @@ export class ParticleManager {
 	}
 
 	paint(view: mat4) {
+		this.#engine.particleShader.use();
+		this.#engine.gl.uniformMatrix4fv(this.#engine.particleShader.uniform("u_view"), false, view);
 		for (const particles of this.#particles) {
 			if (!particles.enabled || particles.areParticlesDead()) {
 				particles.disable();
 				continue;
 			}
-			// TODO: can we just have one shader?
-			particles.shader.use();
 			particles.draw([mat4.create()], view);
 		}
 	}

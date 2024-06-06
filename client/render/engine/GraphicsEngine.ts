@@ -8,6 +8,8 @@ import { getModels } from "../../../assets/models";
 import { SerializedCollider } from "../../../common/messages";
 import { ShaderProgram } from "./ShaderProgram";
 import { WebGlUtils } from "./WebGlUtils";
+import particleVertexSource from "../../shaders/particle.vert";
+import particleFragmentSource from "../../shaders/particle.frag";
 
 /**
  * Handles helper functions for interacting with WebGL.
@@ -39,6 +41,14 @@ class GraphicsEngine extends WebGlUtils {
 		this.createProgram(
 			this.createShader("vertex", textVertexSource, "text.vert"),
 			this.createShader("fragment", textFragmentSource, "text.frag"),
+		),
+	);
+	particleShader = new ShaderProgram(
+		this,
+		this.createProgram(
+			this.createShader("vertex", particleVertexSource, "particle.vert"),
+			this.createShader("fragment", particleFragmentSource, "particle.frag"),
+			["v_position", "v_velocity", "v_ttl"],
 		),
 	);
 	models = getModels(this);
