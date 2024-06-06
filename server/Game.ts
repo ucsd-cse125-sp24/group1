@@ -42,6 +42,7 @@ import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
 import { CubeEntity } from "./entities/CubeEntity";
+import { BigBossEntity } from "./entities/BigBossEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
