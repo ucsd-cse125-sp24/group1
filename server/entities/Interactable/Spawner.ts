@@ -12,10 +12,10 @@ export type SpawnerType = "wood" | "iron" | "string" | "mushroom";
 let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI);
 let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 const modelForSpawnerType: Record<SpawnerType, EntityModel[]> = {
-	string: [{ modelId: "chair", offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
+	string: [{ modelId: "spider_web", offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
 	iron: [{ modelId: "ore_vein", offset: [0, -1.75, 0], rotation: fullSquat.toArray() }],
-	mushroom: [{ modelId: "spider_web", offset: [0, -1.5, 0], rotation: halfSquat.mult(fullSquat).toArray() }],
-	wood: [{ modelId: "mushroom_cluster", offset: [0, -1.5, 0] }],
+	mushroom: [{ modelId: "mushroom_cluster", offset: [0, -1.5, 0], rotation: halfSquat.mult(fullSquat).toArray() }],
+	wood: [{ modelId: "chair", offset: [0, -1.5, 0] }],
 };
 const colliderShapeForSpawnerType: Record<SpawnerType, phys.Shape> = {
 	string: new phys.Box(new phys.Vec3(1.6, 1.6, 1.6)),
