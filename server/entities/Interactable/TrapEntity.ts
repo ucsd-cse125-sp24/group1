@@ -13,7 +13,7 @@ export class TrapEntity extends InteractableEntity {
 	durability: number;
 
 	constructor(game: Game, position: phys.Vec3) {
-		super(game, [{ modelId: "trap", scale: 0.25 }]); 
+		super(game, [{ modelId: "trap", scale: 0.25, offset: [0, -.2, 0] }]); 
 		this.body = new phys.Body({
 			mass: 100,
 			position,
