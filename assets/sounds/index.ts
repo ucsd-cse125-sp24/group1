@@ -56,6 +56,7 @@ export const sounds = {
 	defaultHit: [defaultHit1, defaultHit2, defaultHit3, defaultHit4, defaultHit5, defaultHit6],
 	/** Player attacks another player (currently just does knockback). */
 	hit,
+	hitBig,
 	/** Player jumps. */
 	jump,
 	/** A hero picks up an item. */

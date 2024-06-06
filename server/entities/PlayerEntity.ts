@@ -268,7 +268,8 @@ export abstract class PlayerEntity extends Entity {
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
 						);
-						this.game.playSound("hit", entity.getPos());
+						if (this.itemInHands?.type == "gamer_sword") this.game.playSound("hitBig", entity.getPos());
+						else this.game.playSound("hit", entity.getPos());
 						this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
 					},
