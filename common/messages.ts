@@ -11,6 +11,7 @@ export type ServerMessage =
 	| PlaySound
 	| SabotageHero
 	| GameOver
+	| Damage
 	| PlayParticle;
 
 export type ClientMessage =
@@ -127,6 +128,8 @@ export type Action<ActionType> = {
 	 */
 	commit: () => void;
 };
+
+export type Damage = { type: "damage" };
 
 export type GameOver = {
 	type: "game-over";

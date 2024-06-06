@@ -418,6 +418,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		return undefined;
 	}
 
+	playDamageFilter(id: EntityId): void {
+		this.#getPlayerByEntityId(id)?.conn.send({ type: "damage" });
+	}
+
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
 		if (this.#currentStage.type === "lobby") {
 			pos = [1000, 1005 + playerNum * 5, 1000];

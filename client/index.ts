@@ -26,6 +26,7 @@ import { drawModels } from "./render/model/draw";
 import filterVertexSource from "./shaders/filter.vert";
 import outlineFilterFragmentSource from "./shaders/outlineFilter.frag";
 import sporeFilterFragmentSource from "./shaders/sporeFilter.frag";
+import damageFilterFragmentSource from "./shaders/damageFilter.frag";
 import { Transition } from "./lib/transition";
 import { TextModel } from "./render/model/TextModel";
 import { PauseMenu } from "./ui/components/PauseMenu";
@@ -124,6 +125,10 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 		case "game-over":
 			// TEMP
 			console.log(`TEMP: GAME OVER - ${data.winner} win(s)`);
+			break;
+		case "damage":
+			damageFilterStrength.setValueInstant(1);
+			damageFilterStrength.setTarget(0);
 			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
@@ -225,7 +230,18 @@ const sporeFilter = {
 	),
 	strength: 0,
 };
+const damageFilter = {
+	shader: new ShaderProgram(
+		engine,
+		engine.createProgram(
+			engine.createShader("vertex", filterVertexSource, "filter.vert"),
+			engine.createShader("fragment", damageFilterFragmentSource, "damageFilter.frag"),
+		),
+	),
+	strength: 0,
+};
 const sporeFilterStrength = new Transition(0);
+const damageFilterStrength = new Transition(0);
 const pipeline = new RenderPipeline(engine, [
 	{
 		shader: new ShaderProgram(
@@ -237,6 +253,7 @@ const pipeline = new RenderPipeline(engine, [
 		),
 	},
 	sporeFilter,
+	damageFilter,
 ]);
 const camera = new PlayerCamera(
 	vec3.fromValues(5, 5, 5),
@@ -471,6 +488,7 @@ const paint = () => {
 	camera.setAspectRatio(window.innerWidth / window.innerHeight);
 	camera.setFovY(fov.getValue());
 	sporeFilter.strength = sporeFilterStrength.getValue();
+	damageFilter.strength = damageFilterStrength.getValue();
 
 	engine.clear();
 

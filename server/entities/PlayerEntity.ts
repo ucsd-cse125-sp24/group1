@@ -259,6 +259,7 @@ export abstract class PlayerEntity extends Entity {
 						type: "hit-mini-boss",
 						commit: () => {
 							this.game.playerHitBoss(entity);
+							this.game.playDamageFilter(entity.id);
 						},
 					};
 				}
@@ -279,7 +280,10 @@ export abstract class PlayerEntity extends Entity {
 					type: currentStage === "combat" ? "combat:damage" : "crafting-stage:slap-player",
 					commit: () => {
 						console.log("attack", entity.id);
-						entity.takeDamage(damage);
+						if (damage > 0) {
+							entity.takeDamage(damage);
+							this.game.playDamageFilter(entity.id);
+						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
