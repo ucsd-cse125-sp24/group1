@@ -11,7 +11,7 @@ import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { log } from "../net/_tempDebugLog";
 
 const COYOTE_FRAMES = 10;
-const WALK_STEP_DIST = 1.5;
+const WALK_STEP_DIST = 2.5;
 const MAX_HEALTH_RING_SIZE = 25;
 
 export abstract class PlayerEntity extends Entity {
@@ -121,7 +121,7 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	move(movement: MovementInfo): void {
-		console.log(this.getPos());
+		//console.log(this.getPos());
 
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
