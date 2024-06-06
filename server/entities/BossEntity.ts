@@ -8,7 +8,7 @@ const PLAYER_INTERACTION_RANGE = 2.0;
 const BOSS_CAPSULE_HEIGHT = 1;
 const BOSS_CAPSULE_RADIUS = 0.25;
 
-const BOSS_WALK_SPEED = 20;
+const BOSS_WALK_SPEED = 25;
 /**
  * Maximum change in horizontal velocity that can be caused by the player in one
  * tick
