@@ -272,7 +272,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let sampleIorn = new Item(this, "knife", [5, 0, 5], "resource");
 		this.#registerEntity(sampleIorn);
 
-		let sampleIorn2 = new Item(this, "raw_iron", [7, 0, 5], "resource");
+		let sampleIorn2 = new Item(this, "armor", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
 	}
 	// #endregion
