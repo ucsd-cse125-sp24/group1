@@ -24,11 +24,17 @@ export class BossEntity extends PlayerEntity {
 	isBoss = true;
 	initHealth = 100;
 
-	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
+	constructor(game: Game, pos: Vector3) {
 		super(
 			game,
 			pos,
-			model,
+			[
+				{
+					modelId: "mushroom_guy",
+					offset: [0, -0.75, 0],
+					scale: 0.2,
+				},
+			],
 			10,
 			BOSS_CAPSULE_HEIGHT,
 			BOSS_CAPSULE_RADIUS,

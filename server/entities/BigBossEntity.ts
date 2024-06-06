@@ -34,7 +34,13 @@ export class BigBossEntity extends PlayerEntity {
 		super(
 			game,
 			pos,
-			model,
+			[
+				{
+					modelId: "mushroom_king",
+					offset: [0, -0.75, 0],
+					scale: 1,
+				},
+			],  
 			10,
 			BOSS_CAPSULE_HEIGHT,
 			BOSS_CAPSULE_RADIUS,
