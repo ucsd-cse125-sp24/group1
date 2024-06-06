@@ -248,22 +248,32 @@ export abstract class PlayerEntity extends Entity {
 
 		for (const entity of entities) {
 			if (entity instanceof PlayerEntity) {
-				if(entity.isBoss) {
-					this.game.playerHitBoss(entity);
-					return null;
+				if (entity.isBoss) {
+					return {
+						type: "hit-mini-boss",
+						commit: () => {
+							this.game.playerHitBoss(entity);
+						},
+					};
+				}
+				const currentStage = this.game.getCurrentStage().type;
+				let damage = 0;
+				if (currentStage === "combat") {
+					if (this.isBoss) {
+						// Boss doesn't need weapons
+						damage = 1;
+					} else if (entity.isBoss) {
+						damage = entity.getWeaponDamage(this.itemInHands);
+					}
+					if (damage === 0) {
+						continue;
+					}
 				}
 				return {
-					type: "damage",
+					type: currentStage === "combat" ? "combat:damage" : "crafting-stage:slap-player",
 					commit: () => {
 						console.log("attack", entity.id);
-						if (this.game.getCurrentStage().type === "combat") {
-							if (this.isBoss) {
-								// Boss doesn't need weapons
-								entity.takeDamage(1);
-							} else if (entity.isBoss) {
-								entity.hitByWeapon(this.itemInHands);
-							}
-						}
+						entity.takeDamage(damage);
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
@@ -290,22 +300,19 @@ export abstract class PlayerEntity extends Entity {
 		return null;
 	}
 
-	hitByWeapon(weapon: Item | null): void {
+	getWeaponDamage(weapon: Item | null): number {
 		if (weapon === null) {
-			return;
+			return 0;
 		}
-		let damage = 0;
 		switch (weapon.type) {
 			case "gamer_bow":
 			case "gamer_sword":
-				damage = 2;
-				break;
+				return 2;
 			case "bow":
 			case "sword":
-				damage = 1;
-				break;
+				return 1;
 		}
-		this.takeDamage(damage);
+		return 0;
 	}
 
 	takeDamage(damage: number): void {

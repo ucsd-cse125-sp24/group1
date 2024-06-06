@@ -107,7 +107,14 @@ export type Use =
 	| "boss:spore"
 	| "boss:place-trap"
 	| "bigboss:";
-export type Attack = "hero:shoot-arrow" | "damage" | "disarm-trap" | "damage-trap" | "default-hit-entity";
+export type Attack =
+	| "hero:shoot-arrow"
+	| "crafting-stage:slap-player"
+	| "combat:damage"
+	| "disarm-trap"
+	| "damage-trap"
+	| "slap-non-player"
+	| "hit-mini-boss";
 export type Action<ActionType> = {
 	/**
 	 * The type of action that would be performed if the player activates it. This
