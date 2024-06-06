@@ -434,7 +434,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				]);
 				break;
 			case "boss":
-				entity = new BossEntity(this, pos);
+				entity = new BigBossEntity(this, [pos[0], pos[1] + 2, pos[2]]);
 				this.#currentBoss = entity;
 				break;
 			default:
