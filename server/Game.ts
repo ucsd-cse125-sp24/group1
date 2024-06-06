@@ -15,6 +15,7 @@ import {
 	ClientMessage,
 	EntityModel,
 	GameStage,
+	ParticleOptions,
 	PlayerEntry,
 	ServerMessage,
 	Use,
@@ -164,7 +165,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let camera = new CameraEntity(this, [1000, 1005, 1000], [0, -10, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
-		let lobbyFloor = new CubeEntity(this, [995, 1000, 995], [10,10,10], true);
+		let lobbyFloor = new CubeEntity(this, [995, 1000, 995], [10, 10, 10], true);
 		this.#registerEntity(lobbyFloor);
 	}
 
@@ -330,11 +331,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({ type: "sound", sound, position });
 	}
 
-	playParticle(position: phys.Vec3 | Vector3): void {
+	playParticle(position: phys.Vec3 | Vector3, options: Partial<ParticleOptions> = {}): void {
 		if (position instanceof phys.Vec3) {
 			position = position.toArray();
 		}
-		this.#server.broadcast({ type: "particle", position });
+		this.#server.broadcast({ type: "particle", position, options });
 	}
 
 	sabotageHero(id: EntityId) {
@@ -370,9 +371,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	spawnSmolBossWithDelay() {
-		if(this.#bossTimer == 0) {
+		if (this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
-			if(this.#currentBoss) {
+			if (this.#currentBoss) {
 				this.#currentBoss.walkSpeed = 20;
 				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
 			}
@@ -396,7 +397,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
 		if (this.#currentStage.type === "lobby") {
-			pos = [1000,1005 + playerNum * 5, 1000];
+			pos = [1000, 1005 + playerNum * 5, 1000];
 		}
 		switch (role) {
 			case "hero":
@@ -510,7 +511,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					this.addToDeleteQueue(oldEntity.id);
 				}
 
-				player.entity = this.#createPlayerEntity(this.#createdInputs.indexOf(player.input), oldEntity?.getPos() ?? [0, 0, 0], data);
+				player.entity = this.#createPlayerEntity(
+					this.#createdInputs.indexOf(player.input),
+					oldEntity?.getPos() ?? [0, 0, 0],
+					data,
+				);
 
 				if (player.entity) {
 					this.addToCreateQueue(player.entity);
@@ -640,10 +645,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
-		this.#bossTimer --;
-		
+		this.#bossTimer--;
+
 		log(JSON.stringify(this.#bossTimer));
-		
+
 		this.spawnSmolBossWithDelay();
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
@@ -722,7 +727,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 	// #endregion
 
-	// #region Entity	
+	// #region Entity
 	addToDeleteQueue(sussyAndRemovable: EntityId) {
 		const index = this.#toCreateQueue.findIndex((entity) => entity.id === sussyAndRemovable);
 		if (index !== -1) {
@@ -732,7 +737,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#toDeleteQueue.push(sussyAndRemovable);
 	}
-	
 
 	addToCreateQueue(entity: Entity) {
 		// If entity was in delete queue, remove it from there instead (can happen

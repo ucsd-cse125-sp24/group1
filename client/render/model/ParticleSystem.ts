@@ -5,37 +5,7 @@ import particleFragmentSource from "../../shaders/particle.frag";
 import GraphicsEngine from "../engine/GraphicsEngine";
 import { ShaderProgram } from "../engine/ShaderProgram";
 import { Model } from "./Model";
-
-export type ParticleOptions = {
-	/**
-	 * Length of time between particle spawns in milliseconds. Set to +inf to only
-	 * spawn particles one time when the `ParticleSystem` is (re-)enabled.
-	 * Default: Infinity
-	 */
-	spawnPeriod: number;
-	/**
-	 * Number of particles to create in each spawn batch. Default: 1
-	 */
-	spawnCount: number;
-	/** Default: 256 */
-	size: number;
-	/** Default: `[1, 1, 1]` (white) */
-	color: vec4;
-	/** Can be positive, 0, or negative. Default: 1 */
-	mass: number;
-	/** Default: `[0, 0, 0]` */
-	initialPosition: vec3;
-	/** Default: `[0, 1, 0]` */
-	initialVelocity: vec3;
-	/**
-	 * If this property is set, then new particles will spawn with a random
-	 * initial velocity - each component i will be sampled from a uniform
-	 * distribution centered on initialVelocity[i].
-	 */
-	initialVelocityRange?: vec3;
-	/** Remaining time to live in seconds. Default: 5 */
-	ttl: number;
-};
+import { ParticleOptions } from "../../../common/messages";
 
 /**
  * Creates and draws particles using the particle shader. Several options can be
