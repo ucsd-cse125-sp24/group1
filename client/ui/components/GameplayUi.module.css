@@ -55,6 +55,75 @@
 	background-color: rgba(255, 0, 0, 0.5);
 }
 
+.guide {
+	margin-top: auto;
+	display: flex;
+	gap: 10px;
+	padding: 20px;
+}
+
+.action {
+	backdrop-filter: blur(20px);
+	background-color: rgba(255, 255, 255, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+	border-radius: 10px;
+	width: 60px;
+	height: 60px;
+	box-sizing: border-box;
+	padding: 5px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	justify-content: flex-end;
+	color: black;
+	font-weight: bold;
+	font-size: 0.8em;
+	touch-action: none;
+	position: relative;
+	transition: all 0.2s;
+	&.hide {
+		transform: translateY(5px);
+	}
+}
+.desktop .action::before {
+	content: "";
+	position: absolute;
+	backdrop-filter: blur(20px);
+	background-color: rgba(255, 255, 255, 0.5);
+	border: 1px solid rgba(255, 255, 255, 0.3);
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+	margin: -8px;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	top: 0;
+	z-index: 1;
+	background-position: center;
+	background-size: contain;
+	background-repeat: no-repeat;
+}
+.attack::before {
+	background-image: url("../assets/mouse-left.svg");
+	left: 0;
+}
+.use::before {
+	background-image: url("../assets/mouse-right.svg");
+	right: 0;
+}
+.wrapper:not(.desktop) {
+	.guide {
+		padding: 40px;
+		gap: 40px;
+		margin-left: auto;
+	}
+	.action {
+		width: 100px;
+		height: 100px;
+	}
+}
+
 .desktop {
 	.pauseBtn,
 	.joystick {

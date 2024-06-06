@@ -283,6 +283,8 @@ export abstract class PlayerEntity extends Entity {
 						if (damage > 0) {
 							entity.takeDamage(damage);
 							this.game.playDamageFilter(entity.id);
+							// Only have a cooldown for damage-dealing attacks
+							this.#previousAttackTime = Date.now();
 						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
@@ -292,7 +294,6 @@ export abstract class PlayerEntity extends Entity {
 							this.game.playSound("hitBig", entity.getPos());
 						else this.game.playSound("hit", entity.getPos());
 						this.animator.play("punch");
-						this.#previousAttackTime = Date.now();
 					},
 				};
 			} else if (entities[0] instanceof InteractableEntity) {
@@ -303,7 +304,8 @@ export abstract class PlayerEntity extends Entity {
 							commit: () => {
 								action.commit();
 								this.animator.play("punch");
-								this.#previousAttackTime = Date.now();
+								// Allow spam-slapping items
+								// this.#previousAttackTime = Date.now();
 							},
 						}
 					: null;

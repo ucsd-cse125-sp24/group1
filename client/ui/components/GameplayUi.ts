@@ -1,5 +1,5 @@
 import { elem } from "../elem";
-import { EntireGameState } from "../../../common/messages";
+import { Attack, EntireGameState, Use } from "../../../common/messages";
 import { InputListener } from "../../net/InputListener";
 import { Timer } from "./Timer";
 import styles from "./GameplayUi.module.css";
@@ -10,14 +10,35 @@ type KeyMap<T> = {
 	right: T;
 	forward: T;
 	backward: T;
+	attack: T;
+	use: T;
+};
+
+const attackLabels: Record<Attack, string> = {
+	"hero:shoot-arrow": "Shoot",
+	"crafting-stage:slap-player": "Slap",
+	"combat:damage": "Attack",
+	"disarm-trap": "Disarm",
+	"damage-trap": "Damage",
+	"slap-non-player": "Slap",
+	"hit-mini-boss": "Slap",
+};
+const useLabels: Record<Use, string> = {
+	"bigboss:shoot-shroom": "Shroom Blast",
+	"throw-item": "Throw",
+	"pickup-item": "Pick Up",
+	"pop-crafter": "Remove",
+	"boss:spore": "Spore Attack",
+	"boss:place-trap": "Place Trap",
+	"bigboss:": "Unknown",
 };
 
 export class GameplayUi {
 	timer = new Timer();
 	#health = new Health();
 	#joystick = elem("div", { className: styles.joystick });
-	#attack = elem("div");
-	#use = elem("div");
+	#attack = elem("button", { classes: [styles.action, styles.attack, styles.hide] });
+	#use = elem("button", { classes: [styles.action, styles.use, styles.hide] });
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.desktop],
 		contents: [
@@ -26,8 +47,7 @@ export class GameplayUi {
 			this.#health.element,
 			elem("button", { classes: [styles.pauseBtn, "mobile-open-pause"], ariaLabel: "Open pause menu" }),
 			this.#joystick,
-			this.#attack,
-			this.#use,
+			elem("div", { className: styles.guide, contents: [this.#attack, this.#use] }),
 		],
 	});
 
@@ -53,6 +73,9 @@ export class GameplayUi {
 		};
 		let pointerId: number | null = null;
 		this.#joystick.addEventListener("pointerdown", (e) => {
+			if (pointerId !== null) {
+				return;
+			}
 			this.#joystick.setPointerCapture(e.pointerId);
 			pointerId = e.pointerId;
 			testPosition(e);
@@ -65,6 +88,44 @@ export class GameplayUi {
 		});
 		this.#joystick.addEventListener("pointerup", handleEnd);
 		this.#joystick.addEventListener("pointercancel", handleEnd);
+
+		let attackPointerId: number | null = null;
+		this.#attack.addEventListener("pointerdown", (e) => {
+			if (attackPointerId !== null) {
+				return;
+			}
+			this.#attack.setPointerCapture(e.pointerId);
+			attackPointerId = e.pointerId;
+			inputs.handleInput(map.attack, true);
+			e.stopPropagation();
+		});
+		const handleAttackEnd = (e: PointerEvent) => {
+			if (e.pointerId === attackPointerId) {
+				inputs.handleInput(map.attack, false);
+				attackPointerId = null;
+			}
+		};
+		this.#attack.addEventListener("pointerup", handleAttackEnd);
+		this.#attack.addEventListener("pointercancel", handleAttackEnd);
+
+		let usePointerId: number | null = null;
+		this.#use.addEventListener("pointerdown", (e) => {
+			if (usePointerId !== null) {
+				return;
+			}
+			this.#use.setPointerCapture(e.pointerId);
+			usePointerId = e.pointerId;
+			inputs.handleInput(map.use, true);
+			e.stopPropagation();
+		});
+		const handleUseEnd = (e: PointerEvent) => {
+			if (e.pointerId === usePointerId) {
+				inputs.handleInput(map.use, false);
+				usePointerId = null;
+			}
+		};
+		this.#use.addEventListener("pointerup", handleUseEnd);
+		this.#use.addEventListener("pointercancel", handleUseEnd);
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
@@ -72,10 +133,20 @@ export class GameplayUi {
 		this.#health.render(state, previous);
 
 		if (state.me.attackAction !== previous?.me.attackAction) {
-			this.#attack.textContent = state.me.attackAction ?? "none";
+			if (state.me.attackAction) {
+				this.#attack.classList.remove(styles.hide);
+				this.#attack.textContent = attackLabels[state.me.attackAction] ?? "Mystery";
+			} else {
+				this.#attack.classList.add(styles.hide);
+			}
 		}
 		if (state.me.useAction !== previous?.me.useAction) {
-			this.#use.textContent = state.me.useAction ?? "none";
+			if (state.me.useAction) {
+				this.#use.classList.remove(styles.hide);
+				this.#use.textContent = useLabels[state.me.useAction] ?? "Mystery";
+			} else {
+				this.#use.classList.add(styles.hide);
+			}
 		}
 	}
 

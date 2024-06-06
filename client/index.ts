@@ -625,7 +625,14 @@ connection.connect();
 inputListener.listen();
 inputListener.enabled = false;
 camera.listen();
-gameUi.listen(inputListener, { forward: "forward", backward: "backward", right: "right", left: "left" });
+gameUi.listen(inputListener, {
+	forward: "forward",
+	backward: "backward",
+	right: "right",
+	left: "left",
+	attack: "attack",
+	use: "use",
+});
 pauseMenu.listen(connection);
 pauseMenu.options.listen(camera);
 paint();

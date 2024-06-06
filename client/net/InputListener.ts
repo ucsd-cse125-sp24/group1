@@ -42,7 +42,8 @@ export class InputListener<Inputs extends string> {
 		this.handleInput(this.options.keymap[e.code], true);
 	};
 	#handleKeyup = (e: KeyboardEvent) => this.handleInput(this.options.keymap[e.code], false);
-	#handleMousedown = (e: MouseEvent) => this.handleInput(this.options.keymap[e.button], true);
+	#handleMousedown = (e: MouseEvent) =>
+		document.pointerLockElement && this.handleInput(this.options.keymap[e.button], true);
 	#handleMouseup = (e: MouseEvent) => this.handleInput(this.options.keymap[e.button], false);
 
 	/** When the user leaves the page, unpress all keys  */
