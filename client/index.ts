@@ -33,6 +33,7 @@ import { GameplayUi } from "./ui/components/GameplayUi";
 import { ensureName } from "./ui/components/NamePrompt";
 import { PointLight } from "./render/lights/PointLight";
 import { TempLightModel } from "./render/lights/TempLightModel";
+import { ParticleManager } from "./render/model/ParticleManager";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -153,8 +154,7 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			break;
 		case "particle":
 			// Play particle here
-			particle.enable();
-
+			particleManager.create(data.options);
 			break;
 		case "sabotage-hero":
 			sporeFilterStrength.setTarget(1);
@@ -308,17 +308,7 @@ const fov = new Transition(Math.PI / 3);
 let result = vec3.create();
 vec3.add(result, camera.getPosition(), camera.getForwardDir());
 
-const particle = new ParticleSystem(engine, 100, {
-	// spawnPeriod: 1000,
-	// spawnCount: 3,
-	// size: 1000,
-	// color: [1, 0, 0, 0.5], // red color
-	// mass: 1,
-	initialPosition: [0, 10, 0],
-	initialVelocity: [0, 2, 0],
-	initialVelocityRange: [1, 1, 1],
-	// ttl: 5,
-});
+const particleManager = new ParticleManager(engine);
 
 type DebugInputs = {
 	skipStage: boolean;
@@ -604,11 +594,7 @@ const paint = () => {
 		}
 	}
 
-	const modelMatrices = [mat4.create()];
-	particle.shader.use();
-	particle.options.initialPosition = [result[0], result[1], result[2]];
-	// Draw particles
-	particle.draw(modelMatrices, view);
+	particleManager.paint(view);
 
 	pipeline.stopRender();
 

@@ -187,7 +187,12 @@ export abstract class PlayerEntity extends Entity {
 		if (movement.jump && this.#coyoteCounter > 0) {
 			if (!this.jumping && this.onGround) {
 				this.game.playSound("jump", this.getPos());
-				this.game.playParticle(this.getPos());
+				this.game.playParticle({
+					spawnCount: 10,
+					color: [1, 0, 0, 0.5],
+					initialPosition: this.getFootPos(),
+					initialVelocityRange: [1, 1, 1],
+				});
 				this.jumping = true;
 			}
 			const deltaVy = new phys.Vec3(0, this.jumpSpeed, 0).vsub(currentVelocity.vmul(new phys.Vec3(0, 1, 0)));

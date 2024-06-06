@@ -374,11 +374,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({ type: "sound", sound, position });
 	}
 
-	playParticle(position: phys.Vec3 | Vector3, options: Partial<ParticleOptions> = {}): void {
-		if (position instanceof phys.Vec3) {
-			position = position.toArray();
-		}
-		this.#server.broadcast({ type: "particle", position, options });
+	playParticle(options: Partial<ParticleOptions> = {}): void {
+		this.#server.broadcast({ type: "particle", options });
 	}
 
 	sabotageHero(id: EntityId) {
@@ -674,7 +671,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				} else {
 					// this.playSound("attackFail", player.entity.getPos());
 				}
-				this.playParticle(player.entity.getPos());
+				this.playParticle({
+					spawnCount: 100,
+					initialPosition: player.entity.getPos(),
+					initialVelocity: [0, 5, 0],
+					initialVelocityRange: [5, 0, 5],
+				});
 			}
 			if (posedge.emote) {
 				// TEMP: using `emote` key (X) to spawn item above player

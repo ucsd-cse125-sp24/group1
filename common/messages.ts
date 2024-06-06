@@ -168,7 +168,6 @@ export type PlaySound = {
 
 export type PlayParticle = {
 	type: "particle";
-	position: Vector3;
 	options: Partial<ParticleOptions>;
 };
 export type ParticleOptions = {
