@@ -24,10 +24,24 @@ type RecipeCheckResult =
 			/** No recipes can be satisfied even with more items */ type: "unsatisfiable";
 	  };
 
+export type CrafterType = "furnace" | "weapons" | "fletching";
+
+let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI);
+let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
+let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
+const modelForCrafterType: Record<CrafterType, EntityModel[]> = {
+	furnace: [{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
+	weapons: [{ modelId: "anvil", offset: [0, -1.25, 0], rotation: halfSquat.toArray() }],
+	fletching: [{ modelId: "work_station", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
+};
+const colliderShapeForCrafterType: Record<CrafterType, phys.Shape> = {
+	furnace: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
+	weapons: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
+	fletching: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
+};
+
 export class CraftingTable extends InteractableEntity {
 	body: phys.Body;
-	halfExtent: number;
-	model: EntityModel[];
 	isStatic = true;
 
 	/** Items stored in the crafting table */
@@ -37,20 +51,15 @@ export class CraftingTable extends InteractableEntity {
 	/** List of potential ingredients for recipes */
 	ingredients: ItemType[];
 
-	// shape
-	box: phys.Box;
-
 	// eject direction
 	#ejectDir: phys.Vec3;
 
-	constructor(game: Game, pos: Vector3, model: EntityModel[] = [], recipes: Recipe[]) {
-		super(game, model);
+	constructor(game: Game, pos: Vector3, type: CrafterType, recipes: Recipe[]) {
+		super(game, modelForCrafterType[type]);
 
-		this.model = model;
 		this.itemList = [];
 		this.recipes = recipes;
 		this.ingredients = recipes.flatMap((recipe) => recipe.ingredients);
-		this.halfExtent = 1.5;
 
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
@@ -59,9 +68,7 @@ export class CraftingTable extends InteractableEntity {
 			collisionFilterGroup: this.getBitFlag(),
 		});
 
-		this.box = new phys.Box(new phys.Vec3(this.halfExtent, this.halfExtent, this.halfExtent));
-
-		this.body.addShape(this.box);
+		this.body.addShape(colliderShapeForCrafterType[type]);
 
 		this.#ejectDir = new phys.Vec3(...pos).negate();
 		this.#ejectDir.set(this.#ejectDir.x, 0, this.#ejectDir.z);

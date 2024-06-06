@@ -318,6 +318,7 @@ type DebugInputs = {
 	cycleWireframe: boolean;
 	toggleTones: boolean;
 	cycleDebugGltf: boolean;
+	tpDebugRoom: boolean;
 };
 const defaultDebugInputs = {
 	forward: false,
@@ -331,6 +332,7 @@ const defaultDebugInputs = {
 	cycleWireframe: false,
 	toggleTones: false,
 	cycleDebugGltf: false,
+	tpDebugRoom: false,
 };
 let debugInputs: FreecamInputs & DebugInputs = { ...defaultDebugInputs };
 const inputListener = new InputListener({
@@ -357,6 +359,7 @@ const inputListener = new InputListener({
 		KeyT: "toggleTones",
 		KeyL: "cycleDebugGltf",
 		KeyI: "skipStage",
+		KeyB: "tpDebugRoom",
 	},
 	handleInputs: (inputs) => {
 		if (inputs.toggleFreecam && !debugInputs.toggleFreecam) {
@@ -375,6 +378,9 @@ const inputListener = new InputListener({
 		}
 		if (inputs.skipStage && !debugInputs.skipStage) {
 			connection.send({ type: "--debug-skip-stage" });
+		}
+		if (inputs.tpDebugRoom && !debugInputs.tpDebugRoom) {
+			connection.send({ type: "--debug-tp" });
 		}
 
 		debugInputs = { ...inputs };

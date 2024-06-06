@@ -85,7 +85,12 @@ export function deserialize(engine: GraphicsEngine, entity: SerializedEntity): C
 			}
 			return {
 				model: engine.models[modelId],
-				transform: mat4.fromRotationTranslationScale(mat4.create(), rotation, offset, [scale, scale, scale]),
+				transform: mat4.fromRotationTranslationScale(
+					mat4.create(),
+					rotation,
+					offset,
+					Array.isArray(scale) ? scale : [scale, scale, scale],
+				),
 			};
 		}),
 		transform,

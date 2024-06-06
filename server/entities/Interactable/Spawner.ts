@@ -7,36 +7,41 @@ import { SpawnerMaterial } from "../../materials/SourceMaterials";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item, ItemType } from "./Item";
 
+export type SpawnerType = "wood" | "iron" | "string" | "mushroom";
+
+let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI);
+let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
+const modelForSpawnerType: Record<SpawnerType, EntityModel[]> = {
+	string: [{ modelId: "chair", offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
+	iron: [{ modelId: "ore_vein", offset: [0, -1.75, 0], rotation: fullSquat.toArray() }],
+	mushroom: [{ modelId: "spider_web", offset: [0, -1.5, 0], rotation: halfSquat.mult(fullSquat).toArray() }],
+	wood: [{ modelId: "mushroom_cluster", offset: [0, -1.5, 0] }],
+};
+const colliderShapeForSpawnerType: Record<SpawnerType, phys.Shape> = {
+	string: new phys.Box(new phys.Vec3(1.6, 1.6, 1.6)),
+	iron: new phys.Box(new phys.Vec3(1.6, 1.6, 1.6)),
+	mushroom: new phys.Box(new phys.Vec3(1.6, 1.6, 1.6)),
+	wood: new phys.Box(new phys.Vec3(1.6, 1.6, 1.6)),
+};
+
 const TRIGGER_SPEED = 1;
 const COOLDOWN_FRAMES = 15;
 
 export class Spawner extends InteractableEntity {
 	body: phys.Body;
-	halfExtent: number;
-	model: EntityModel[];
 	isStatic = true;
 
 	toSpawn: ItemType;
 
-	// shape
-	box: phys.Box;
-
-	game: Game;
-
 	previousTick: number;
 	toolToHarvest: ItemType;
 
-	constructor(game: Game, pos: Vector3, toSpawn: ItemType, toolToHarvest: ItemType, model: EntityModel[] = []) {
-		super(game, model);
+	constructor(game: Game, pos: Vector3, spawnerType: SpawnerType, toSpawn: ItemType, toolToHarvest: ItemType) {
+		super(game, modelForSpawnerType[spawnerType]);
 		this.previousTick = 0;
-		this.game = game; //TEMPORARY
-
-		this.model = model;
 
 		this.toSpawn = toSpawn;
 		this.toolToHarvest = toolToHarvest;
-
-		this.halfExtent = 1.6;
 
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
@@ -45,9 +50,7 @@ export class Spawner extends InteractableEntity {
 			collisionFilterGroup: this.getBitFlag(),
 		});
 
-		this.box = new phys.Box(new phys.Vec3(this.halfExtent, this.halfExtent, this.halfExtent));
-
-		this.body.addShape(this.box);
+		this.body.addShape(colliderShapeForSpawnerType[spawnerType]);
 	}
 
 	onCollide(otherEntity: Entity) {

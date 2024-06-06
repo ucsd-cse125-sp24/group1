@@ -23,7 +23,7 @@ export type ClientMessage =
 	| StartGame
 	| DebugMessages;
 
-export type DebugMessages = { type: "--debug-skip-stage" };
+export type DebugMessages = { type: "--debug-skip-stage" } | { type: "--debug-tp" };
 
 export type ClientControlMessage = {
 	/**
@@ -248,8 +248,8 @@ export type EntityModelObject = {
 	modelId: ModelId;
 	offset?: Vector3;
 	rotation?: Quaternion;
-	/** Scales evenly in all directions */
-	scale?: number;
+	/** If a single number, scales evenly in all directions */
+	scale?: number | Vector3;
 };
 export type TextModelFont = {
 	color?: string;
