@@ -62,8 +62,8 @@ export class SkinSelector {
 			}
 		}
 
-		const currentModel = state.me.entityId && state.entities[state.me.entityId].model[0];
-		const previousModel = previous?.me.entityId && previous.entities[previous.me.entityId].model[0];
+		const currentModel = state.me.entityId && state.entities[state.me.entityId]?.model[0];
+		const previousModel = previous?.me.entityId && previous.entities[previous.me.entityId]?.model[0];
 		if (JSON.stringify(currentModel) !== JSON.stringify(previousModel)) {
 			const currentSkin =
 				typeof currentModel === "string" || !currentModel
