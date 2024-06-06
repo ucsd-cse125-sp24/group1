@@ -26,7 +26,7 @@ export type ItemType =
 	| "gamer_armor";
 
 const modelForItemType: Record<ItemType, EntityModel[]> = {
-    armor: [{ modelId: "armor", scale: 0.5 }],
+    armor: [{ modelId: "armor", scale: 0.5, offset: [0, -.8, 0] }],
     axe: [{ modelId: "axe", scale: 0.5, offset: [0.2, -0.8, 0] }],
     bow: [{ modelId: "bow", scale: 0.5, offset: [0, -1.4, 0] }],
     gamer_bow: [{ modelId: "gamer_bow", scale: 0.5, offset: [0, -1.5, 0] }],
