@@ -22,7 +22,8 @@ export type ItemType =
 	| "string"
 	| "sword"
 	| "armor"
-	| "wood";
+	| "wood"
+	| "gamer_armor";
 
 const modelForItemType: Record<ItemType, EntityModel[]> = {
     armor: [{ modelId: "armor", scale: 0.5 }],
@@ -40,9 +41,12 @@ const modelForItemType: Record<ItemType, EntityModel[]> = {
     string: [{ modelId: "string", scale: 0.5, offset: [0, -0.6, 0] }],
     sword: [{ modelId: "sword", scale: 0.5, offset: [0, -1.7, 0] }],
     wood: [{ modelId: "wood", scale: 0.5, offset: [0, -0.5, 0] }],
+	gamer_armor: [{ modelId: "gamer_armor", scale: 0.5 }],
+
 };
 const colliderShapeForItemType: Record<ItemType, phys.Shape> = {
     armor: new phys.Sphere(0.5),
+	gamer_armor: new phys.Sphere(0.5),
     axe: new phys.Box(new phys.Vec3(0.5, 1, 0.1)),
     bow: new phys.Cylinder(0.5, 0.5, 4.3, 12),
     gamer_bow: new phys.Cylinder(0.5, 0.5, 4.2, 12),

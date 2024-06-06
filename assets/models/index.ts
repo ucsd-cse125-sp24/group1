@@ -38,6 +38,12 @@ import { defaultCube } from "./default-cube";
 import { healthCrystal } from "./health-crystal";
 import { map } from "./map";
 
+import { trap } from "./trap";
+import { rockpile } from "./rockpile";
+import { gamer_armor } from "./gamer_armor";
+import { minecart } from "./minecart";
+import { mushroom_king } from "./mushroom_king";
+
 export const getModels = (engine: GraphicsEngine) =>
 	({
 		fish1: GltfModelWrapper.from(engine.gltfMaterial, fish1),
@@ -82,6 +88,12 @@ export const getModels = (engine: GraphicsEngine) =>
 		bottle_table: GltfModelWrapper.from(engine.gltfMaterial, bottle_table),
 		anvil: GltfModelWrapper.from(engine.gltfMaterial, anvil),
 		armor: GltfModelWrapper.from(engine.gltfMaterial, armor),
+		gamer_armor: GltfModelWrapper.from(engine.gltfMaterial, gamer_armor),
+		mushroom_king: GltfModelWrapper.from(engine.gltfMaterial, mushroom_king),
+		trap: GltfModelWrapper.from(engine.gltfMaterial, trap),
+
+		rockpile: GltfModelWrapper.from(engine.gltfMaterial, rockpile),
+		minecart: GltfModelWrapper.from(engine.gltfMaterial, minecart),
 
 		map: GltfModelWrapper.from(engine.gltfMaterial, map),
 	}) satisfies Record<string, Model>;

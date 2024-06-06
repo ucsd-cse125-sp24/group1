@@ -233,7 +233,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				{ ingredients: ["iron", "wood"], output: "knife" },
 				{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "armor" }, //GAMER ARMOR
+				{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "gamer_armor" }, 
 			],
 		);
 		this.#registerEntity(WeaponCrafter);
@@ -417,13 +417,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				]);
 				break;
 			case "boss":
-				entity = new BossEntity(this, pos, [
-					{
-						modelId: "mushroom_guy",
-						offset: [0, -0.75, 0],
-						scale: 0.2,
-					},
-				]);
+				entity = new BossEntity(this, pos);
 				this.#currentBoss = entity;
 				break;
 			default:
