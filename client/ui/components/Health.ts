@@ -11,16 +11,8 @@ export class Health {
 	});
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
-		if (state.stage.type !== previous?.stage.type) {
-			if (state.stage.type === "combat") {
-				this.element.classList.remove(styles.hide);
-			} else {
-				this.element.classList.add(styles.hide);
-			}
-		}
-
-		const health = state.me.health;
-		const previousHealth = previous?.me.health;
+		const health = state.stage.type === "combat" ? state.me.health : 0;
+		const previousHealth = previous?.stage.type === "combat" ? previous.me.health : 0;
 		if (health !== previousHealth) {
 			if (!health) {
 				this.element.classList.add(styles.hide);

@@ -47,7 +47,7 @@ export class BossEntity extends PlayerEntity {
 	}
 
 	attack(): Action<Attack> | null {
-		return null;
+		return super.attack();
 	}
 
 	use(): Action<Use> | null {

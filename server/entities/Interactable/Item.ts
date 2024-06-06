@@ -117,18 +117,15 @@ export class Item extends InteractableEntity {
 	}
 
 	interact(player: PlayerEntity): Action<Use> | null {
-		if (this.heldBy) {
-			const heldBy = this.heldBy;
+		if (this.heldBy === player) {
 			return {
 				type: "throw-item",
 				commit: () => {
 					this.unbind(); // You prob need some COFFEE
 					// this.body.mass = 1.0;
-					if (heldBy == player) {
-						this.throw(player.lookDir);
-						this.game.playSound("throw", player.getPos());
-						return;
-					}
+
+					this.throw(player.lookDir);
+					this.game.playSound("throw", player.getPos());
 				},
 			};
 		}
@@ -137,23 +134,19 @@ export class Item extends InteractableEntity {
 		//if a hero, then makes the item's position locked into the player's hands
 		//turns collider off, possibly
 
-		if (!player.isBoss) {
-			return {
-				type: "pickup-item",
-				commit: () => {
-					this.bind(player);
-					this.game.playSound("pickup", player.getPos());
-					// Should this be moved to `bind`?
-					this.canBeAbsorbedByCraftingTable = true;
-					// this.body.mass = 0;
-				},
-			};
-		} else {
-		}
-
-		//if a boss, do some sabotage!
-		//TBD
-		return null;
+		return {
+			type: "pickup-item",
+			commit: () => {
+				if (this.heldBy) {
+					this.unbind();
+				}
+				this.bind(player);
+				this.game.playSound("pickup", player.getPos());
+				// Should this be moved to `bind`?
+				this.canBeAbsorbedByCraftingTable = true;
+				// this.body.mass = 0;
+			},
+		};
 	}
 
 	throw(direction: phys.Vec3) {
