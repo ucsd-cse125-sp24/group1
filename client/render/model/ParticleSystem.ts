@@ -214,14 +214,14 @@ export class ParticleSystem implements Model {
 		console.log(numToSpawn);
 
 		const newPositions = Float32Array.from(
-			Array.from({ length: numToSpawn }, () => [...this.options.initialPosition]).flat(),
+			Array.from({ length: numToSpawn }, () => this.options.initialPosition).flat(),
 		);
 		const newVelocities = Float32Array.from(
 			Array.from({ length: numToSpawn }, () => {
 				const v = this.options.initialVelocity;
 				const range = this.options.initialVelocityRange;
 				if (range === undefined) {
-					return [...v];
+					return v;
 				}
 				const r0 = Math.random() * range[0] - range[0] / 2;
 				const r1 = Math.random() * range[1] - range[1] / 2;

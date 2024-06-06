@@ -15,13 +15,4 @@ export class CameraEntity extends Entity {
 			position: new phys.Vec3(...pos),
 		});
 	}
-
-	serialize(): SerializedEntity {
-		return {
-			id: this.id,
-			model: this.model,
-			position: this.body.position.toArray(),
-			quaternion: this.body.quaternion.toArray(),
-		};
-	}
 }
