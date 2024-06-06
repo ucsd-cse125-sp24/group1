@@ -121,7 +121,6 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	move(movement: MovementInfo): void {
-
 		console.log(this.getPos());
 
 		this.lookDir = new phys.Vec3(...movement.lookDir);
@@ -246,9 +245,9 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 
-		for (const entity of entities) {	
+		for (const entity of entities) {
 			if (entity instanceof PlayerEntity) {
-				if(entity.isBoss) {
+				if (entity.isBoss) {
 					this.game.setBossTimer(50);
 					entity.walkSpeed = 0;
 					log("hit");
@@ -381,5 +380,9 @@ export abstract class PlayerEntity extends Entity {
 			return this.#lastSoundIsLeft ? 1 : 2;
 		}
 		return 0;
+	}
+
+	reset() {
+		this.health = this.initHealth;
 	}
 }

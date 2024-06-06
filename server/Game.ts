@@ -186,11 +186,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (player.entity) {
 				player.entity.body.position = new phys.Vec3(0, -1, 0);
 				player.entity.body.velocity = new phys.Vec3(0, 0, 0);
-				player.entity.health = player.entity.initHealth;
-				if (player.entity instanceof HeroEntity) {
-					player.entity.isSabotaged = false;
-					player.entity.isTrapped = false;
-				}
+				player.entity.reset();
 			}
 		}
 
@@ -399,28 +395,32 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		if (this.#currentStage.type === "lobby") {
 			pos = [1000, 1005 + playerNum * 5, 1000];
 		}
+		let entity;
 		switch (role) {
 			case "hero":
-				return new HeroEntity(this, pos, [
+				entity = new HeroEntity(this, pos, [
 					{
 						modelId: `player_${skin}`,
 						offset: [0, -1.5, 0],
 						scale: 0.4,
 					},
 				]);
+				break;
 			case "boss":
-				let boss = new BossEntity(this, pos, [
+				entity = new BossEntity(this, pos, [
 					{
 						modelId: "samplePlayer",
 						offset: [0, -0.75, 0],
 						scale: 0.2,
 					},
 				]);
-				this.#currentBoss = boss;
-				return boss;
+				this.#currentBoss = entity;
+				break;
 			default:
 				return null;
 		}
+		entity.reset();
+		return entity;
 	}
 
 	handlePlayerJoin(conn: Connection<ServerMessage>, name = `Player ${conn.id.slice(0, 6)}`) {

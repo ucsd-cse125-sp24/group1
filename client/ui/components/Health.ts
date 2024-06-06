@@ -21,7 +21,7 @@ export class Health {
 
 		const health = state.me.health;
 		const previousHealth = previous?.me.health;
-		if (state.stage.type === "combat" && health !== previousHealth) {
+		if (health !== previousHealth) {
 			if (!health) {
 				this.element.classList.add(styles.hide);
 			} else if (health > 10) {
