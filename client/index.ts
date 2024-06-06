@@ -19,7 +19,6 @@ import { RenderPipeline } from "./render/engine/RenderPipeline";
 import { ShaderProgram } from "./render/engine/ShaderProgram";
 import tempLightVertexSource from "./shaders/temp_light.vert";
 import tempLightFragmentSource from "./shaders/temp_light.frag";
-import { TempLightEntity } from "./render/lights/TempLightEntity";
 import { SoundManager } from "./SoundManager";
 import { ParticleSystem } from "./render/model/ParticleSystem";
 import { drawModels } from "./render/model/draw";
@@ -33,6 +32,7 @@ import { PauseMenu } from "./ui/components/PauseMenu";
 import { GameplayUi } from "./ui/components/GameplayUi";
 import { ensureName } from "./ui/components/NamePrompt";
 import { PointLight } from "./render/lights/PointLight";
+import { TempLightModel } from "./render/lights/TempLightModel";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -408,30 +408,6 @@ const tempLightShader = new ShaderProgram(
 		engine.createShader("fragment", tempLightFragmentSource, "temp_light.frag"),
 	),
 );
-const warmLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 1, 0), vec3.fromValues(0, 0, 0));
-const whiteLight = new TempLightEntity(
-	tempLightShader,
-	vec3.fromValues(10, 20, -20),
-	vec3.fromValues(0, 0, 30),
-	5,
-	false,
-);
-const staticLight2 = new TempLightEntity(
-	tempLightShader,
-	vec3.fromValues(-15, 5, 15),
-	vec3.fromValues(27 / 360, 0.9, 50),
-	5,
-	false,
-);
-const staticLight3 = new TempLightEntity(
-	tempLightShader,
-	vec3.fromValues(-10, -10, -10),
-	vec3.fromValues(0.5, 0.1, 10),
-	5,
-	false,
-);
-const coolLight = new TempLightEntity(tempLightShader, vec3.fromValues(0, 0, 0), vec3.fromValues(0.5, 0.1, 2));
-const hueLightCount = engine.MAX_LIGHTS; // Math.floor(1 + Math.random() * 10);
 const tempEntities: ClientEntity[] = [
 	// coolLight,
 	// warmLight,
@@ -492,9 +468,6 @@ const debugGltfShaders = [
 let previousStaticIds = "";
 const paint = () => {
 	engine._drawCalls = 0;
-	warmLight.color = vec3.fromValues(27 / 360, 0.9, (50 * (Math.sin(Date.now() / 8372) + 1)) / 2 + 10);
-	warmLight.position = vec3.fromValues(0, Math.sin(Date.now() / 738) * 5 + 1, 0);
-	// whiteLight.position = vec3.fromValues(Math.cos(Date.now() / 3000) * 15, 10, Math.sin(Date.now() / 3000) * 15);
 
 	// Set camera position
 	if (!freecam && isFirstPerson) {
@@ -509,7 +482,6 @@ const paint = () => {
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
-		coolLight.position = position; //vec3.add(vec3.create(), position, vec3.scale(vec3.create(), [dir[0], 0, dir[2]], 3));
 		sporeFilterStrength.setTarget(cameraTarget.data?.isSabotaged ? 1 : 0);
 		fov.setTarget(cameraTarget.data?.isTrapped ? Math.PI / 6 : (pauseMenu.options.fov * Math.PI) / 180);
 		if (isFirstPerson) {
@@ -527,7 +499,6 @@ const paint = () => {
 		// Spectate
 		camera.setFree(true);
 		camera.updateFreecam(debugInputs);
-		coolLight.position = camera.getPosition();
 	}
 	// TODO: also call this when rotating camera?
 	camera.moveAudioListener(audioContext.listener);
@@ -615,6 +586,17 @@ const paint = () => {
 		for (const { collider, transform } of colliders) {
 			engine.gl.uniformMatrix4fv(engine.wireframeMaterial.uniform("u_model"), false, transform);
 			engine.drawWireframe(collider);
+		}
+		for (const light of lights) {
+			tempLightShader.use();
+			engine.gl.uniformMatrix4fv(tempLightShader.uniform("u_view"), false, view);
+			new TempLightModel(tempLightShader, light.color).draw([
+				mat4.multiply(
+					mat4.create(),
+					mat4.fromTranslation(mat4.create(), light.position),
+					mat4.fromRotation(mat4.create(), Date.now() / 1000 + light.position[0], vec3.fromValues(1, 2, 3)),
+				),
+			]);
 		}
 		engine.gl.enable(engine.gl.CULL_FACE);
 		if (wireframe === 2) {
