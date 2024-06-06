@@ -220,6 +220,7 @@ export abstract class PlayerEntity extends Entity {
 			return null;
 		}
 		const lookDir = this.lookDir.unit();
+		// This is for firing the bow
 		if (!this.isBoss && this.itemInHands !== null) {
 			if (this.itemInHands.type === "bow" || this.itemInHands.type === "gamer_bow") {
 				const isGamer = this.itemInHands.type === "gamer_bow";
@@ -249,9 +250,7 @@ export abstract class PlayerEntity extends Entity {
 		for (const entity of entities) {	
 			if (entity instanceof PlayerEntity) {
 				if(entity.isBoss) {
-					this.game.setBossTimer(50);
-					entity.walkSpeed = 0;
-					log("hit");
+					this.game.playerHitBoss(entity);
 					return null;
 				}
 				return {
