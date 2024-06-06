@@ -122,7 +122,7 @@ export abstract class PlayerEntity extends Entity {
 
 	move(movement: MovementInfo): void {
 
-		console.log(this.getPos());
+		//console.log(this.getPos());
 
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 

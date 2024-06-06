@@ -214,10 +214,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let shears = new Item(this, "shears", startingToolLocations[posIndex], "tool");
 		this.#registerEntity(shears);
 
+		let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI);
 		let Furnace = new CraftingTable(
 			this,
 			[14, -3.5, 28],
-			[{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0] }],
+			[{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
 			[
 				{ ingredients: ["raw_iron", "wood"], output: "iron" },
 				{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
@@ -225,10 +226,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(Furnace);
 
+		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI/2);
 		let WeaponCrafter = new CraftingTable(
 			this,
 			[-5, -3.5, -29.5],
-			[{ modelId: "anvil", offset: [0, -1.25, 0] }],
+			[{ modelId: "anvil", offset: [0, -1.25, 0], rotation: halfSquat.toArray() }],
 			[
 				{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 				{ ingredients: ["iron", "wood"], output: "knife" },
@@ -239,10 +241,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(WeaponCrafter);
 
+		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI/4);
 		let FletchingTable = new CraftingTable(
 			this,
 			[-19, -3, -24],
-			[{ modelId: "work_station", offset: [0, -1.25, 0] }],
+			[{ modelId: "work_station", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
 			[
 				{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
 				{ ingredients: ["bow", "magic_sauce"], output: "gamer_bow" },
@@ -251,21 +254,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		this.#registerEntity(FletchingTable);
 
-		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "axe", [{ modelId: "chair", offset: [0, -1.1, 0] }]);
+		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "axe", [{ modelId: "chair", offset: [0, -1.5, 0], rotation: fullSquat.toArray() }]);
 		this.#registerEntity(woodSpawner);
 
 		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "raw_iron", "pickaxe", [
-			{ modelId: "ore_vein", offset: [0, -1.1, 0] },
+			{ modelId: "ore_vein", offset: [0, -1.75, 0], rotation: fullSquat.toArray() },
 		]);
 		this.#registerEntity(oreSpawner);
 
 		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "shears", [
-			{ modelId: "spider_web", offset: [0, -1.1, 0] },
+			{ modelId: "spider_web", offset: [0, -1.5, 0], rotation: halfSquat.mult(fullSquat).toArray() },
 		]);
 		this.#registerEntity(stringSpawner);
 
 		let mushroomSpawner = new Spawner(this, [-18, -17.5, 4], "mushroom", "knife", [
-			{ modelId: "mushroom_cluster", offset: [0, -1.1, 0] },
+			{ modelId: "mushroom_cluster", offset: [0, -1.5, 0] },
 		]);
 		this.#registerEntity(mushroomSpawner);
 
@@ -417,7 +420,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			case "boss":
 				let boss = new BossEntity(this, pos, [
 					{
-						modelId: "samplePlayer",
+						modelId: "mushroom_guy",
 						offset: [0, -0.75, 0],
 						scale: 0.2,
 					},
@@ -649,8 +652,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#nextTick() {
 		this.#currentTick++;
 		this.#bossTimer --;
-		
-		log(JSON.stringify(this.#bossTimer));
 		
 		this.resetBoss();
 		this.#world.nextTick();

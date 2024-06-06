@@ -41,7 +41,6 @@ export class BossEntity extends PlayerEntity {
 	}
 
 	attack(): Action<Attack> | null {
-		console.log("big spag");
 		return null;
 	}
 
