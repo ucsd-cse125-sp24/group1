@@ -26,7 +26,7 @@ export type ItemType =
 	| "gamer_armor";
 
 const modelForItemType: Record<ItemType, EntityModel[]> = {
-    armor: [{ modelId: "armor", scale: 0.5 }],
+    armor: [{ modelId: "armor", scale: 0.5, offset: [0, -.8, 0] }],
     axe: [{ modelId: "axe", scale: 0.5, offset: [0.2, -0.8, 0] }],
     bow: [{ modelId: "bow", scale: 0.5, offset: [0, -1.4, 0] }],
     gamer_bow: [{ modelId: "gamer_bow", scale: 0.5, offset: [0, -1.5, 0] }],
@@ -117,18 +117,15 @@ export class Item extends InteractableEntity {
 	}
 
 	interact(player: PlayerEntity): Action<Use> | null {
-		if (this.heldBy) {
-			const heldBy = this.heldBy;
+		if (this.heldBy === player) {
 			return {
 				type: "throw-item",
 				commit: () => {
 					this.unbind(); // You prob need some COFFEE
 					// this.body.mass = 1.0;
-					if (heldBy == player) {
-						this.throw(player.lookDir);
-						this.game.playSound("throw", player.getPos());
-						return;
-					}
+
+					this.throw(player.lookDir);
+					this.game.playSound("throw", player.getPos());
 				},
 			};
 		}
@@ -137,23 +134,19 @@ export class Item extends InteractableEntity {
 		//if a hero, then makes the item's position locked into the player's hands
 		//turns collider off, possibly
 
-		if (!player.isBoss) {
-			return {
-				type: "pickup-item",
-				commit: () => {
-					this.bind(player);
-					this.game.playSound("pickup", player.getPos());
-					// Should this be moved to `bind`?
-					this.canBeAbsorbedByCraftingTable = true;
-					// this.body.mass = 0;
-				},
-			};
-		} else {
-		}
-
-		//if a boss, do some sabotage!
-		//TBD
-		return null;
+		return {
+			type: "pickup-item",
+			commit: () => {
+				if (this.heldBy) {
+					this.unbind();
+				}
+				this.bind(player);
+				this.game.playSound("pickup", player.getPos());
+				// Should this be moved to `bind`?
+				this.canBeAbsorbedByCraftingTable = true;
+				// this.body.mass = 0;
+			},
+		};
 	}
 
 	throw(direction: phys.Vec3) {
