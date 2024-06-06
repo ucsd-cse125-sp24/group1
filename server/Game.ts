@@ -100,14 +100,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#entities: Map<EntityId, Entity>;
 	#bodyToEntityMap: Map<Body, Entity>;
 
-	//Tyler is creating this so like. Might need to change
 	#toCreateQueue: Entity[];
 	#toDeleteQueue: EntityId[];
 
 	#currentTick: number;
 	#bossTimer: number;
 
-	#currentBoss: BossEntity | null;
+	//#bossResets: ([number, BossEntity])[];
+	#currentBoss: PlayerEntity | null;
 	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
@@ -251,7 +251,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "axe", [{ modelId: "chair", offset: [0, -1.1, 0] }]);
 		this.#registerEntity(woodSpawner);
 
-		let oreSpawner = new Spawner(this, [0, -17, -21.5], "raw_iron", "pickaxe", [
+		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "raw_iron", "pickaxe", [
 			{ modelId: "ore_vein", offset: [0, -1.1, 0] },
 		]);
 		this.#registerEntity(oreSpawner);
@@ -366,8 +366,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(new ArrowEntity(this, position, velocity, damage, mod));
 	}
 
-	spawnSmolBossWithDelay() {
-		if (this.#bossTimer == 0) {
+	resetBoss() {
+		if(this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
 			if (this.#currentBoss) {
 				this.#currentBoss.walkSpeed = 20;
@@ -378,6 +378,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	setBossTimer(delay: number) {
 		this.#bossTimer = delay;
+	}
+
+	playerHitBoss(boss: PlayerEntity) {
+ 		if (this.getBossTimer() < 0) {
+			boss.walkSpeed = 0;
+		
+		}
 	}
 	// #endregion
 
@@ -565,6 +572,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	// #region Game State
 	getCurrentTick = () => this.#currentTick;
 	getCurrentStage = () => this.#currentStage;
+	getBossTimer = () => this.#bossTimer;
 
 	logTicks(ticks: number, totalDelta: number) {
 		if ("_debugGetActivePlayerCount" in this.#server) {
@@ -648,8 +656,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#bossTimer--;
 
 		log(JSON.stringify(this.#bossTimer));
-
-		this.spawnSmolBossWithDelay();
+		
+		this.resetBoss();
 		this.#world.nextTick();
 		for (let input of this.#createdInputs) {
 			input.serverTick();
