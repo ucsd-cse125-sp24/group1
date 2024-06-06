@@ -1,12 +1,10 @@
 import * as phys from "cannon-es";
 import { ItemMaterial } from "../materials/SourceMaterials";
 import { Game } from "../Game";
+import { EntityModel } from "../../common/messages";
 import { Entity } from "./Entity";
 import { BossEntity } from "./BossEntity";
 import { MapEntity } from "./map/MapEntity";
-import { Mode } from "fs";
-import { ModelId } from "../../assets/models";
-import { EntityModel } from "../../common/messages";
 
 export class ArrowEntity extends Entity {
 	damage: number;

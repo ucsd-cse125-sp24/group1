@@ -1,4 +1,4 @@
-import { ChangeRole, EntireGameState } from "../../../common/messages";
+import { EntireGameState } from "../../../common/messages";
 import { Connection } from "../../net/Connection";
 import { elem } from "../elem";
 import styles from "./SkinSelector.module.css";

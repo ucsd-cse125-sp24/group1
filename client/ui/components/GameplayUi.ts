@@ -1,9 +1,9 @@
 import { elem } from "../elem";
 import { EntireGameState } from "../../../common/messages";
+import { InputListener } from "../../net/InputListener";
 import { Timer } from "./Timer";
 import styles from "./GameplayUi.module.css";
 import { Health } from "./Health";
-import { InputListener } from "../../net/InputListener";
 
 type KeyMap<T> = {
 	left: T;

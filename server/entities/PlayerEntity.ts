@@ -8,7 +8,6 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
-import { log } from "../net/_tempDebugLog";
 
 const COYOTE_FRAMES = 10;
 const WALK_STEP_DIST = 2.5;

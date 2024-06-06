@@ -1,9 +1,9 @@
 import { vec3, mat4 } from "gl-matrix";
 import { ClientEntity } from "../ClientEntity";
 import { ShaderProgram } from "../engine/ShaderProgram";
+import { SerializedEntity } from "../../../common/messages";
 import { TempLightModel } from "./TempLightModel";
 import { PointLight } from "./PointLight";
-import { SerializedEntity } from "../../../common/messages";
 
 export class TempLightEntity extends ClientEntity {
 	#model: TempLightModel;

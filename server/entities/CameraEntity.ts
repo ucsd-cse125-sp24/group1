@@ -1,6 +1,5 @@
 import * as phys from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { SerializedEntity } from "../../common/messages";
 import { Game } from "../Game";
 import { Entity } from "./Entity";
 

@@ -7,8 +7,13 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 
 export class CubeEntity extends Entity {
-
-	constructor(game: Game, pos: Vector3, halfExtents: [number, number, number], isStatic: boolean, model: EntityModel[] = []) {
+	constructor(
+		game: Game,
+		pos: Vector3,
+		halfExtents: [number, number, number],
+		isStatic: boolean,
+		model: EntityModel[] = [],
+	) {
 		super(game, model);
 
 		this.body = new phys.Body({
@@ -17,7 +22,7 @@ export class CubeEntity extends Entity {
 			shape: new phys.Box(v3(...halfExtents)),
 			material: SlipperyMaterial,
 			collisionFilterGroup: this.getBitFlag(),
-			type: isStatic ? phys.Body.STATIC : phys.Body.DYNAMIC
+			type: isStatic ? phys.Body.STATIC : phys.Body.DYNAMIC,
 		});
 	}
 

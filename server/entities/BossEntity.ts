@@ -1,5 +1,5 @@
 import { Vector3 } from "../../common/commontypes";
-import { Action, Attack, EntityModel, Use } from "../../common/messages";
+import { Action, Attack, Use } from "../../common/messages";
 import { Game } from "../Game";
 import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
