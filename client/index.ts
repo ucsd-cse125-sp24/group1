@@ -240,7 +240,7 @@ document.addEventListener("click", (e) => {
 		gameUi.hide();
 		pauseMenu.show();
 		inputListener.enabled = false;
-	} else if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
+	} else if ((!trapClick && gameState/* && gameState.stage.type !== "lobby"*/) || isStartBtn) {
 		if (lastPointerType === "touch") {
 			gameUi.show();
 			pauseMenu.hide();
@@ -475,6 +475,7 @@ const paint = () => {
 	}
 
 	const cameraTarget = entities.find((entity) => entity.data?.id === cameraLockTarget);
+	console.log(camera.getPosition(), camera._orientation);
 	if (cameraTarget && !freecam) {
 		camera.setFree(false);
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
