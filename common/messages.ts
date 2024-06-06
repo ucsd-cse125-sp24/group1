@@ -11,6 +11,7 @@ export type ServerMessage =
 	| PlaySound
 	| SabotageHero
 	| GameOver
+	| Damage
 	| PlayParticle;
 
 export type ClientMessage =
@@ -127,6 +128,8 @@ export type Action<ActionType> = {
 	 */
 	commit: () => void;
 };
+
+export type Damage = { type: "damage" };
 
 export type GameOver = {
 	type: "game-over";
@@ -267,6 +270,17 @@ export type EntityModel = ModelId | EntityModelObject | TextModelObject;
 export type SerializedEntity = {
 	id: EntityId;
 	model: EntityModel[];
+	/**
+	 * A light anchored to the entity.
+	 *
+	 * Clients can only handle up to 12 lights in the world.
+	 *
+	 * The client is optimized so that turning on and off a light (by setting
+	 * `light` to `undefined`) will not re-cast shadows (slow) if `light.willMove`
+	 * is false. This way, you can have static lights blink or flash. Disabled
+	 * lights do not count towards the 12-light limit.
+	 */
+	light?: SerializedLight;
 	quaternion: Quaternion;
 	position: Vector3;
 	/**
@@ -281,6 +295,32 @@ export type SerializedEntity = {
 	isTrapped?: boolean;
 	// NOTE: currently unused (PlayerEntity.health is used instead)
 	health?: number;
+};
+
+/**
+ * Changing `color` and `falloff` are very fast, but changing the light's
+ * position (by moving the entity or changing `offset`) will slow down the game.
+ */
+export type SerializedLight = {
+	/**
+	 * HSV. Value can be above 1 for greater brightness, but it will result in a
+	 * white circle in the middle.
+	 */
+	color: Vector3;
+	/** The range of the light. */
+	falloff?: number;
+	/**
+	 * Whether the light may move. If the light is false, the client can do
+	 * optimizations by only casting shadows of entities that won't move
+	 * (`isStatic`) once instead of every frame.
+	 *
+	 * Prefer having only `willMove: false` lights. Clients can only handle up to
+	 * about 3 `willMove: true` lights. Every `willMove: true` light adds *six*
+	 * more draw calls to every frame, so the first mobile light will make the
+	 * game seven times laggier.
+	 */
+	willMove: boolean;
+	offset?: Vector3;
 };
 
 export type SerializedBody = {

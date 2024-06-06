@@ -8,6 +8,7 @@ import { Game } from "../Game";
 import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
+import { BossEntity } from "./BossEntity";
 
 const COYOTE_FRAMES = 10;
 const WALK_STEP_DIST = 2.5;
@@ -37,13 +38,16 @@ export abstract class PlayerEntity extends Entity {
 	#maxGroundSpeedChange: number;
 	#maxAirSpeedChange: number;
 
-	// shapes
-	#eyeHeight: number;
+	// shapes (the top sphere is the center of the entity)
 	#cylinderHeight: number;
 	#capsuleRadius: number;
 	#cylinder: phys.Cylinder;
 	#sphereTop: phys.Sphere;
 	#sphereBot: phys.Sphere;
+	/** The Y offset of the top of the entity. */
+	headOffset: number;
+	/** The Y offset (should be negative) of the bottom of the entity. */
+	footOffset: number;
 
 	// coyote countdown
 	#coyoteCounter: number;
@@ -57,7 +61,7 @@ export abstract class PlayerEntity extends Entity {
 
 	constructor(
 		game: Game,
-		pos: Vector3,
+		footPos: Vector3,
 		model: EntityModel[] = [],
 		mass: number,
 		capsuleHeight: number,
@@ -79,9 +83,12 @@ export abstract class PlayerEntity extends Entity {
 		this.onGround = false;
 		this.#capsuleRadius = capsuleRadius;
 		this.#cylinderHeight = capsuleHeight - 2 * capsuleRadius;
-		this.#eyeHeight = capsuleHeight - capsuleRadius;
+		this.headOffset = this.#capsuleRadius;
+		this.footOffset = -this.#cylinderHeight - this.#capsuleRadius;
 		this.#maxGroundSpeedChange = maxGroundSpeedChange;
 		this.#maxAirSpeedChange = maxAirSpeedChange;
+
+		const pos = [footPos[0], footPos[1] - this.footOffset, footPos[2]];
 
 		this.body = new phys.Body({
 			mass: mass,
@@ -247,11 +254,12 @@ export abstract class PlayerEntity extends Entity {
 
 		for (const entity of entities) {
 			if (entity instanceof PlayerEntity) {
-				if (entity.isBoss) {
+				if (entity instanceof BossEntity) {
 					return {
 						type: "hit-mini-boss",
 						commit: () => {
 							this.game.playerHitBoss(entity);
+							this.game.playDamageFilter(entity.id);
 						},
 					};
 				}
@@ -272,7 +280,10 @@ export abstract class PlayerEntity extends Entity {
 					type: currentStage === "combat" ? "combat:damage" : "crafting-stage:slap-player",
 					commit: () => {
 						console.log("attack", entity.id);
-						entity.takeDamage(damage);
+						if (damage > 0) {
+							entity.takeDamage(damage);
+							this.game.playDamageFilter(entity.id);
+						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100),
@@ -341,8 +352,8 @@ export abstract class PlayerEntity extends Entity {
 				...this.model,
 				{
 					text: this.displayName,
-					height: 0.2,
-					offset: [0, 0.8, 0],
+					height: 0.3,
+					offset: [0, this.headOffset + 0.6, 0],
 					rotation: [0, Math.SQRT1_2, 0, Math.SQRT1_2],
 					font: { weight: "bold" },
 				},
@@ -358,7 +369,7 @@ export abstract class PlayerEntity extends Entity {
 							scale: 0.1,
 							offset: [
 								Math.cos((angle + (Date.now() / radius) * 0.00005 * revolutionSpeed) * 2 * Math.PI) * radius,
-								0.6 + Math.cos((angle + Date.now() / 20000) * 10 * Math.PI) * 0.05 + ring * 0.4,
+								this.headOffset + 0.3 + Math.cos((angle + Date.now() / 20000) * 10 * Math.PI) * 0.05 + ring * 0.4,
 								Math.sin((angle + (Date.now() / radius) * 0.00005 * revolutionSpeed) * 2 * Math.PI) * radius,
 							],
 						};
@@ -391,5 +402,14 @@ export abstract class PlayerEntity extends Entity {
 
 	reset() {
 		this.health = this.initHealth;
+	}
+
+	/**
+	 * Since `getPos` gets the position at the camera, this gets the position of
+	 * the player's foot.
+	 */
+	getFootPos(): Vector3 {
+		const [x, y, z] = this.getPos();
+		return [x, y + this.footOffset, z];
 	}
 }

@@ -35,6 +35,11 @@ export class Transition {
 		}
 	}
 
+	setValueInstant(value: number): void {
+		this.#target = value;
+		this.#delta = 0;
+	}
+
 	setTarget(target: number, time = Date.now()): void {
 		if (target === this.#target) {
 			return;
