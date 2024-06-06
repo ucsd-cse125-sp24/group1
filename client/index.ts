@@ -40,7 +40,6 @@ if (errorWindow instanceof HTMLDialogElement) {
 }
 
 const playerName = await ensureName();
-console.log("hello", playerName);
 
 const params = new URL(window.location.href).searchParams;
 const wsUrl = params.get("ws") ?? window.location.href.replace(/^http/, "ws").replace(/\/$/, "");

@@ -24,10 +24,10 @@ export class HeroEntity extends PlayerEntity {
 	isBoss = false;
 	initHealth = 3;
 
-	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
+	constructor(game: Game, footPos: Vector3, model: EntityModel[] = []) {
 		super(
 			game,
-			pos,
+			footPos,
 			model,
 			10,
 			HERO_CAPSULE_HEIGHT,

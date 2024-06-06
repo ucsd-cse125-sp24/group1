@@ -7,9 +7,9 @@ import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 
-const PLAYER_INTERACTION_RANGE = 7.0;
-const BOSS_CAPSULE_HEIGHT = 4;
-const BOSS_CAPSULE_RADIUS = 1;
+const PLAYER_INTERACTION_RANGE = 10;
+const BOSS_CAPSULE_HEIGHT = 7.5;
+const BOSS_CAPSULE_RADIUS = 1.5;
 const BOSS_WALK_SPEED = 8;
 /**
  * Maximum change in horizontal velocity that can be caused by the player in one
@@ -29,17 +29,16 @@ export class BigBossEntity extends PlayerEntity {
 	previousAttackTick: number;
 	chargeTicks: number;
 
-	constructor(game: Game, pos: Vector3, model: EntityModel[] = []) {
+	constructor(game: Game, footPos: Vector3) {
+		const model = {
+			modelId: "mushroom_king" as const,
+			offset: [0, 0, 0] as Vector3,
+			scale: 1,
+		};
 		super(
 			game,
-			pos,
-			[
-				{
-					modelId: "mushroom_king",
-					offset: [0, -0.75, 0],
-					scale: 1,
-				},
-			],
+			footPos,
+			[model],
 			10,
 			BOSS_CAPSULE_HEIGHT,
 			BOSS_CAPSULE_RADIUS,
@@ -49,6 +48,7 @@ export class BigBossEntity extends PlayerEntity {
 			BOSS_JUMP_SPEED,
 			PLAYER_INTERACTION_RANGE,
 		);
+		model.offset[1] = this.footOffset;
 
 		this.previousAttackTick = this.game.getCurrentTick();
 		this.chargeTicks = 0;

@@ -24,10 +24,10 @@ export class BossEntity extends PlayerEntity {
 	isBoss = true;
 	initHealth = 100;
 
-	constructor(game: Game, pos: Vector3) {
+	constructor(game: Game, footPos: Vector3) {
 		super(
 			game,
-			pos,
+			footPos,
 			[
 				{
 					modelId: "mushroom_guy",

@@ -42,6 +42,7 @@ import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
 import { CubeEntity } from "./entities/CubeEntity";
+import { BigBossEntity } from "./entities/BigBossEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -64,7 +65,7 @@ const itemModels: ItemType[] = [
 /** Length of the crafting stage in milliseconds */
 const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000; // 0.5 minutes
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 2; // 0.5 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -283,6 +284,23 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 */
 	#transitionToCombat() {
 		this.#currentStage = { type: "combat", startTime: Date.now(), endTime: Date.now() + COMBAT_STAGE_LENGTH };
+
+		for (const player of this.#players.values()) {
+			const oldBoss = player.entity;
+			if (!(oldBoss instanceof BossEntity)) {
+				continue;
+			}
+			this.addToDeleteQueue(oldBoss.id);
+			player.entity = new BigBossEntity(this, oldBoss.getFootPos());
+			player.entity.reset();
+			this.addToCreateQueue(player.entity);
+			player.conn.send({
+				type: "camera-lock",
+				entityId: player.entity.id,
+				freeRotation: true,
+				pov: "first-person",
+			});
+		}
 	}
 
 	/**
@@ -516,7 +534,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 				player.entity = this.#createPlayerEntity(
 					this.#createdInputs.indexOf(player.input),
-					oldEntity?.getPos() ?? [0, 0, 0],
+					oldEntity?.getFootPos() ?? [0, 0, 0],
 					data,
 				);
 
