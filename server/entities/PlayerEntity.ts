@@ -131,18 +131,28 @@ export abstract class PlayerEntity extends Entity {
 		this.#lastSoundIsLeft = false;
 	}
 
+	checkOnGround(): boolean {
+		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.5, 0, 0));
+		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.5, 0, 0));
+		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.5));
+		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.5));
+		const offset = new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0);
+
+		return (
+			this.game.raycast(this.body.position, this.body.position.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posFront, posFront.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posBack, posBack.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posLeft, posLeft.vsub(offset), {}, this).length > 0 ||
+			this.game.raycast(posRight, posRight.vsub(offset), {}, this).length > 0
+		);
+	}
+
 	move(movement: MovementInfo): void {
 		//console.log(this.getPos());
 
 		this.lookDir = new phys.Vec3(...movement.lookDir);
 
-		this.onGround =
-			this.game.raycast(
-				this.body.position,
-				this.body.position.vsub(new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0)),
-				{},
-				this,
-			).length > 0;
+		this.onGround = this.checkOnGround();
 
 		if (this.#upwardCounter > 0) this.#coyoteCounter = 0;
 		else if (this.onGround) this.#coyoteCounter = COYOTE_FRAMES;
