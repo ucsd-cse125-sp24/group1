@@ -133,10 +133,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
 	 */
-	#currentStage: GameStage = {
-		type: "lobby",
-		previousWinner: null,
-	};
+	#currentStage: GameStage = { type: "lobby" };
 
 	constructor() {
 		this.#createdInputs = [];
@@ -191,7 +188,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the game in the Lobby state
 	 */
 	async #makeLobby() {
-		let camera = new CameraEntity(this, [0, 115, 0], [-20, 90, 0], "lobby-camera");
+		let camera = new CameraEntity(this, [0, 115, 0], [-20, 45, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
 		let lobbyFloor = new phys.Body({
@@ -464,7 +461,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	/**
 	 * Check whether either side has met their win condition
 	 */
-	#checkGameOver() {
+	#checkGameOver(endTime: number) {
 		let isAnyHeroAlive = true;
 		let isAnyBossAlive = false;
 		for (const { entity } of this.#players.values()) {
@@ -479,15 +476,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 			}
 		}
-		const endTime = this.#currentStage.type === "lobby" ? Number.POSITIVE_INFINITY : this.#currentStage.endTime;
 		if (!isAnyBossAlive || Date.now() >= endTime) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
-			this.#currentStage = { type: "lobby", previousWinner: "hero" };
+			this.#currentStage = { type: "gameover", winner: "hero" };
 		} else if (!isAnyHeroAlive || (this.#minecart && this.#minecart.health <= 0)) {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
-			this.#currentStage = { type: "lobby", previousWinner: "boss" };
+			this.#currentStage = { type: "gameover", winner: "boss" };
 		} else {
 			return;
 		}
@@ -749,6 +745,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 				break;
 			}
+			case "return-to-lobby": {
+				if (this.#currentStage.type === "gameover") {
+					this.#reset();
+					this.#makeLobby();
+				}
+				break;
+			}
 			case "--debug-skip-stage": {
 				switch (this.#currentStage.type) {
 					case "lobby": {
@@ -911,7 +914,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				break;
 			}
 			case "combat": {
-				this.#checkGameOver();
+				this.#checkGameOver(this.#currentStage.endTime);
 				break;
 			}
 		}
@@ -945,10 +948,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	#reset() {
-		this.#currentStage = {
-			type: "lobby",
-			previousWinner: null,
-		};
+		this.#currentStage = { type: "lobby" };
 		for (let entity of [...this.#entities.values()]) {
 			this.#unregisterEntity(entity);
 		}

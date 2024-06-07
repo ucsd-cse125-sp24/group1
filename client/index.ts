@@ -131,7 +131,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 
 			gameUi.render(data, gameState);
 			pauseMenu.render(data, gameState);
-			if (data.stage.type === "lobby" && gameState?.stage.type !== "lobby") {
+			if (
+				(data.stage.type === "lobby" || data.stage.type === "gameover") &&
+				gameState?.stage.type !== "lobby" &&
+				gameState?.stage.type !== "gameover"
+			) {
 				unlockPointer();
 				gameUi.hide();
 				pauseMenu.show();
@@ -370,7 +374,7 @@ const inputListener = new InputListener({
 		}
 		if (inputs.cycleWireframe && !debugInputs.cycleWireframe) {
 			wireframe = (wireframe + 1) % 3;
-			connection.send({type: "--debug-wireframes", val: wireframe !== 0});
+			connection.send({ type: "--debug-wireframes", val: wireframe !== 0 });
 		}
 		if (inputs.toggleTones && !debugInputs.toggleTones) {
 			tones = !tones;

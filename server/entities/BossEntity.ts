@@ -82,4 +82,8 @@ export class BossEntity extends PlayerEntity {
 		}
 		return null;
 	}
+
+	reset() {
+		this.canPlaceTrap = true;
+	}
 }

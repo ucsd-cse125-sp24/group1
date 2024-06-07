@@ -22,6 +22,7 @@ export type ClientMessage =
 	| ChangeDisplayName
 	| ChangeRole
 	| StartGame
+	| ReturnToLobby
 	| DebugMessages;
 
 export type DebugMessages =
@@ -56,8 +57,6 @@ export type ServerControlMessage = {
 export type GameStage =
 	| {
 			type: "lobby";
-			/** Null if no games have been played yet */
-			previousWinner: "hero" | "boss" | null;
 	  }
 	| {
 			type: "crafting";
@@ -74,7 +73,6 @@ export type GameStage =
 	| {
 			type: "gameover";
 			winner: "hero" | "boss";
-			endTime: number;
 	  };
 
 export type EntireGameState = {
@@ -247,6 +245,10 @@ export type ChangeRole = {
 
 export type StartGame = {
 	type: "start-game";
+};
+
+export type ReturnToLobby = {
+	type: "return-to-lobby";
 };
 
 export type EntityModelObject = {

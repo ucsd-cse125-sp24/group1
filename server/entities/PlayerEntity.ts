@@ -511,6 +511,7 @@ export abstract class PlayerEntity extends Entity {
 
 	reset() {
 		this.health = this.initHealth;
+		this.resetSpeed();
 	}
 
 	/**

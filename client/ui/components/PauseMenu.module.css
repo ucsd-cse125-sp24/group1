@@ -127,6 +127,14 @@
 	opacity: 0;
 }
 
+.replayBtn {
+	background-color: #eab308;
+	color: black;
+	&:not(:disabled):hover {
+		background-color: #facc15;
+	}
+}
+
 .hide {
 	opacity: 0;
 	visibility: hidden;

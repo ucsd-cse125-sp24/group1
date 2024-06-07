@@ -8,7 +8,7 @@ export class RoleSelector {
 	#selectHeroBtn = elem("button", { classes: ["button", styles.heroBtn], textContent: "Join team Heroes" });
 	#spectateBtn = elem("button", { classes: ["button", styles.spectateBtn], textContent: "Spectate" });
 	element = elem("div", {
-		classes: [styles.wrapper, /* styles.hide, */ "trap-clicks"],
+		classes: [styles.wrapper, styles.hide, "trap-clicks"],
 		contents: [
 			elem("div", { className: styles.buttonRow, contents: [this.#selectBossBtn, this.#selectHeroBtn] }),
 			this.#spectateBtn,
@@ -36,13 +36,14 @@ export class RoleSelector {
 			this.#spectateBtn.disabled = role === "spectator";
 		}
 
-		// TEMP
-		// if (state.stage.type !== previous?.stage.type) {
-		// 	if (state.stage.type === "lobby") {
-		// 		this.element.classList.remove(styles.hide);
-		// 	} else {
-		// 		this.element.classList.add(styles.hide);
-		// 	}
-		// }
+		if (state.stage.type !== previous?.stage.type) {
+			// Can change this to `=== "lobby"` if we don't want to allow joining the
+			// game late
+			if (state.stage.type !== "gameover") {
+				this.element.classList.remove(styles.hide);
+			} else {
+				this.element.classList.add(styles.hide);
+			}
+		}
 	}
 }
