@@ -189,6 +189,11 @@ export class CraftingTable extends InteractableEntity {
 			if (!this.ingredients.includes(otherEntity.type)) {
 				return;
 			}
+			if (this.itemList.has(otherEntity)) {
+				return;
+			}
+			otherEntity.canBeAbsorbedByCraftingTable = false;
+
 			// console.log(this.ingredients);
 			// console.log(otherEntity.type);
 
