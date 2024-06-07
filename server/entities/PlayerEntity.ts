@@ -107,10 +107,10 @@ export abstract class PlayerEntity extends Entity {
 
 		// prettier-ignore
 		this.animator = new Animator({
-			punch: new Animation([
-				{ model: ["chair"], duration: 5 },
-				{ model: ["donut"], duration: 5 },
-				{ model: ["fish1"], duration: 5 },
+			slap: new Animation([
+				{ model: ["player_blue_slap1"], duration: 5 },
+				{ model: ["player_blue_slap2"], duration: 5 },
+				{ model: ["player_blue_slap3"], duration: 5 },
 			]),
 			jump: new Animation([
 				{ model: ["chair"], duration: 5 },
@@ -338,7 +338,7 @@ export abstract class PlayerEntity extends Entity {
 						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
 							this.game.playSound("hitBig", entity.getPos());
 						else this.game.playSound("hit", entity.getPos());
-						//this.animator.play("punch");
+						this.animator.play("slap");
 					},
 				};
 			} else if (entities[0] instanceof InteractableEntity) {
