@@ -7,6 +7,8 @@ import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { MinecartEntity } from "./MinecartEntity";
+import { log } from "../net/_tempDebugLog";
+
 
 const PLAYER_INTERACTION_RANGE = 12;
 const BOSS_CAPSULE_HEIGHT = 7.5;
@@ -19,13 +21,13 @@ const BOSS_WALK_SPEED = 10;
 const MAX_BOSS_GROUND_SPEED_CHANGE = 2.5;
 /** Maximum change in horizontal velocity that can occur while in the air */
 const MAX_BOSS_AIR_SPEED_CHANGE = 1;
-const BOSS_JUMP_SPEED = 21;
+const BOSS_JUMP_SPEED = 20;
 
 const BOSS_ATTACK_COOLDOWN = 50; // ticks
 
 export class BigBossEntity extends PlayerEntity {
 	isBoss = true;
-	initHealth = 100;
+	initHealth = 75;
 
 	previousAttackTick: number;
 	previousShootTick: number;
@@ -42,7 +44,7 @@ export class BigBossEntity extends PlayerEntity {
 			game,
 			footPos,
 			[model],
-			10,
+			8,
 			BOSS_CAPSULE_HEIGHT,
 			BOSS_CAPSULE_RADIUS,
 			BOSS_WALK_SPEED,
@@ -84,23 +86,24 @@ export class BigBossEntity extends PlayerEntity {
 					//FOR TESTING
 					//console.log(betterDirection, i);
 
-					entities.push(...this.game.raycast(this.body.position, dir, {}, this));
+					entities.push(...this.game.raycast(this.body.position, betterDirection, {}, this));
 				}
 
 				for (const entity of entities) {
 					if (entity instanceof HeroEntity || entity instanceof MinecartEntity) {
 						if (this.game.getCurrentStage().type === "combat") {
 							entity.takeDamage(1);
+							log("Minecart taking damage");
 						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
 							new Vec3(this.lookDir.x * 300, Math.abs(this.lookDir.y) * 150 + 50, this.lookDir.z * 300),
 						);
 						this.game.playSound("hit", entity.getPos());
-						this.animator.play("punch");
+						//this.animator.play("punch");
 					} else if (entities[0] instanceof InteractableEntity) {
 						entities[0].hit(this);
-						this.animator.play("punch");
+						//this.animator.play("punch");
 					}
 				}
 				this.previousAttackTick = this.game.getCurrentTick();
@@ -122,15 +125,15 @@ export class BigBossEntity extends PlayerEntity {
 
 				let quat = new Quaternion(0, 0, 0, 1);
 				let base = this.body.position.vadd(lookDir.scale(this.interactionRange));
-				for (let i = 0; i < 5; i++) {
-					quat.setFromAxisAngle(new Vec3(0, 1, 0), -2 * (Math.PI / 30) + i * (Math.PI / 30));
+				for (let i = 0; i < 3; i++) {
+					quat.setFromAxisAngle(new Vec3(0, 1, 0), -1 * (Math.PI / 30) + i * (Math.PI / 30));
 					let dir = quat.vmult(lookDir.scale(6));
 					let betterDirection = this.body.position.vadd(dir);
 
 					this.game.shootArrow(betterDirection, dir.scale(10), 1, [{ modelId: "mushroom" }]);
 					//console.log(dir, betterDirection, betterDirection.unit(), this.body.position.vadd(betterDirection.unit()), this.getPos());
 				}
-				this.animator.play("pee");
+				//this.animator.play("pee");
 				this.previousShootTick = this.game.getCurrentTick();
 			},
 		};

@@ -16,6 +16,8 @@ const WALK_STEP_DIST = 2.4;
 const MAX_HEALTH_RING_SIZE = 25;
 const BOOST_RATIO = 11.2;
 const KNOCKBACK_RATIO = 1.5;
+const KNOCKBACK_RATIO_SWORD = 3;
+const KNOCKBACK_RATIO_GAMER_SWORD = 10;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -38,6 +40,7 @@ export abstract class PlayerEntity extends Entity {
 
 	// movement
 	walkSpeed: number;
+	initialSpeed: number;
 	jumpSpeed: number;
 	#maxGroundSpeedChange: number;
 	#maxAirSpeedChange: number;
@@ -84,6 +87,7 @@ export abstract class PlayerEntity extends Entity {
 		this.lookDir = new phys.Vec3(0, -1, 0);
 
 		this.walkSpeed = walkSpeed;
+		this.initialSpeed = walkSpeed;
 		this.jumpSpeed = jumpSpeed;
 		this.onGround = false;
 		this.#capsuleRadius = capsuleRadius;
@@ -133,10 +137,10 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	checkOnGround(): boolean {
-		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.5, 0, 0));
-		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.5, 0, 0));
-		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.5));
-		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.5));
+		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.6, 0, 0));
+		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.6, 0, 0));
+		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.6));
+		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.6));
 		const offset = new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0);
 
 		return (
@@ -280,7 +284,7 @@ export abstract class PlayerEntity extends Entity {
 							isGamer ? 6 : 3,
 							[{ modelId: "donut" }],
 						);
-						this.animator.play("punch");
+						//this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
 					},
 				};
@@ -327,16 +331,24 @@ export abstract class PlayerEntity extends Entity {
 							// Only have a cooldown for damage-dealing attacks
 							this.#previousAttackTime = Date.now();
 						}
+
+						const knockback =
+							this.itemInHands?.type == "gamer_sword"
+								? KNOCKBACK_RATIO_GAMER_SWORD
+								: this.itemInHands?.type == "sword"
+									? KNOCKBACK_RATIO_SWORD
+									: KNOCKBACK_RATIO;
+
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100).scale(
-								KNOCKBACK_RATIO,
+								knockback,
 							),
 						);
 						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
 							this.game.playSound("hitBig", entity.getPos());
 						else this.game.playSound("hit", entity.getPos());
-						this.animator.play("punch");
+						//this.animator.play("punch");
 					},
 				};
 			} else if (entities[0] instanceof InteractableEntity) {
@@ -346,7 +358,7 @@ export abstract class PlayerEntity extends Entity {
 							...action,
 							commit: () => {
 								action.commit();
-								this.animator.play("punch");
+								//this.animator.play("punch");
 								// Allow spam-slapping items
 								// this.#previousAttackTime = Date.now();
 							},
@@ -436,6 +448,10 @@ export abstract class PlayerEntity extends Entity {
 
 	setSpeed(speed: number) {
 		this.walkSpeed = speed;
+	}
+
+	resetSpeed() {
+		this.walkSpeed = this.initialSpeed;
 	}
 
 	/** returns 0 if don't, 1 if left, 2 if right */

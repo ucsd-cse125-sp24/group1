@@ -64,7 +64,13 @@ export class CraftingTable extends InteractableEntity {
 	// eject direction
 	#ejectDir: phys.Vec3;
 
-	constructor(game: Game, pos: Vector3, type: CrafterType, recipes: Recipe[]) {
+	constructor(
+		game: Game,
+		pos: Vector3,
+		type: CrafterType,
+		recipes: Recipe[],
+		ejectDir: phys.Vec3 = new phys.Vec3(0, 0, 0),
+	) {
 		super(game, modelForCrafterType[type]);
 
 		this.itemList = new Set();
@@ -82,9 +88,13 @@ export class CraftingTable extends InteractableEntity {
 
 		addColliders(this.body, colliderShapeForCrafterType[type]);
 
-		this.#ejectDir = new phys.Vec3(...pos).negate();
-		this.#ejectDir.set(this.#ejectDir.x, 0, this.#ejectDir.z);
-		this.#ejectDir.normalize();
+		if (ejectDir.length() == 0) {
+			this.#ejectDir = new phys.Vec3(...pos).negate();
+			this.#ejectDir.set(this.#ejectDir.x, 0, this.#ejectDir.z);
+			this.#ejectDir.normalize();
+		} else {
+			this.#ejectDir = ejectDir.clone();
+		}
 	}
 
 	#lastMessage = "";
@@ -141,14 +151,14 @@ export class CraftingTable extends InteractableEntity {
 		// wherever it was before it got absorbed)
 		// launch toward spawn but a little randomized
 		const dir = this.#ejectDir.clone();
-		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.8, (Math.random() - 0.5) * 0.2));
+		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.9, (Math.random() - 0.5) * 0.2));
 		dir.normalize();
-		item.body.position = this.body.position.vadd(new phys.Vec3(0, 3.5, 0)).vadd(dir.scale(3.2));
+		item.body.position = this.body.position.vadd(new phys.Vec3(0, 2, 0)).vadd(dir.scale(2));
 		this.game.addToCreateQueue(item);
 
 		// console.log(this.body.position + ": " + dir);
 
-		item.throw(dir.scale(70));
+		item.throw(dir.scale(65));
 	}
 
 	interact(player: PlayerEntity): Action<Use> | null {
@@ -179,6 +189,11 @@ export class CraftingTable extends InteractableEntity {
 			if (!this.ingredients.includes(otherEntity.type)) {
 				return;
 			}
+			if (this.itemList.has(otherEntity)) {
+				return;
+			}
+			otherEntity.canBeAbsorbedByCraftingTable = false;
+
 			// console.log(this.ingredients);
 			// console.log(otherEntity.type);
 
