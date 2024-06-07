@@ -348,7 +348,7 @@ export abstract class PlayerEntity extends Entity {
 							...action,
 							commit: () => {
 								action.commit();
-								//this.animator.play("punch");
+								this.animator.play("slap");
 								// Allow spam-slapping items
 								// this.#previousAttackTime = Date.now();
 							},
