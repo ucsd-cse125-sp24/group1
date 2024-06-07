@@ -28,6 +28,7 @@ export abstract class PlayerEntity extends Entity {
 	/** Minimum time between attacks in milliseconds */
 	attackCooldown: number = 500;
 	displayName = `Player ${this.id}`;
+	isInvulnerableThisTick = false;
 
 	onGround: boolean;
 	jumping = false;
@@ -134,10 +135,10 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	checkOnGround(): boolean {
-		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.5, 0, 0));
-		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.5, 0, 0));
-		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.5));
-		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.5));
+		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.6, 0, 0));
+		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.6, 0, 0));
+		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.6));
+		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.6));
 		const offset = new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0);
 
 		return (
@@ -191,9 +192,15 @@ export abstract class PlayerEntity extends Entity {
 		this.body.applyImpulse(deltaVelocity.scale(this.body.mass));
 
 		if (this.itemInHands instanceof Item) {
-			const offset = this.lookDir.unit().scale(1.5).vadd(this.lookDir.cross(rightVector).unit().scale(0.5));
+			let offset = this.lookDir
+				.unit()
+				.scale(1.5)
+				.vadd(this.lookDir.cross(rightVector).unit().scale(0.5))
+				.vadd(rightVector.unit().scale(0.75));
+
 			this.itemInHands.body.position = this.body.position.vadd(offset);
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
+
 			this.itemInHands.body.quaternion = new phys.Quaternion(
 				...mat4.getRotation(
 					quat.create(),
@@ -246,7 +253,7 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 		if (entities[0] instanceof InteractableEntity) {
-			if(entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
+			if (entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
 				return this.game.playerEquipArmor(entities[0], this);
 			}
 			return entities[0].interact(this);
@@ -275,7 +282,7 @@ export abstract class PlayerEntity extends Entity {
 							isGamer ? 6 : 3,
 							[{ modelId: "donut" }],
 						);
-						this.animator.play("punch");
+						//this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
 					},
 				};
@@ -331,7 +338,7 @@ export abstract class PlayerEntity extends Entity {
 						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
 							this.game.playSound("hitBig", entity.getPos());
 						else this.game.playSound("hit", entity.getPos());
-						this.animator.play("punch");
+						//this.animator.play("punch");
 					},
 				};
 			} else if (entities[0] instanceof InteractableEntity) {
@@ -341,7 +348,7 @@ export abstract class PlayerEntity extends Entity {
 							...action,
 							commit: () => {
 								action.commit();
-								this.animator.play("punch");
+								//this.animator.play("punch");
 								// Allow spam-slapping items
 								// this.#previousAttackTime = Date.now();
 							},
@@ -368,12 +375,16 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	takeDamage(damage: number): void {
+		if (this.isInvulnerableThisTick) {
+			return;
+		}
 		this.health -= damage;
 		if (this.health <= 0) {
 			this.health = 0;
 			// Die
 			this.game.addToDeleteQueue(this.id);
 		}
+		this.isInvulnerableThisTick = true;
 	}
 
 	serialize(): SerializedEntity {

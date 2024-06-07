@@ -80,7 +80,7 @@ const SPAWN_LOCATION = [
 /** Length of the crafting stage in milliseconds */
 const CRAFT_STAGE_LENGTH = 60 * 1000 * 6; // 5 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000 * 3; // 2 minutes
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 1.5; // 2 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -243,11 +243,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 
-		let Furnace = new CraftingTable(this, [-17.7, -3, -24], "furnace", [
-			{ ingredients: ["raw_iron", "wood"], output: "iron" },
-			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
-		]);
-		Furnace.body.quaternion = halfSquat;
+		let Furnace = new CraftingTable(
+			this,
+			[-17.7, -3.5, -24],
+			"furnace",
+			[
+				{ ingredients: ["raw_iron", "wood"], output: "iron" },
+				{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
+			],
+			new phys.Vec3(0, 0, 1),
+		);
+		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
+
 		this.#registerEntity(Furnace);
 
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
@@ -256,7 +263,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		]);
 		this.#registerEntity(WeaponCrafter);
 
-		let FletchingTable = new CraftingTable(this, [-15, -3.5, 26], "fletching", [
+		// TEMP: for testing crafter
+		for (let i = 0; i < 5; i++) {
+			this.#registerEntity(new Item(this, "wood", [10, -3, 20], "resource"));
+			this.#registerEntity(new Item(this, "iron", [10, -3, 20], "resource"));
+		}
+
+		let FletchingTable = new CraftingTable(this, [-15, -3.9, 26], "fletching", [
 			{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
 			{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 			//probably should add arrows for when we get actual combat ngl
@@ -264,36 +277,43 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
 
-		let SauceTable = new CraftingTable(this, [12.5, -3, 10], "magic_table", [
-			{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
-			{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
-			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-			//probably should add arrows for when we get actual combat ngl
-		]);
+		let SauceTable = new CraftingTable(
+			this,
+			[12.5, -4, 10],
+			"magic_table",
+			[
+				{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
+				{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
+				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
+				//probably should add arrows for when we get actual combat ngl
+			],
+			new phys.Vec3(0, 0, 1),
+		);
 		SauceTable.body.quaternion = halfSquat;
 		this.#registerEntity(SauceTable);
 
-		let woodSpawner = new Spawner(this, [-5, -3.5, -25.5], "wood", "wood", "axe");
-		woodSpawner.body.quaternion = halfSquat;
+		let woodSpawner = new Spawner(this, [-5, -4.8, -24], "wood", "wood", "axe");
+		woodSpawner.body.quaternion = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), (3 * Math.PI) / 4);
 		this.#registerEntity(woodSpawner);
 
-		let woodSpawner2 = new Spawner(this, [-5, -3.5, -29.5], "wood2", "wood", "axe");
+		let woodSpawner2 = new Spawner(this, [-7, -3.7, -27], "wood2", "wood", "axe");
 		woodSpawner2.body.quaternion = halfSquat;
 		this.#registerEntity(woodSpawner2);
 
-		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "iron", "raw_iron", "pickaxe");
+		let oreSpawner = new Spawner(this, [0, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
 
-		let oreSpawner2 = new Spawner(this, [10, -17.5, 21], "iron", "raw_iron", "pickaxe");
+		let oreSpawner2 = new Spawner(this, [10, -17.65, 21], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner2);
 
 		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "string", "shears");
+		stringSpawner.body.quaternion = halfSquat.mult(fullSquat);
 		this.#registerEntity(stringSpawner);
 
-		let mushroomSpawner = new Spawner(this, [-18, -19, 4], "mushroom", "mushroom", "knife");
+		let mushroomSpawner = new Spawner(this, [-18, -19.05, 4], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner);
 
-		let mushroomSpawner2 = new Spawner(this, [-1, -19, 10.5], "mushroom", "mushroom", "knife");
+		let mushroomSpawner2 = new Spawner(this, [-1, -19.05, 10.5], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner2);
 
 		let sampleIorn = new Item(this, "knife", [5, 0, 5], "resource");
@@ -376,10 +396,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.#registerEntity(entity);
 		}
 		const debugSpawnerEntities = [
-			...(["string", "iron", "mushroom", "wood"] as const).map(
+			...(["string", "iron", "mushroom", "wood", "wood2"] as const).map(
 				(type) => new Spawner(this, [0, 0, 0], type, "wood", "wood"),
 			),
-			...(["furnace", "weapons", "fletching"] as const).map((type) => new CraftingTable(this, [0, 0, 0], type, [])),
+			...(["furnace", "weapons", "fletching", "magic_table"] as const).map(
+				(type) => new CraftingTable(this, [0, 0, 0], type, []),
+			),
 		];
 		for (const [i, entity] of debugSpawnerEntities.entries()) {
 			entity.body.position = new phys.Vec3(
@@ -405,7 +427,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				continue;
 			}
 			this.addToDeleteQueue(oldBoss.id);
-			player.entity = new BigBossEntity(this, oldBoss.getFootPos());
+			player.entity = new BigBossEntity(this, [23, 0, 0]); //send them to the spawn area
 			player.entity.reset();
 			this.addToCreateQueue(player.entity);
 			player.conn.send({
@@ -427,7 +449,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * Check whether either side has met their win condition
 	 */
 	#checkGameOver() {
-		let isAnyHeroAlive = false;
+		let isAnyHeroAlive = true;
 		let isAnyBossAlive = false;
 		for (const { entity } of this.#players.values()) {
 			if (entity && entity.health > 0) {
@@ -591,7 +613,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				entity: null,
 				online: true,
 				name,
-				debug: false
+				debug: false,
 			};
 			this.#players.set(conn.id, player);
 		}
@@ -766,6 +788,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (!player.entity) {
 				continue;
 			}
+			player.entity.isInvulnerableThisTick = false;
 			let inputs = player.input.getInputs();
 			let posedge = player.input.getPosedge();
 
@@ -829,6 +852,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				);
 				log(`Player ${player.id.slice(0, 6)} spawned ${modelId}`);
 			}
+		}
+		if (this.#minecart !== null) {
+			this.#minecart.isInvulnerableThisTick = false;
 		}
 		this.#nextTick();
 	}

@@ -1,4 +1,4 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import { expect } from "../../../common/lib/expect";
 import particleVertexSource from "../../shaders/particle.vert";
 import particleFragmentSource from "../../shaders/particle.frag";
@@ -220,9 +220,10 @@ export class ParticleSystem implements Model {
 				if (range === undefined) {
 					return v;
 				}
-				const r0 = Math.random() * range[0] - range[0] / 2;
-				const r1 = Math.random() * range[1] - range[1] / 2;
-				const r2 = Math.random() * range[2] - range[2] / 2;
+				const randVector = vec3.random(vec3.create());
+				const r0 = randVector[0] * range[0] / 2;
+				const r1 = randVector[1] * range[1] / 2;
+				const r2 = randVector[2] * range[2] / 2;
 				return [v[0] + r0, v[1] + r1, v[2] + r2];
 			}).flat(),
 		);
