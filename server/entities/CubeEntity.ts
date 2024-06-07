@@ -6,6 +6,10 @@ import { SlipperyMaterial } from "../materials/SourceMaterials";
 import { Game } from "../Game";
 import { Entity } from "./Entity";
 
+
+/**
+ * DO NOT USE THIS YOU STUPID IDIONT
+ */
 export class CubeEntity extends Entity {
 	constructor(
 		game: Game,

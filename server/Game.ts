@@ -63,6 +63,8 @@ const itemModels: ItemType[] = [
 	"sword",
 	"wood",
 ];
+/** Spawn locations of the boss */
+const SPAWN_LOCATION = [[17, -4.17, 13.78], [5.45, -4.17, 29.58], [-19.52, -4.17, 18.27], [-7.65, -18.42,-23.25], [-3.13, -18.42, 6.05], [5.21, -18.42, 4.72], [-1.95, -18.42, 5.92]];
 
 /** Length of the crafting stage in milliseconds */
 const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
@@ -163,11 +165,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the game in the Lobby state
 	 */
 	async #makeLobby() {
-		let camera = new CameraEntity(this, [1000, 1005, 1000], [0, -10, 0], "lobby-camera");
+		let camera = new CameraEntity(this, [0, 115, 0], [30, 270, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
-		let lobbyFloor = new CubeEntity(this, [995, 1000, 995], [10, 10, 10], true);
-		this.#registerEntity(lobbyFloor);
+		let lobbyFloor = new phys.Body({
+			mass: 0,
+			position: new phys.Vec3(0, 100, 0),
+			shape: new phys.Box(new phys.Vec3(...[20,10,20])), 
+			type: phys.Body.STATIC
+		});
+		
+		this.#world.addBody(lobbyFloor);
 	}
 
 	// #region startGame
@@ -446,9 +454,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	resetBoss() {
 		if (this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
+		
 			if (this.#currentBoss) {
+				let randNum = (Math.random() * 10) % 7
 				this.#currentBoss.walkSpeed = 20;
-				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
+				this.#currentBoss.body.position = new phys.Vec3(SPAWN_LOCATION[randNum][0], SPAWN_LOCATION[randNum][1], SPAWN_LOCATION[randNum][2]);
+
 			}
 		}
 	}
@@ -458,7 +469,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	playerHitBoss(boss: PlayerEntity) {
-		if (this.getBossTimer() < 0) {
+		this.setBossTimer(10);
+		if (this.getBossTimer() > 0) {
 			boss.walkSpeed = 0;
 		}
 	}
@@ -479,8 +491,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+		console.log(playerNum);
 		if (this.#currentStage.type === "lobby") {
-			pos = [1000, 1005 + playerNum * 5, 1000];
+			pos = [(2 * playerNum - 6) % 12, 115, 0];
+			if (playerNum === 0) {
+				for (let i = 1; i < 5; i++) {
+					this.#createPlayerEntity(i, pos, {type:"change-role",role, skin});
+				}
+			}
 		}
 		let entity;
 		switch (role) {

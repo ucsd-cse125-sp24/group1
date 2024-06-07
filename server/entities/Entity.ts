@@ -79,12 +79,13 @@ export abstract class Entity {
 	static readonly EPSILON = 0.1;
 
 	getBitFlag(): number {
-		if (this.tags.size == 0) return -1;
+		return -1;
+		/*if (this.tags.size == 0) return -1;
 
 		let flag = 0;
 
 		if (flag == 0) return -1;
-		return flag;
+		return flag;*/
 	}
 
 	/** For logging entities to the console while debugging */
