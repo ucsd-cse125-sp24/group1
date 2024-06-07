@@ -12,7 +12,7 @@ import { BossEntity } from "./BossEntity";
 
 const COYOTE_FRAMES = 4;
 const UPWARD_FRAMES = 9;
-const WALK_STEP_DIST = 2;
+const WALK_STEP_DIST = 2.2;
 const MAX_HEALTH_RING_SIZE = 25;
 const BOOST_RATIO = 11.2;
 const KNOCKBACK_RATIO = 1.5;
@@ -309,6 +309,7 @@ export abstract class PlayerEntity extends Entity {
 						);
 						//this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
+						this.game.playSound("arrow", this.getPos());
 					},
 				};
 			}
@@ -450,6 +451,7 @@ export abstract class PlayerEntity extends Entity {
 		}
 		this.health -= damage;
 		if (this.health <= 0) {
+			this.game.playSound("death", this.getPos());
 			this.health = 0;
 			// Die
 			this.game.addToDeleteQueue(this.id);

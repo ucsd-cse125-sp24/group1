@@ -36,10 +36,22 @@ import walkRight4 from "./Step R 4.wav";
 import walkRight5 from "./Step R 5.wav";
 export { default as reverbImpulse } from "./AndrewsChurchConvReverb2.wav";
 // TODO: boss swing, boss projectiles
+import bossGrowl from "./Boss Growl.wav";
+import bossMelee from "./Boss Melee.wav";
+import bossRange from "./Boss Range.wav";
+import death from "./Death.wav";
+import arrow from "./Arrow Shoot.wav";
 
 export const sounds = {
 	/** Player tries to attack but it's not aimed at anything. */
 	attackFail,
+
+	bossGrowl,
+	bossMelee,
+	bossRange,
+
+	death,
+	arrow,
 	/**
 	 * A crafter ejects all items right after absorbing an item because it cannot
 	 * form a valid recipe.
