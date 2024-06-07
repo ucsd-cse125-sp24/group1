@@ -280,7 +280,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(woodSpawner);
 
 		let woodSpawner2 = new Spawner(this, [-5, -3.5, -29.5], "wood2", "wood", "axe");
-		woodSpawner2.body.quaternion = halfSquat;
+		woodSpawner2.body.quaternion = halfSquat.mult(halfSquat);
 		this.#registerEntity(woodSpawner2);
 
 		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "iron", "raw_iron", "pickaxe");
@@ -290,6 +290,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(oreSpawner2);
 
 		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "string", "shears");
+		stringSpawner.body.quaternion = halfSquat.mult(fullSquat);
 		this.#registerEntity(stringSpawner);
 
 		let mushroomSpawner = new Spawner(this, [-18, -19, 4], "mushroom", "mushroom", "knife");
@@ -407,7 +408,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				continue;
 			}
 			this.addToDeleteQueue(oldBoss.id);
-			player.entity = new BigBossEntity(this, oldBoss.getFootPos());
+			player.entity = new BigBossEntity(this, [23, 0, 0]); //send them to the spawn area
 			player.entity.reset();
 			this.addToCreateQueue(player.entity);
 			player.conn.send({
