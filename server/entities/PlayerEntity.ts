@@ -133,10 +133,10 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	checkOnGround(): boolean {
-		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.5, 0, 0));
-		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.5, 0, 0));
-		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.5));
-		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.5));
+		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.6, 0, 0));
+		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.6, 0, 0));
+		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.6));
+		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.6));
 		const offset = new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0);
 
 		return (
@@ -190,7 +190,9 @@ export abstract class PlayerEntity extends Entity {
 		this.body.applyImpulse(deltaVelocity.scale(this.body.mass));
 
 		if (this.itemInHands instanceof Item) {
-			let offset = this.lookDir.unit().scale(1.5)
+			let offset = this.lookDir
+				.unit()
+				.scale(1.5)
 				.vadd(this.lookDir.cross(rightVector).unit().scale(0.5))
 				.vadd(rightVector.unit().scale(0.75));
 
@@ -249,7 +251,7 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 		if (entities[0] instanceof InteractableEntity) {
-			if(entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
+			if (entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
 				return this.game.playerEquipArmor(entities[0], this);
 			}
 			return entities[0].interact(this);

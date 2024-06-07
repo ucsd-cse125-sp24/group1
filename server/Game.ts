@@ -246,10 +246,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 
-		let Furnace = new CraftingTable(this, [-17.7, -3, -24], "furnace", [
-			{ ingredients: ["raw_iron", "wood"], output: "iron" },
-			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
-		]);
+		let Furnace = new CraftingTable(
+			this,
+			[-17.7, -3, -24],
+			"furnace",
+			[
+				{ ingredients: ["raw_iron", "wood"], output: "iron" },
+				{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
+			],
+			new phys.Vec3(0, 0, 1),
+		);
 		Furnace.body.quaternion = halfSquat;
 		this.#registerEntity(Furnace);
 
@@ -267,12 +273,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
 
-		let SauceTable = new CraftingTable(this, [12.5, -3, 10], "magic_table", [
-			{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
-			{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
-			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-			//probably should add arrows for when we get actual combat ngl
-		]);
+		let SauceTable = new CraftingTable(
+			this,
+			[12.5, -3, 10],
+			"magic_table",
+			[
+				{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
+				{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
+				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
+				//probably should add arrows for when we get actual combat ngl
+			],
+			new phys.Vec3(0, 0, 1),
+		);
 		SauceTable.body.quaternion = halfSquat;
 		this.#registerEntity(SauceTable);
 
@@ -606,7 +618,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				entity: null,
 				online: true,
 				name,
-				debug: false
+				debug: false,
 			};
 			this.#players.set(conn.id, player);
 		}
