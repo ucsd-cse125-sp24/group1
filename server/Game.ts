@@ -273,6 +273,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let sampleIorn2 = new Item(this, "armor", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
 
+		this.#minecart = null;
 		this.#obstacles = [];
 		this.#obstacles.push(
 			new StaticEntity(this, [-27, 0, 0], new phys.Box(new phys.Vec3(2, 10, 5)), GroundMaterial, [
@@ -386,7 +387,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			});
 		}
 
-		this.#minecart = new MinecartEntity(this, new phys.Vec3(-72, 0, 2));
+		this.#minecart = new MinecartEntity(this, new phys.Vec3(-72, -2, 2));
 		this.addToCreateQueue(this.#minecart);
 		for (const entity of this.#obstacles) {
 			this.addToDeleteQueue(entity.id);
