@@ -78,9 +78,9 @@ const SPAWN_LOCATION = [
 ];
 
 /** Length of the crafting stage in milliseconds */
-const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
+const CRAFT_STAGE_LENGTH = 60 * 1000 * 6; // 5 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000 * 2; // 0.5 minutes
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 3; // 2 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -102,6 +102,7 @@ interface NetworkedPlayer {
 	id: string;
 	conn: Connection<ServerMessage>;
 	name: string;
+	debug: boolean;
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
@@ -295,7 +296,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let oreSpawner2 = new Spawner(this, [10, -17.65, 21], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner2);
 
-		let stringSpawner = new Spawner(this, [-14.5, -17.6, -20.75], "string", "string", "shears");
+		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "string", "shears");
+		stringSpawner.body.quaternion = halfSquat.mult(fullSquat);
 		this.#registerEntity(stringSpawner);
 
 		let mushroomSpawner = new Spawner(this, [-18, -19.05, 4], "mushroom", "mushroom", "knife");
@@ -415,7 +417,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				continue;
 			}
 			this.addToDeleteQueue(oldBoss.id);
-			player.entity = new BigBossEntity(this, oldBoss.getFootPos());
+			player.entity = new BigBossEntity(this, [23, 0, 0]); //send them to the spawn area
 			player.entity.reset();
 			this.addToCreateQueue(player.entity);
 			player.conn.send({
@@ -612,6 +614,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				entity: null,
 				online: true,
 				name,
+				debug: false,
 			};
 			this.#players.set(conn.id, player);
 		}
@@ -755,6 +758,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 				break;
 			}
+			case "--debug-wireframes":
+				const player = this.#players.get(conn.id);
+				console.log(player, data);
+				if (player) {
+					player.debug = data.val;
+				}
+				break;
 			default:
 				console.warn(`Unhandled message '${data["type"]}'`);
 		}
@@ -895,7 +905,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "entire-game-state",
 				stage: this.#currentStage,
 				entities: Object.fromEntries(Array.from(this.#entities.entries(), ([id, entity]) => [id, entity.serialize()])),
-				physicsBodies: this.#world.serialize(),
+				physicsBodies: player.debug ? this.#world.serialize() : undefined,
 				others: Array.from(this.#players.values(), (p) =>
 					p === player ? [] : [this.#serializeNetworkedPlayer(p)],
 				).flat(),

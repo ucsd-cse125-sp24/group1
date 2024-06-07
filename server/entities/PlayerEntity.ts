@@ -9,6 +9,7 @@ import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { BossEntity } from "./BossEntity";
+import { off } from "process";
 
 const COYOTE_FRAMES = 4;
 const UPWARD_FRAMES = 9;
@@ -189,9 +190,13 @@ export abstract class PlayerEntity extends Entity {
 		this.body.applyImpulse(deltaVelocity.scale(this.body.mass));
 
 		if (this.itemInHands instanceof Item) {
-			const offset = this.lookDir.unit().scale(1.5).vadd(this.lookDir.cross(rightVector).unit().scale(0.5));
+			let offset = this.lookDir.unit().scale(1.5)
+				.vadd(this.lookDir.cross(rightVector).unit().scale(0.5))
+				.vadd(rightVector.unit().scale(0.75));
+
 			this.itemInHands.body.position = this.body.position.vadd(offset);
 			this.itemInHands.body.velocity = new phys.Vec3(0, 0, 0);
+
 			this.itemInHands.body.quaternion = new phys.Quaternion(
 				...mat4.getRotation(
 					quat.create(),
