@@ -51,6 +51,7 @@ import { player_blue_walk1, player_blue_walk2 } from "./player_blue/walk";
 import { player_green_walk1, player_green_walk2 } from "./player_green/walk";
 import { player_red_walk1, player_red_walk2 } from "./player_red/walk";
 import { player_yellow_walk1, player_yellow_walk2 } from "./player_yellow/walk";
+import { workstationHelp } from "./workstation_help";
 
 export const getModels = (engine: GraphicsEngine) =>
 	({
@@ -126,6 +127,8 @@ export const getModels = (engine: GraphicsEngine) =>
 		gamer_armor: GltfModelWrapper.from(engine.gltfMaterial, gamer_armor),
 		mushroom_king: GltfModelWrapper.from(engine.gltfMaterial, mushroom_king),
 		trap: GltfModelWrapper.from(engine.gltfMaterial, trap),
+
+		workstationHelp: GltfModelWrapper.from(engine.gltfMaterial, workstationHelp),
 
 		rockpile: GltfModelWrapper.from(engine.gltfMaterial, rockpile),
 		minecart: GltfModelWrapper.from(engine.gltfMaterial, minecart),
