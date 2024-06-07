@@ -20,9 +20,9 @@ export function listenErrors(errorWindow: HTMLDialogElement): (error: unknown) =
 	function handleError(error: unknown) {
 		log.textContent += displayError(error) + "\n";
 		if (!visible) {
-			visible = true;
-			errorWindow.append(log);
-			errorWindow.showModal();
+			// visible = true;
+			// errorWindow.append(log);
+			// errorWindow.showModal();
 		}
 	}
 

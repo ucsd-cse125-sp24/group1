@@ -510,7 +510,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * Check whether either side has met their win condition
 	 */
 	#checkGameOver(endTime: number) {
-		let isAnyHeroAlive = true;
+		let isAnyHeroAlive = false;
 		let isAnyBossAlive = false;
 		for (const { entity } of this.#players.values()) {
 			if (entity && entity.health > 0) {
