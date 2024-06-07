@@ -15,6 +15,7 @@ import {
 	ClientMessage,
 	EntityModel,
 	GameStage,
+	PartialGameState,
 	ParticleOptions,
 	PlayerEntry,
 	ServerMessage,
@@ -45,6 +46,7 @@ import { CubeEntity } from "./entities/CubeEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
 import { StaticLightEntity } from "./entities/StaticLightEntity";
 import { StaticCubeEntity } from "./entities/StaticCubeEntity";
+import { diff } from "deep-object-diff";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -801,6 +803,40 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		};
 	}
 
+	#lastBroadcastedState: PartialGameState | {} = {};
+	async broadcastPartialState() {
+		let entities = Object.fromEntries(Array.from(this.#entities.entries(), ([id, entity]) => [id, entity.serialize()]));
+		let physicsBodies = this.#world.serialize();
+		let entireState: PartialGameState = {
+			type: "partial-game-state",
+			stage: this.#currentStage,
+			entities: entities,
+			physicsBodies: physicsBodies
+		};
+
+		let difference = diff(this.#lastBroadcastedState, entireState);
+		
+		this.#lastBroadcastedState = JSON.parse(JSON.stringify(entireState));
+
+		for (const player of this.#players.values()) {
+			player.conn.send({
+				...entireState,
+				hashes: {
+					e: await sha1(entities),
+					p: await sha1(physicsBodies)
+				}
+			})
+			player.conn.send({
+				type: "player-data",
+				others: Array.from(this.#players.values(), (p) =>
+					p === player ? [] : [this.#serializeNetworkedPlayer(p)],
+				).flat(),
+				me: this.#serializeNetworkedPlayer(player),
+			});
+		}
+		this.#lastBroadcastedState = entireState;
+	}
+
 	broadcastState() {
 		for (const player of this.#players.values()) {
 			player.conn.send({
@@ -919,6 +955,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		entity.removeFromWorld(this.#world);
 	}
 	// #endregion
+}
+
+async function sha1(object: Object): Promise<string> {
+	return btoa(String.fromCharCode.apply(null, [...new Uint8Array((await crypto.subtle.digest("SHA-1", Buffer.from(JSON.stringify(object)))))]));
 }
 
 /**

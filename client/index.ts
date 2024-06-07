@@ -80,6 +80,68 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			return {
 				type: "ping",
 			};
+		case "partial-game-state":
+			if (data.entities) {
+				Object.values(data.entities).map((entity) => deserialize(engine, entity))
+			}
+			entities = ;
+			colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
+				const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
+				return colliders.map((collider) => ({
+					collider,
+					transform: mat4.multiply(
+						mat4.create(),
+						transform,
+						mat4.fromRotationTranslation(
+							mat4.create(),
+							collider.orientation ?? [0, 0, 0, 1],
+							collider.offset ?? [0, 0, 0],
+						),
+					),
+				}));
+			});
+
+			const newLights: Record<EntityId, PointLightEntry> = {};
+			for (const entity of Object.values(data.entities)) {
+				let light = entityLights[entity.id];
+				if (light) {
+					// When the entity loses its light, just disable it in case it gets
+					// reenabled later
+					light.enabled = !!entity.light;
+					if (entity.light) {
+						light.light.position = vec3.add(vec3.create(), entity.position, entity.light.offset ?? [0, 0, 0]);
+						light.light.color = vec3.fromValues(...entity.light.color);
+						light.light.falloff = entity.light.falloff ?? 1;
+						light.light.willMove = entity.light.willMove;
+					}
+				} else if (entity.light) {
+					light = {
+						light: new PointLight(engine, vec3.create(), vec3.create(), 1, false),
+						enabled: true,
+					};
+				} else {
+					continue;
+				}
+				if (entity.light) {
+					light.light.position = vec3.add(vec3.create(), entity.position, entity.light.offset ?? [0, 0, 0]);
+					light.light.color = vec3.fromValues(...entity.light.color);
+					light.light.falloff = entity.light.falloff ?? 1;
+					light.light.willMove = entity.light.willMove;
+				}
+				newLights[entity.id] = light;
+			}
+			entityLights = newLights;
+
+			gameUi.render(data, gameState);
+			pauseMenu.render(data, gameState);
+			if (data.stage.type === "lobby" && gameState?.stage.type !== "lobby") {
+				unlockPointer();
+				gameUi.hide();
+				pauseMenu.show();
+				inputListener.enabled = false;
+			}
+			gameState = data;
+			break;
 		case "entire-game-state":
 			entities = Object.values(data.entities).map((entity) => deserialize(engine, entity));
 			colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {

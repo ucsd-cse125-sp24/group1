@@ -12,7 +12,9 @@ export type ServerMessage =
 	| SabotageHero
 	| GameOver
 	| Damage
-	| PlayParticle;
+	| PlayParticle
+	| PartialGameStateMessage
+	| PlayerData;
 
 export type ClientMessage =
 	| { type: "ping" }
@@ -86,6 +88,26 @@ export type EntireGameState = {
 	me: PlayerEntry;
 	others: PlayerEntry[];
 };
+
+export type PartialGameStateMessage = {
+	hashes: {
+		p: string;
+		e: string;
+	}
+} & PartialGameState;
+
+export type PartialGameState = {
+	type: "partial-game-state";
+	stage?: GameStage;
+	entities?: Record<EntityId, SerializedEntity>;
+	physicsBodies?: SerializedBody[];
+};
+
+export type PlayerData = {
+	type: "player-data";
+	me: PlayerEntry;
+	others: PlayerEntry[];
+}
 
 export type PlayerEntry = {
 	name: string;
