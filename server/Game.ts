@@ -542,7 +542,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	playerHitBoss(boss: BossEntity) {
 		if (!this.#bossResets.has(boss)) {
 			boss.setSpeed(0);
-			this.#bossResets.set(boss, 50);
+			this.#bossResets.set(boss, 150);
 		}
 	}
 	// #endregion
