@@ -32,7 +32,7 @@ const BIG_BOSS_SCALE: { offset: [number, number, number], rotation: [number, num
 
 export class BigBossEntity extends PlayerEntity {
 	isBoss = true;
-	initHealth = 75;
+	initHealth = 60;
 
 	previousAttackTick: number;
 	previousShootTick: number;

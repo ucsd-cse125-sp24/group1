@@ -298,8 +298,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		]);
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
+		const workstation_helpScale = 0.2;
+		const workstationHelp = new StaticCubeEntity(
+			this,
+			[-16, 1, 28],
+			[0.333 * workstation_helpScale, 7.38 * workstation_helpScale, 10.851 * workstation_helpScale],
+			[{ modelId: "workstationHelp", scale: workstation_helpScale }],
+		);
+		workstationHelp.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, Math.PI / 4);
+		this.#registerEntity(workstationHelp);
 		this.#registerEntity(
-			new StaticLightEntity(this, [-15, 3, 26], {
+			new StaticLightEntity(this, [-9, 9, 22], {
 				color: [29 / 360, 0.66, 0.94],
 				falloff: 10,
 			}),
@@ -335,7 +344,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}),
 		);
 
-		let oreSpawner = new Spawner(this, [0, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
+		let oreSpawner = new Spawner(this, [-0.3, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
 		this.#registerEntity(
 			new StaticLightEntity(this, [-2, -15, -8], {
