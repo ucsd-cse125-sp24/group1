@@ -5,6 +5,7 @@ import { EntityModel } from "../../common/messages";
 import { Entity } from "./Entity";
 import { BossEntity } from "./BossEntity";
 import { MapEntity } from "./map/MapEntity";
+import { PlayerEntity } from "./PlayerEntity";
 
 export class ArrowEntity extends Entity {
 	damage: number;
@@ -22,7 +23,7 @@ export class ArrowEntity extends Entity {
 	}
 
 	onCollide(otherEntity: Entity): void {
-		if (otherEntity instanceof BossEntity) {
+		if (otherEntity instanceof PlayerEntity) {
 			if (this.game.getCurrentStage().type === "combat") {
 				otherEntity.takeDamage(this.damage);
 			}

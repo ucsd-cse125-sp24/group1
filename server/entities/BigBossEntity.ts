@@ -18,7 +18,7 @@ const BOSS_WALK_SPEED = 10;
 const MAX_BOSS_GROUND_SPEED_CHANGE = 2.5;
 /** Maximum change in horizontal velocity that can occur while in the air */
 const MAX_BOSS_AIR_SPEED_CHANGE = 1;
-const BOSS_JUMP_SPEED = 10;
+const BOSS_JUMP_SPEED = 20;
 
 const BOSS_ATTACK_COOLDOWN = 50; // ticks
 
@@ -126,7 +126,7 @@ export class BigBossEntity extends PlayerEntity {
 					let dir = quat.vmult(lookDir.scale(6));
 					let betterDirection = this.body.position.vadd(dir);
 					
-                    this.game.shootArrow(betterDirection, dir.scale(30), 1, [{ modelId: "mushroom" }]);
+                    this.game.shootArrow(betterDirection, dir.scale(20), 1, [{ modelId: "mushroom" }]);
                     //console.log(dir, betterDirection, betterDirection.unit(), this.body.position.vadd(betterDirection.unit()), this.getPos());                  
 
                 }

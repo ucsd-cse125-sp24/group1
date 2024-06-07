@@ -6,7 +6,8 @@ import { Entity } from "../Entity";
 import { Game } from "../../Game";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item, ItemType } from "./Item";
-import { SpawnerMaterial } from "../../materials/SourceMaterials";
+import { GroundMaterial, SpawnerMaterial } from "../../materials/SourceMaterials";
+import { Collider, addColliders } from "../../lib/Collider";
 
 export type Recipe = { ingredients: ItemType[]; output: ItemType };
 
@@ -35,16 +36,22 @@ const modelForCrafterType: Record<CrafterType, EntityModel[]> = {
 	fletching: [{ modelId: "work_station", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
 	magic_table: [{ modelId: "bottle_table", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
 };
-const colliderShapeForCrafterType: Record<CrafterType, phys.Shape> = {
-	furnace: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
-	weapons: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
-	fletching: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
-	magic_table: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5))
+const colliderShapeForCrafterType: Record<CrafterType, Collider[]> = {
+	furnace: [
+		{ shape: new phys.Box(new phys.Vec3(1.9, 1.1, 2.2)), offset: new phys.Vec3(0.2, -0.5, 0) },
+		{ shape: new phys.Box(new phys.Vec3(1.2, 2.2, 2.2)), offset: new phys.Vec3(-0.5, 1, 0) },
+	],
+	weapons: [
+		{ shape: new phys.Box(new phys.Vec3(1.5, 1.45, 1.3)) },
+		{ shape: new phys.Box(new phys.Vec3(2.7, 0.5, 1.3)), offset: new phys.Vec3(0, 0.95, 0) },
+	],
+	fletching: [{ shape: new phys.Box(new phys.Vec3(1.3, 1, 2.5)) }],
 };
 
 export class CraftingTable extends InteractableEntity {
 	body: phys.Body;
 	isStatic = true;
+	isFurnace: boolean;
 
 	/** Items stored in the crafting table */
 	itemList: Item[];
@@ -62,15 +69,16 @@ export class CraftingTable extends InteractableEntity {
 		this.itemList = [];
 		this.recipes = recipes;
 		this.ingredients = recipes.flatMap((recipe) => recipe.ingredients);
+		this.isFurnace = type === "furnace";
 
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
 			position: new phys.Vec3(...pos),
-			material: SpawnerMaterial, // temp fix, depends on the item,
+			material: GroundMaterial, // temp fix, depends on the item,
 			collisionFilterGroup: this.getBitFlag(),
 		});
 
-		this.body.addShape(colliderShapeForCrafterType[type]);
+		addColliders(this.body, colliderShapeForCrafterType[type]);
 
 		this.#ejectDir = new phys.Vec3(...pos).negate();
 		this.#ejectDir.set(this.#ejectDir.x, 0, this.#ejectDir.z);
@@ -188,6 +196,14 @@ export class CraftingTable extends InteractableEntity {
 		return {
 			...super.serialize(),
 			model: [...this.model, ...this.itemList.flatMap((item) => item.model)],
+			light: this.isFurnace
+				? {
+						color: [30 / 360, 0.8, 1 + Math.sin(Date.now() / 1000) * 0.2],
+						falloff: 5,
+						offset: [-0.5, 1.1, 0],
+						willMove: false,
+					}
+				: undefined,
 		};
 	}
 }
