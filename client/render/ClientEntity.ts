@@ -14,7 +14,7 @@ import { TextModel } from "./model/TextModel";
 export class ClientEntity {
 	engine: GraphicsEngine;
 	models: ModelWithTransform[];
-	data?: SerializedEntity;
+	data: SerializedEntity;
 	/**
 	 * A transformation to apply to all the models in the entity. You can think of
 	 * it like the anchor position and rotation of the entity.
@@ -22,12 +22,7 @@ export class ClientEntity {
 	transform: mat4;
 	hasCamera = false;
 
-	constructor(
-		engine: GraphicsEngine,
-		models: ModelWithTransform[],
-		transform = mat4.create(),
-		data?: SerializedEntity,
-	) {
+	constructor(engine: GraphicsEngine, models: ModelWithTransform[], transform = mat4.create(), data: SerializedEntity) {
 		this.engine = engine;
 		this.models = models;
 		this.transform = transform;
@@ -44,7 +39,7 @@ export class ClientEntity {
 	 * - If omitted, the entity is always visible.
 	 */
 	getModels(purpose?: "rendering" | "static-shadows" | null): ModelWithTransform[] {
-		if ((purpose === "rendering" && this.hasCamera) || (purpose === "static-shadows" && !this.data?.isStatic)) {
+		if ((purpose === "rendering" && this.hasCamera) || (purpose === "static-shadows" && !this.data.isStatic)) {
 			return [];
 		}
 		return this.models.map(({ model, transform }) => ({

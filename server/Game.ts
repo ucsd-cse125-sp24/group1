@@ -245,12 +245,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 
-		let Furnace = new CraftingTable(this, [-17.7, -3, -24], "furnace", [
+		let Furnace = new CraftingTable(this, [-17.7, -3.5, -24], "furnace", [
 			{ ingredients: ["raw_iron", "wood"], output: "iron" },
 			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
 		]);
-		Furnace.body.quaternion = halfSquat;
+		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
 		this.#registerEntity(Furnace);
+
+		// TEMP: for testing furnace
+		for (let i = 0; i < 5; i++) {
+			this.#registerEntity(new Item(this, "wood", [-15, -3, -20], "resource"));
+			this.#registerEntity(new Item(this, "raw_iron", [-15, -3, -20], "resource"));
+		}
 
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
 			{ ingredients: ["iron", "iron", "wood"], output: "sword" },
@@ -258,7 +264,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		]);
 		this.#registerEntity(WeaponCrafter);
 
-		let FletchingTable = new CraftingTable(this, [-15, -3.5, 26], "fletching", [
+		let FletchingTable = new CraftingTable(this, [-15, -3.9, 26], "fletching", [
 			{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
 			{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 			//probably should add arrows for when we get actual combat ngl
@@ -266,7 +272,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
 
-		let SauceTable = new CraftingTable(this, [12.5, -3, 10], "magic_table", [
+		let SauceTable = new CraftingTable(this, [12.5, -4, 10], "magic_table", [
 			{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
 			{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
 			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
@@ -283,19 +289,19 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		woodSpawner2.body.quaternion = halfSquat;
 		this.#registerEntity(woodSpawner2);
 
-		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "iron", "raw_iron", "pickaxe");
+		let oreSpawner = new Spawner(this, [0, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
 
-		let oreSpawner2 = new Spawner(this, [10, -17.5, 21], "iron", "raw_iron", "pickaxe");
+		let oreSpawner2 = new Spawner(this, [10, -17.65, 21], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner2);
 
-		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "string", "shears");
+		let stringSpawner = new Spawner(this, [-14.5, -17.6, -20.75], "string", "string", "shears");
 		this.#registerEntity(stringSpawner);
 
-		let mushroomSpawner = new Spawner(this, [-18, -19, 4], "mushroom", "mushroom", "knife");
+		let mushroomSpawner = new Spawner(this, [-18, -19.05, 4], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner);
 
-		let mushroomSpawner2 = new Spawner(this, [-1, -19, 10.5], "mushroom", "mushroom", "knife");
+		let mushroomSpawner2 = new Spawner(this, [-1, -19.05, 10.5], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner2);
 
 		let sampleIorn = new Item(this, "knife", [5, 0, 5], "resource");
@@ -378,10 +384,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.#registerEntity(entity);
 		}
 		const debugSpawnerEntities = [
-			...(["string", "iron", "mushroom", "wood"] as const).map(
+			...(["string", "iron", "mushroom", "wood", "wood2"] as const).map(
 				(type) => new Spawner(this, [0, 0, 0], type, "wood", "wood"),
 			),
-			...(["furnace", "weapons", "fletching"] as const).map((type) => new CraftingTable(this, [0, 0, 0], type, [])),
+			...(["furnace", "weapons", "fletching", "magic_table"] as const).map(
+				(type) => new CraftingTable(this, [0, 0, 0], type, []),
+			),
 		];
 		for (const [i, entity] of debugSpawnerEntities.entries()) {
 			entity.body.position = new phys.Vec3(
