@@ -10,6 +10,7 @@
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import {
+	Action,
 	Attack,
 	ChangeRole,
 	ClientMessage,
@@ -64,6 +65,16 @@ const itemModels: ItemType[] = [
 	"string",
 	"sword",
 	"wood",
+];
+/** Spawn locations of the boss */
+const SPAWN_LOCATION = [
+	[17, -4.17, 13.78],
+	[5.45, -4.17, 29.58],
+	[-19.52, -4.17, 18.27],
+	[-7.65, -18.42, -23.25],
+	[-3.13, -18.42, 6.05],
+	[5.21, -18.42, 4.72],
+	[-1.95, -18.42, 5.92],
 ];
 
 /** Length of the crafting stage in milliseconds */
@@ -231,35 +242,45 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(shears);
 
 		let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI);
-		let Furnace = new CraftingTable(this, [14, -3.5, 28], "furnace", [
+		let Furnace = new CraftingTable(this, [-19, -3, -24], "furnace", [
 			{ ingredients: ["raw_iron", "wood"], output: "iron" },
-			{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
+			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
 		]);
+		Furnace.body.quaternion = fullSquat;
 		this.#registerEntity(Furnace);
 
+		//[14, -3.5, 28]
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let WeaponCrafter = new CraftingTable(this, [-5, -3.5, -29.5], "weapons", [
 			{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 			{ ingredients: ["iron", "wood"], output: "knife" },
-			{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
-			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-			{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "gamer_armor" },
 		]);
 		this.#registerEntity(WeaponCrafter);
 
 		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 		let FletchingTable = new CraftingTable(this, [-19, -3, -24], "fletching", [
 			{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
-			{ ingredients: ["bow", "magic_sauce"], output: "gamer_bow" },
+			{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 			//probably should add arrows for when we get actual combat ngl
 		]);
 		this.#registerEntity(FletchingTable);
 
-		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "wood", "axe");
+		let SauceTable = new CraftingTable(this, [13, -3, 9], "magic_table", [
+			{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
+			{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
+			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
+			//probably should add arrows for when we get actual combat ngl
+		]);
+		this.#registerEntity(FletchingTable);
+
+		let woodSpawner = new Spawner(this, [-5, -3.5, -29.5], "wood", "wood", "axe");
 		this.#registerEntity(woodSpawner);
 
 		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
+
+		let oreSpawner2 = new Spawner(this, [10, -17.5, 17.5], "iron", "raw_iron", "pickaxe");
+		this.#registerEntity(oreSpawner2);
 
 		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "string", "shears");
 		this.#registerEntity(stringSpawner);
@@ -287,7 +308,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			this.#registerEntity(entity);
 		}
 
-		const hueLightCount = 11;
+		const hueLightCount = 9;
 		for (let i = 0; i < hueLightCount; i++) {
 			const radius = 5 + Math.random() * 15;
 			this.#registerEntity(
@@ -478,9 +499,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	resetBoss() {
 		if (this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
+
 			if (this.#currentBoss) {
+				let randNum = Math.floor(Math.random() * 10) % 7;
 				this.#currentBoss.walkSpeed = 20;
-				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
+				this.#currentBoss.body.position = new phys.Vec3(
+					SPAWN_LOCATION[randNum][0],
+					SPAWN_LOCATION[randNum][1],
+					SPAWN_LOCATION[randNum][2],
+				);
 			}
 		}
 	}
@@ -490,7 +517,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	playerHitBoss(boss: PlayerEntity) {
-		if (this.getBossTimer() < 0) {
+		this.setBossTimer(10);
+		if (this.getBossTimer() > 0) {
 			boss.walkSpeed = 0;
 		}
 	}
@@ -585,6 +613,28 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.online = false;
 		}
 	}
+
+	playerEquipArmor(entity: Item, player: PlayerEntity): Action<Use> | null {
+		if (this.getCurrentStage().type == "combat") {
+			if (entity.type == "armor" || entity.type == "gamer_armor") {
+				this.addToDeleteQueue(entity.id);
+
+				player.health += entity.type == "armor" ? 3 : 6;
+
+				return {
+					type: "equip-armor",
+					commit: () => {
+						this.playSound("pickup", player.getPos());
+					},
+				};
+			} else {
+				console.log("SHOULD NOT BE HERE");
+				return null;
+			}
+		}
+		return null;
+	}
+
 	// #endregion
 
 	/**
