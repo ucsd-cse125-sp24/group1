@@ -11,7 +11,7 @@ export class MinecartEntity extends StaticEntity {
 	isInvulnerableThisTick = false;
 
 	constructor(game: Game, position: phys.Vec3) {
-		super(game, position.toArray(), new phys.Box(new phys.Vec3(3, 3, 3)), GroundMaterial, [
+		super(game, position.toArray(), new phys.Box(new phys.Vec3(3, 5, 3)), GroundMaterial, [
 			{ modelId: "minecart", scale: 2 },
 		]);
 	}
