@@ -41,11 +41,12 @@ import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
-import { CubeEntity } from "./entities/CubeEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
 import { StaticLightEntity } from "./entities/StaticLightEntity";
 import { StaticCubeEntity } from "./entities/StaticCubeEntity";
 import { MinecartEntity } from "./entities/MinecartEntity";
+import { StaticEntity } from "./entities/StaticEntity";
+import { GroundMaterial } from "./materials/SourceMaterials";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -111,6 +112,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	//#bossResets: ([number, BossEntity])[];
 	#currentBoss: PlayerEntity | null;
 	#minecart: MinecartEntity | null;
+	#obstacles: StaticEntity[];
 	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
@@ -134,6 +136,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#currentBoss = null;
 		this.#minecart = null;
+		this.#obstacles = [];
 
 		this.#makeLobby();
 
@@ -270,6 +273,19 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let sampleIorn2 = new Item(this, "armor", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
 
+		this.#obstacles = [];
+		this.#obstacles.push(
+			new StaticEntity(this, [-27, 0, 0], new phys.Box(new phys.Vec3(2, 10, 5)), GroundMaterial, [
+				{ modelId: "rockpile", offset: [0, -5, 0] },
+			]),
+			new StaticEntity(this, [16, 0, 0], new phys.Box(new phys.Vec3(2, 10, 5)), GroundMaterial, [
+				{ modelId: "rockpile", offset: [0, -5, 0], rotation: [0, 1, 0, 0] },
+			]),
+		);
+		for (const entity of this.#obstacles) {
+			this.#registerEntity(entity);
+		}
+
 		const hueLightCount = 11;
 		for (let i = 0; i < hueLightCount; i++) {
 			const radius = 5 + Math.random() * 15;
@@ -372,6 +388,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#minecart = new MinecartEntity(this, new phys.Vec3(-72, 0, 2));
 		this.addToCreateQueue(this.#minecart);
+		for (const entity of this.#obstacles) {
+			this.addToDeleteQueue(entity.id);
+		}
 	}
 
 	/**
