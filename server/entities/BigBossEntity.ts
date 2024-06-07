@@ -160,6 +160,11 @@ export class BigBossEntity extends PlayerEntity {
 		};
 	}
 
+	tick() {
+		this.animator.tick();
+		this.model = this.animator.getModel();
+	}
+
 	//TODO
 	charge() {}
 }
