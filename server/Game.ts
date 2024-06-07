@@ -651,11 +651,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	playerEquipArmor(entity: Item, player: PlayerEntity): Action<Use> | null {
-		if (this.getCurrentStage().type == "combat") {
+		if (this.getCurrentStage().type == "combat" && player instanceof HeroEntity) {
 			if (entity.type == "armor" || entity.type == "gamer_armor") {
 				this.addToDeleteQueue(entity.id);
 
 				player.health += entity.type == "armor" ? 3 : 6;
+				player.addArmorModel(entity.type);
 
 				return {
 					type: "equip-armor",

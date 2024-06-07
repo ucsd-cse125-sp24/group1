@@ -216,7 +216,7 @@ export abstract class PlayerEntity extends Entity {
 				this.game.playSound("jump", this.getPos());
 				this.game.playParticle({
 					spawnCount: 10,
-					color: [1, 0, 0, 0.5],
+					color: [234, 221, 202, 0.5],
 					initialPosition: this.getFootPos(),
 					initialVelocityRange: [1, 1, 1],
 				});
@@ -284,7 +284,7 @@ export abstract class PlayerEntity extends Entity {
 						this.game.shootArrow(
 							this.body.position.vadd(lookDir.scale(2)),
 							lookDir.scale(isGamer ? 80 : 40),
-							isGamer ? 6 : 3,
+							isGamer ? 4 : 2,
 							[{ modelId: "donut" }],
 						);
 						//this.animator.play("punch");
@@ -306,6 +306,14 @@ export abstract class PlayerEntity extends Entity {
 					return {
 						type: "hit-mini-boss",
 						commit: () => {
+							this.game.playParticle({
+								spawnCount: 50,
+								initialPosition: this.getPos(),
+								initialVelocity: [0, 5, 0],
+								initialVelocityRange: [4, 0, 4],
+								color: [255, 140, 0, 0.5] 
+							});
+
 							this.game.playerHitBoss(entity);
 							this.game.playDamageFilter(entity.id);
 						},
@@ -405,10 +413,10 @@ export abstract class PlayerEntity extends Entity {
 		switch (weapon.type) {
 			case "gamer_bow":
 			case "gamer_sword":
-				return 2;
+				return 6;
 			case "bow":
 			case "sword":
-				return 1;
+				return 3;
 		}
 		return 0;
 	}

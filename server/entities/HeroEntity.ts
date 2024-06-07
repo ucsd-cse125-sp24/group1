@@ -63,6 +63,10 @@ export class HeroEntity extends PlayerEntity {
 		this.isTrapped = false;
 	}
 
+	addArmorModel(type: "armor" | "gamer_armor") {
+		this.model.push({ modelId: type, offset: [0, -1.8, 0], scale: 0.5 });
+	}
+
 	serialize(): SerializedEntity {
 		return {
 			...super.serialize(),
