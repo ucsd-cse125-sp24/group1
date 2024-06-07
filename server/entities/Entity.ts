@@ -80,7 +80,7 @@ export abstract class Entity {
 
 	getBitFlag(): number {
 		return -1;
-		/*if (this.tags.size == 0) return -1;
+		/*if (this.tags.size == 0) return -1;	
 
 		let flag = 0;
 

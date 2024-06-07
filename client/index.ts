@@ -305,6 +305,8 @@ const camera = new PlayerCamera(
 	100,
 	engine,
 );
+// @ts-ignore
+window.camera = camera;
 const fov = new Transition(Math.PI / 3);
 
 let result = vec3.create();

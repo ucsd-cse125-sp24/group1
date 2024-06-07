@@ -80,7 +80,7 @@ const SPAWN_LOCATION = [
 /** Length of the crafting stage in milliseconds */
 const CRAFT_STAGE_LENGTH = 60 * 1000 * 6; // 5 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000 * 3; // 2 minutes
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 1.5; // 2 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -119,10 +119,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#toDeleteQueue: EntityId[];
 
 	#currentTick: number;
-	#bossTimer: number;
 
-	//#bossResets: ([number, BossEntity])[];
-	#currentBoss: PlayerEntity | null;
+	#bossResets: Map<BossEntity, number>;
 	#minecart: MinecartEntity | null;
 	#obstacles: StaticEntity[];
 	/**
@@ -144,9 +142,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
-		this.#bossTimer = 0;
+		this.#bossResets = new Map();
 
-		this.#currentBoss = null;
 		this.#minecart = null;
 		this.#obstacles = [];
 
@@ -181,7 +178,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the game in the Lobby state
 	 */
 	async #makeLobby() {
-		let camera = new CameraEntity(this, [0, 115, 0], [30, 270, 0], "lobby-camera");
+		let camera = new CameraEntity(this, [0, 115, 0], [-20, 90, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
 		let lobbyFloor = new phys.Body({
@@ -246,11 +243,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 
-		let Furnace = new CraftingTable(this, [-17.7, -3.5, -24], "furnace", [
-			{ ingredients: ["raw_iron", "wood"], output: "iron" },
-			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
-		]);
+		let Furnace = new CraftingTable(
+			this,
+			[-17.7, -3.5, -24],
+			"furnace",
+			[
+				{ ingredients: ["raw_iron", "wood"], output: "iron" },
+				{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
+			],
+			new phys.Vec3(0, 0, 1),
+		);
 		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
+
 		this.#registerEntity(Furnace);
 
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
@@ -273,12 +277,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
 
-		let SauceTable = new CraftingTable(this, [12.5, -4, 10], "magic_table", [
-			{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
-			{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
-			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-			//probably should add arrows for when we get actual combat ngl
-		]);
+		let SauceTable = new CraftingTable(
+			this,
+			[12.5, -4, 10],
+			"magic_table",
+			[
+				{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
+				{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
+				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
+				//probably should add arrows for when we get actual combat ngl
+			],
+			new phys.Vec3(0, 0, 1),
+		);
 		SauceTable.body.quaternion = halfSquat;
 		this.#registerEntity(SauceTable);
 
@@ -442,7 +452,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * Check whether either side has met their win condition
 	 */
 	#checkGameOver() {
-		let isAnyHeroAlive = false;
+		let isAnyHeroAlive = true;
 		let isAnyBossAlive = false;
 		for (const { entity } of this.#players.values()) {
 			if (entity && entity.health > 0) {
@@ -519,30 +529,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(new ArrowEntity(this, position, velocity, damage, mod));
 	}
 
-	resetBoss() {
-		if (this.#bossTimer == 0) {
-			//spawn the boss at [0, 0, 0] for now
-
-			if (this.#currentBoss) {
-				let randNum = Math.floor(Math.random() * 10) % 7;
-				this.#currentBoss.walkSpeed = 20;
-				this.#currentBoss.body.position = new phys.Vec3(
-					SPAWN_LOCATION[randNum][0],
-					SPAWN_LOCATION[randNum][1],
-					SPAWN_LOCATION[randNum][2],
-				);
-			}
-		}
+	teleportBoss(boss: BossEntity) {
+		let randNum = Math.floor(Math.random() * 10) % 7;
+		boss.resetSpeed();
+		boss.body.position = new phys.Vec3(
+			SPAWN_LOCATION[randNum][0],
+			SPAWN_LOCATION[randNum][1],
+			SPAWN_LOCATION[randNum][2],
+		);
 	}
 
-	setBossTimer(delay: number) {
-		this.#bossTimer = delay;
-	}
-
-	playerHitBoss(boss: PlayerEntity) {
-		this.setBossTimer(10);
-		if (this.getBossTimer() > 0) {
-			boss.walkSpeed = 0;
+	playerHitBoss(boss: BossEntity) {
+		if (!this.#bossResets.has(boss)) {
+			boss.setSpeed(0);
+			this.#bossResets.set(boss, 50);
 		}
 	}
 	// #endregion
@@ -564,7 +564,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
 		console.log(playerNum);
 		if (this.#currentStage.type === "lobby") {
-			pos = [(2 * playerNum - 6) % 12, 115, 0];
+			pos = [(2 * playerNum - 6) % 12, 115, -5];
 			if (playerNum === 0) {
 				for (let i = 1; i < 5; i++) {
 					this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
@@ -584,7 +584,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				break;
 			case "boss":
 				entity = new BossEntity(this, [pos[0], pos[1] + 2, pos[2]]);
-				this.#currentBoss = entity;
 				break;
 			default:
 				return null;
@@ -626,7 +625,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: true,
+				freeRotation: false
 			});
 		}
 	}
@@ -776,7 +775,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	// #region Game State
 	getCurrentTick = () => this.#currentTick;
 	getCurrentStage = () => this.#currentStage;
-	getBossTimer = () => this.#bossTimer;
 
 	logTicks(ticks: number, totalDelta: number) {
 		if ("_debugGetActivePlayerCount" in this.#server) {
@@ -866,20 +864,36 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
-		this.#bossTimer--;
 
-		this.resetBoss();
+		// Tick the world
 		this.#world.nextTick();
+
+		// Tick the player inputs
 		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
+
+		// Tick each of the entities
 		for (let entity of this.#entities.values()) {
 			entity.tick();
 		}
+
+		for (let [boss, timer] of this.#bossResets.entries()) {
+			timer--;
+			if (timer <= 0) {
+				this.#bossResets.delete(boss);
+				this.teleportBoss(boss);
+				continue;
+			}
+			this.#bossResets.set(boss, timer);
+		}
+
+		// Run delete jobs
 		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
 			this.clearEntityQueues();
 		}
 
+		// Handle game state changes
 		switch (this.#currentStage.type) {
 			case "crafting": {
 				if (Date.now() >= this.#currentStage.endTime) {
