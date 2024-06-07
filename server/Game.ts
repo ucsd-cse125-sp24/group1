@@ -93,6 +93,7 @@ interface NetworkedPlayer {
 	id: string;
 	conn: Connection<ServerMessage>;
 	name: string;
+	debug: boolean;
 }
 
 export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
@@ -569,6 +570,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				entity: null,
 				online: true,
 				name,
+				debug: false
 			};
 			this.#players.set(conn.id, player);
 		}
@@ -716,6 +718,13 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 				break;
 			}
+			case "--debug-wireframes":
+				const player = this.#players.get(conn.id);
+				console.log(player, data);
+				if (player) {
+					player.debug = data.val;
+				}
+				break;
 			default:
 				console.warn(`Unhandled message '${data["type"]}'`);
 		}
@@ -856,7 +865,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "entire-game-state",
 				stage: this.#currentStage,
 				entities: Object.fromEntries(Array.from(this.#entities.entries(), ([id, entity]) => [id, entity.serialize()])),
-				physicsBodies: this.#world.serialize(),
+				physicsBodies: player.debug ? this.#world.serialize() : undefined,
 				others: Array.from(this.#players.values(), (p) =>
 					p === player ? [] : [this.#serializeNetworkedPlayer(p)],
 				).flat(),
