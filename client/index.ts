@@ -82,21 +82,23 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			};
 		case "entire-game-state":
 			entities = Object.values(data.entities).map((entity) => deserialize(engine, entity));
-			colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
-				const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
-				return colliders.map((collider) => ({
-					collider,
-					transform: mat4.multiply(
-						mat4.create(),
-						transform,
-						mat4.fromRotationTranslation(
+			if (data.physicsBodies) {
+				colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
+					const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
+					return colliders.map((collider) => ({
+						collider,
+						transform: mat4.multiply(
 							mat4.create(),
-							collider.orientation ?? [0, 0, 0, 1],
-							collider.offset ?? [0, 0, 0],
+							transform,
+							mat4.fromRotationTranslation(
+								mat4.create(),
+								collider.orientation ?? [0, 0, 0, 1],
+								collider.offset ?? [0, 0, 0],
+							),
 						),
-					),
-				}));
-			});
+					}));
+				});
+			}
 
 			const newLights: Record<EntityId, PointLightEntry> = {};
 			for (const entity of Object.values(data.entities)) {
@@ -368,6 +370,7 @@ const inputListener = new InputListener({
 		}
 		if (inputs.cycleWireframe && !debugInputs.cycleWireframe) {
 			wireframe = (wireframe + 1) % 3;
+			connection.send({type: "--debug-wireframes", val: wireframe !== 0});
 		}
 		if (inputs.toggleTones && !debugInputs.toggleTones) {
 			tones = !tones;

@@ -23,7 +23,7 @@ export type ClientMessage =
 	| StartGame
 	| DebugMessages;
 
-export type DebugMessages = { type: "--debug-skip-stage" } | { type: "--debug-tp" };
+export type DebugMessages = { type: "--debug-skip-stage" } | { type: "--debug-tp" } | { type: "--debug-wireframes", val: boolean};
 
 export type ClientControlMessage = {
 	/**
@@ -82,7 +82,7 @@ export type EntireGameState = {
 	 * These should be drawn directly as given; do not try to interpolate or
 	 * predict positions on these bodies.
 	 */
-	physicsBodies: SerializedBody[];
+	physicsBodies?: SerializedBody[];
 	me: PlayerEntry;
 	others: PlayerEntry[];
 };
