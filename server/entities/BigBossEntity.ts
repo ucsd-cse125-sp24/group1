@@ -91,6 +91,7 @@ export class BigBossEntity extends PlayerEntity {
 					if (entity instanceof HeroEntity || entity instanceof MinecartEntity) {
 						if (this.game.getCurrentStage().type === "combat") {
 							entity.takeDamage(1);
+							console.log("Minecart taking damage");
 						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
