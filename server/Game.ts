@@ -834,12 +834,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				} else {
 					// this.playSound("attackFail", player.entity.getPos());
 				}
-				this.playParticle({
-					spawnCount: 100,
-					initialPosition: player.entity.getPos(),
-					initialVelocity: [0, 5, 0],
-					initialVelocityRange: [5, 0, 5],
-				});
+				
 			}
 			if (posedge.emote) {
 				// TEMP: using `emote` key (X) to spawn item above player
