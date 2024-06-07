@@ -281,11 +281,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		SauceTable.body.quaternion = halfSquat;
 		this.#registerEntity(SauceTable);
 
-		let woodSpawner = new Spawner(this, [-5, -3.5, -25.5], "wood", "wood", "axe");
-		woodSpawner.body.quaternion = halfSquat;
+		let woodSpawner = new Spawner(this, [-5, -4.8, -24], "wood", "wood", "axe");
+		woodSpawner.body.quaternion = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), (3 * Math.PI) / 4);
 		this.#registerEntity(woodSpawner);
 
-		let woodSpawner2 = new Spawner(this, [-5, -3.5, -29.5], "wood2", "wood", "axe");
+		let woodSpawner2 = new Spawner(this, [-7, -3.7, -27], "wood2", "wood", "axe");
 		woodSpawner2.body.quaternion = halfSquat;
 		this.#registerEntity(woodSpawner2);
 
