@@ -33,8 +33,8 @@ let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0)
 const modelForCrafterType: Record<CrafterType, EntityModel[]> = {
 	furnace: [{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
 	weapons: [{ modelId: "anvil", offset: [0, -1.25, 0], rotation: halfSquat.toArray() }],
-	fletching: [{ modelId: "work_station", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
-	magic_table: [{ modelId: "bottle_table", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
+	fletching: [{ modelId: "work_station", offset: [0, -1.5, 0]}],
+	magic_table: [{ modelId: "bottle_table", offset: [0, -1.5, 0] }],
 };
 const colliderShapeForCrafterType: Record<CrafterType, Collider[]> = {
 	furnace: [
@@ -46,6 +46,7 @@ const colliderShapeForCrafterType: Record<CrafterType, Collider[]> = {
 		{ shape: new phys.Box(new phys.Vec3(2.7, 0.5, 1.3)), offset: new phys.Vec3(0, 0.95, 0) },
 	],
 	fletching: [{ shape: new phys.Box(new phys.Vec3(1.3, 1, 2.5)) }],
+	magic_table: [{ shape: new phys.Box(new phys.Vec3(1.3, 1, 2.5)) }],
 };
 
 export class CraftingTable extends InteractableEntity {
