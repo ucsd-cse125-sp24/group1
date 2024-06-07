@@ -216,9 +216,11 @@ export abstract class PlayerEntity extends Entity {
 				this.game.playSound("jump", this.getPos());
 				this.game.playParticle({
 					spawnCount: 10,
-					color: [234, 221, 202, 0.5],
+					color: [234 / 255, 221 / 255, 202 / 255, 0.5],
 					initialPosition: this.getFootPos(),
-					initialVelocityRange: [1, 1, 1],
+					initialVelocity: [0, 1.5, 0],
+					initialVelocityRange: [1.5, 1.5, 1.5],
+					ttl: 1,
 				});
 				this.jumping = true;
 				const boost = currentVelocity.clone();
@@ -311,7 +313,8 @@ export abstract class PlayerEntity extends Entity {
 								initialPosition: this.getPos(),
 								initialVelocity: [0, 5, 0],
 								initialVelocityRange: [4, 0, 4],
-								color: [255, 140, 0, 0.5] 
+								color: [255 / 255, 140 / 255, 0, 0.5],
+								ttl: 1,
 							});
 
 							this.game.playerHitBoss(entity);
@@ -395,6 +398,7 @@ export abstract class PlayerEntity extends Entity {
 									initialPosition: point.toArray(),
 									initialVelocity: [0, 1, 0],
 									initialVelocityRange: [1, 1, 1],
+									ttl: 1,
 								});
 								// Allow spam-slapping items
 								// this.#previousAttackTime = Date.now();

@@ -221,9 +221,9 @@ export class ParticleSystem implements Model {
 					return v;
 				}
 				const randVector = vec3.random(vec3.create());
-				const r0 = randVector[0] * range[0] / 2;
-				const r1 = randVector[1] * range[1] / 2;
-				const r2 = randVector[2] * range[2] / 2;
+				const r0 = (randVector[0] * range[0]) / 2;
+				const r1 = (randVector[1] * range[1]) / 2;
+				const r2 = (randVector[2] * range[2]) / 2;
 				return [v[0] + r0, v[1] + r1, v[2] + r2];
 			}).flat(),
 		);
@@ -297,6 +297,7 @@ export class ParticleSystem implements Model {
 
 		gl.uniform1f(this.shader.uniform("u_size"), this.options.size);
 		gl.uniform4fv(this.shader.uniform("u_color"), this.options.color);
+		gl.uniform1f(this.shader.uniform("u_ttl_max"), this.options.ttl);
 		gl.uniform1f(this.shader.uniform("u_mass"), this.options.mass);
 		gl.uniform1f(this.shader.uniform("u_dt"), dt / 1000);
 
