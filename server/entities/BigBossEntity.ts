@@ -97,10 +97,10 @@ export class BigBossEntity extends PlayerEntity {
 							new Vec3(this.lookDir.x * 300, Math.abs(this.lookDir.y) * 150 + 50, this.lookDir.z * 300),
 						);
 						this.game.playSound("hit", entity.getPos());
-						this.animator.play("punch");
+						//this.animator.play("punch");
 					} else if (entities[0] instanceof InteractableEntity) {
 						entities[0].hit(this);
-						this.animator.play("punch");
+						//this.animator.play("punch");
 					}
 				}
 				this.previousAttackTick = this.game.getCurrentTick();
@@ -122,15 +122,15 @@ export class BigBossEntity extends PlayerEntity {
 
 				let quat = new Quaternion(0, 0, 0, 1);
 				let base = this.body.position.vadd(lookDir.scale(this.interactionRange));
-				for (let i = 0; i < 5; i++) {
-					quat.setFromAxisAngle(new Vec3(0, 1, 0), -2 * (Math.PI / 30) + i * (Math.PI / 30));
+				for (let i = 0; i < 3; i++) {
+					quat.setFromAxisAngle(new Vec3(0, 1, 0), -1 * (Math.PI / 30) + i * (Math.PI / 30));
 					let dir = quat.vmult(lookDir.scale(6));
 					let betterDirection = this.body.position.vadd(dir);
 
 					this.game.shootArrow(betterDirection, dir.scale(10), 1, [{ modelId: "mushroom" }]);
 					//console.log(dir, betterDirection, betterDirection.unit(), this.body.position.vadd(betterDirection.unit()), this.getPos());
 				}
-				this.animator.play("pee");
+				//this.animator.play("pee");
 				this.previousShootTick = this.game.getCurrentTick();
 			},
 		};

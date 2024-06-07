@@ -278,7 +278,7 @@ export abstract class PlayerEntity extends Entity {
 							isGamer ? 6 : 3,
 							[{ modelId: "donut" }],
 						);
-						this.animator.play("punch");
+						//this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
 					},
 				};
@@ -334,7 +334,7 @@ export abstract class PlayerEntity extends Entity {
 						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
 							this.game.playSound("hitBig", entity.getPos());
 						else this.game.playSound("hit", entity.getPos());
-						this.animator.play("punch");
+						//this.animator.play("punch");
 					},
 				};
 			} else if (entities[0] instanceof InteractableEntity) {
@@ -344,7 +344,7 @@ export abstract class PlayerEntity extends Entity {
 							...action,
 							commit: () => {
 								action.commit();
-								this.animator.play("punch");
+								//this.animator.play("punch");
 								// Allow spam-slapping items
 								// this.#previousAttackTime = Date.now();
 							},
