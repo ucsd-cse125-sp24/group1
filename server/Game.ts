@@ -264,7 +264,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			new phys.Vec3(0, 0, 1),
 		);
 		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
-
 		this.#registerEntity(Furnace);
 
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
@@ -272,20 +271,25 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			{ ingredients: ["iron", "wood"], output: "knife" },
 		]);
 		this.#registerEntity(WeaponCrafter);
-
-		// TEMP: for testing crafter
-		for (let i = 0; i < 5; i++) {
-			this.#registerEntity(new Item(this, "wood", [10, -3, 20], "resource"));
-			this.#registerEntity(new Item(this, "iron", [10, -3, 20], "resource"));
-		}
+		this.#registerEntity(
+			new StaticLightEntity(this, [10, 3, 24], {
+				color: [29 / 360, 0.66, 0.94],
+				falloff: 10,
+			}),
+		);
 
 		let FletchingTable = new CraftingTable(this, [-15, -3.9, 26], "fletching", [
 			{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
 			{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
-			//probably should add arrows for when we get actual combat ngl
 		]);
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
+		this.#registerEntity(
+			new StaticLightEntity(this, [-15, 3, 26], {
+				color: [29 / 360, 0.66, 0.94],
+				falloff: 10,
+			}),
+		);
 
 		let SauceTable = new CraftingTable(
 			this,
@@ -310,8 +314,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		woodSpawner2.body.quaternion = halfSquat;
 		this.#registerEntity(woodSpawner2);
 
+		this.#registerEntity(
+			new StaticLightEntity(this, [-7, 3, -27], {
+				color: [29 / 360, 0.66, 0.94],
+				falloff: 10,
+			}),
+		);
+
 		let oreSpawner = new Spawner(this, [0, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
+		this.#registerEntity(
+			new StaticLightEntity(this, [-2, -12, -8], {
+				color: [191 / 360, 0.26, 0.95],
+				falloff: 15,
+			}),
+		);
 
 		let oreSpawner2 = new Spawner(this, [10, -17.65, 21], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner2);
@@ -326,11 +343,41 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let mushroomSpawner2 = new Spawner(this, [-1, -19.05, 10.5], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner2);
 
-		let sampleIorn = new Item(this, "knife", [5, 0, 5], "resource");
-		this.#registerEntity(sampleIorn);
+		this.#registerEntity(
+			new StaticLightEntity(this, [6, -12, 15], {
+				color: [282 / 360, 0.36, 0.98],
+				falloff: 20,
+			}),
+		);
 
-		let sampleIorn2 = new Item(this, "armor", [7, 0, 5], "resource");
-		this.#registerEntity(sampleIorn2);
+		// middle
+		this.#registerEntity(
+			new StaticLightEntity(this, [-4, 2, 2], {
+				color: [2 / 360, 0.35, 0.99],
+				falloff: 15,
+			}),
+		);
+		// hole
+		this.#registerEntity(
+			new StaticLightEntity(this, [-16, -6, 14], {
+				color: [124 / 360, 0.97, 0.83],
+				falloff: 10,
+			}),
+		);
+		// stairs
+		this.#registerEntity(
+			new StaticLightEntity(this, [13, 0, -15], {
+				color: [2 / 360, 0.35, 0.99],
+				falloff: 15,
+			}),
+		);
+		// minecart
+		this.#registerEntity(
+			new StaticLightEntity(this, [-75, 16, 1.5], {
+				color: [57 / 360, 0.78, 0.99],
+				falloff: 30,
+			}),
+		);
 
 		this.#minecart = null;
 		this.#obstacles = [];
@@ -344,25 +391,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		for (const entity of this.#obstacles) {
 			this.#registerEntity(entity);
-		}
-
-		const hueLightCount = 9;
-		for (let i = 0; i < hueLightCount; i++) {
-			const radius = 5 + Math.random() * 15;
-			this.#registerEntity(
-				new StaticLightEntity(
-					this,
-					[
-						Math.cos((i / hueLightCount) * 2 * Math.PI) * radius,
-						Math.random() * 40 - 20,
-						Math.sin((i / hueLightCount) * 2 * Math.PI) * radius,
-					],
-					{
-						color: [i / hueLightCount, Math.random(), Math.exp(Math.random() * 4 - 1)],
-						falloff: Math.random() * 10 + 0.1,
-					},
-				),
-			);
 		}
 
 		// Debug room
