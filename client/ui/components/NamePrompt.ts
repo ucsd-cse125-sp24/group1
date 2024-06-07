@@ -22,7 +22,7 @@ export class NamePrompt {
 	});
 	element = elem("div", {
 		classes: [styles.wrapper],
-		contents: [logo(), this.#form],
+		contents: [this.#form],
 	});
 
 	listen(onName: (name: string) => void) {
