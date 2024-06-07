@@ -78,9 +78,9 @@ const SPAWN_LOCATION = [
 ];
 
 /** Length of the crafting stage in milliseconds */
-const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
+const CRAFT_STAGE_LENGTH = 60 * 1000 * 6; // 5 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000 * 2; // 0.5 minutes
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 3; // 2 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
