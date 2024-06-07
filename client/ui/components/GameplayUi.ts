@@ -50,6 +50,7 @@ const useLabels: Record<Use, string> = {
 	"boss:spore": "Spore",
 	"boss:place-trap": "Trap",
 	"bigboss:": "Unknown",
+	"equip-armor": "Equip",
 };
 
 export class GameplayUi {

@@ -652,15 +652,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	playerEquipArmor(entity: Item, player: PlayerEntity): Action<Use> | null {
 		if (this.getCurrentStage().type == "combat" && player instanceof HeroEntity) {
-			if (entity.type == "armor" || entity.type == "gamer_armor") {
-				this.addToDeleteQueue(entity.id);
-
-				player.health += entity.type == "armor" ? 3 : 6;
-				player.addArmorModel(entity.type);
-
+			const armorType = entity.type;
+			if (armorType == "armor" || armorType == "gamer_armor") {
 				return {
 					type: "equip-armor",
 					commit: () => {
+						this.addToDeleteQueue(entity.id);
+
+						player.health += armorType == "armor" ? 3 : 6;
+						player.addArmorModel(armorType);
+
 						this.playSound("pickup", player.getPos());
 					},
 				};

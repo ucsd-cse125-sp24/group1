@@ -261,7 +261,10 @@ export abstract class PlayerEntity extends Entity {
 				entities[0].entity instanceof Item &&
 				(entities[0].entity.type == "armor" || entities[0].entity.type == "gamer_armor")
 			) {
-				return this.game.playerEquipArmor(entities[0].entity, this);
+				const action = this.game.playerEquipArmor(entities[0].entity, this);
+				if (action) {
+					return action;
+				}
 			}
 			return entities[0].entity.interact(this);
 		}
