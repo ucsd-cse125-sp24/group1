@@ -3,7 +3,7 @@ import { Vector3 } from "../../../common/commontypes";
 import { Action, EntityModel, Use } from "../../../common/messages";
 import { Entity } from "../Entity";
 import { Game } from "../../Game";
-import { SpawnerMaterial } from "../../materials/SourceMaterials";
+import { GroundMaterial, SpawnerMaterial } from "../../materials/SourceMaterials";
 import { InteractableEntity } from "./InteractableEntity";
 import { Item, ItemType } from "./Item";
 import { Collider, addColliders } from "../../lib/Collider";
@@ -13,8 +13,8 @@ export type SpawnerType = "wood" | "iron" | "string" | "mushroom" | "wood2";
 let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 let quat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 6);
 const modelForSpawnerType: Record<SpawnerType, EntityModel[]> = {
-	wood: [{ modelId: "chair", offset: [0, -1.5, 0] }],
-	wood2: [{ modelId: "table", offset: [0, -1.5, 0], rotation: halfSquat.mult(quat).toArray() }],
+	wood: [{ modelId: "chair", offset: [0, 0, 0] }],
+	wood2: [{ modelId: "table", offset: [0, -1, 0] }],
 	iron: [{ modelId: "ore_vein", offset: [0, -1.75, 0] }],
 	string: [{ modelId: "spider_web", offset: [0, -1.5, 0] }],
 	mushroom: [{ modelId: "mushroom_cluster", offset: [0, -0.1, 0] }],
@@ -34,8 +34,25 @@ const colliderShapeForSpawnerType: Record<SpawnerType, Collider[]> = {
 		{ shape: new phys.Cylinder(0.5, 0.5, 1.4, 5), offset: new phys.Vec3(-0.35, 0.9, 0.35) },
 		{ shape: new phys.Cylinder(0.35, 0.35, 0.9, 5), offset: new phys.Vec3(0.4, 0.5, -0.5) },
 	],
-	wood: [{ shape: new phys.Box(new phys.Vec3(1.3, 1.6, 1.3)) }],
-	wood2: [{ shape: new phys.Box(new phys.Vec3(3.5, 1.2, 1.5)) }]
+	wood: [
+		{
+			shape: new phys.Box(new phys.Vec3(1, 1, 1)),
+			offset: new phys.Vec3(0, 0.7, 0),
+			rotation: new phys.Quaternion().setFromVectors(phys.Vec3.UNIT_Y, new phys.Vec3(1, 5, -0.3)),
+		},
+		{
+			shape: new phys.Box(new phys.Vec3(0.2, 2.1, 0.9)),
+			offset: new phys.Vec3(-0.7, 2.1, 0),
+			rotation: new phys.Quaternion().setFromVectors(phys.Vec3.UNIT_Z, new phys.Vec3(0.5, 0.2, 5)),
+		},
+	],
+	wood2: [
+		{
+			shape: new phys.Box(new phys.Vec3(1.7, 0.4, 3.4)),
+			offset: new phys.Vec3(0, 0.9, 0.2),
+			rotation: new phys.Quaternion().setFromEuler(-0.1, (Math.PI / 4) * 0.5, -0.18, "YXZ"),
+		},
+	],
 };
 
 const TRIGGER_SPEED = 1;
@@ -60,7 +77,7 @@ export class Spawner extends InteractableEntity {
 		this.body = new phys.Body({
 			type: phys.Body.STATIC,
 			position: new phys.Vec3(...pos),
-			material: SpawnerMaterial, // depends on the item?
+			material: GroundMaterial, // depends on the item?
 			collisionFilterGroup: this.getBitFlag(),
 		});
 

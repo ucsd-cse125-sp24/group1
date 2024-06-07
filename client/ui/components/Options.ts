@@ -80,6 +80,7 @@ export class Options {
 		this.#resetBtn.addEventListener("click", () => {
 			this.#setFov();
 			this.#setSensitivity(camera);
+			this.#setAmbientLight();
 		});
 	}
 

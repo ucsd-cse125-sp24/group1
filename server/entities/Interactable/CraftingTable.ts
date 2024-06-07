@@ -31,10 +31,10 @@ let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), M
 let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 const modelForCrafterType: Record<CrafterType, EntityModel[]> = {
-	furnace: [{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
-	weapons: [{ modelId: "anvil", offset: [0, -1.25, 0], rotation: halfSquat.toArray() }],
-	fletching: [{ modelId: "work_station", offset: [0, -1.5, 0] }],
-	magic_table: [{ modelId: "bottle_table", offset: [0, -1.5, 0] }],
+	furnace: [{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0] }],
+	weapons: [{ modelId: "anvil", offset: [0, -1.25, 0] }],
+	fletching: [{ modelId: "work_station", offset: [0, -0.65, 0] }],
+	magic_table: [{ modelId: "bottle_table", offset: [0, -0.55, 0] }],
 };
 const colliderShapeForCrafterType: Record<CrafterType, Collider[]> = {
 	furnace: [
@@ -220,7 +220,21 @@ export class CraftingTable extends InteractableEntity {
 			...super.serialize(),
 			model: [
 				...this.model,
-				...Array.from(this.itemList, (item) => item.model).flat(),
+				...Array.from(this.itemList, (item, i) =>
+					item.model.map((model): EntityModel => {
+						if (typeof model === "string") {
+							model = { modelId: model };
+						}
+						const [x, y, z] = model.offset ?? [0, 0, 0];
+						return {
+							...model,
+							offset: [x + (i - (this.itemList.size - 1) / 2), y + 3 + Math.sin(Date.now() / 500) * 0.2, z],
+							rotation: new phys.Quaternion()
+								.setFromAxisAngle(phys.Vec3.UNIT_Y, Date.now() / (2345 + Math.sin(i) * 300))
+								.toArray(),
+						};
+					}),
+				).flat(),
 				{ text: this.#lastMessage, offset: [0, 2, 0], height: 0.1 },
 				{ text: Array.from(this.itemList, (item) => item.type).join(" "), offset: [0, 1.5, 0], height: 0.1 },
 			],
@@ -228,7 +242,7 @@ export class CraftingTable extends InteractableEntity {
 				? {
 						color: [30 / 360, 0.8, 1 + Math.sin(Date.now() / 1000) * 0.2],
 						falloff: 5,
-						offset: [-0.5, 1.1, 0],
+						offset: [-0.5, 1.2, 0],
 						willMove: false,
 					}
 				: undefined,
