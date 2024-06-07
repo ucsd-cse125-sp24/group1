@@ -16,6 +16,8 @@ const WALK_STEP_DIST = 2.4;
 const MAX_HEALTH_RING_SIZE = 25;
 const BOOST_RATIO = 11.2;
 const KNOCKBACK_RATIO = 1.5;
+const KNOCKBACK_RATIO_SWORD = 3;
+const KNOCKBACK_RATIO_GAMER_SWORD = 10;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -38,6 +40,7 @@ export abstract class PlayerEntity extends Entity {
 
 	// movement
 	walkSpeed: number;
+	initialSpeed: number;
 	jumpSpeed: number;
 	#maxGroundSpeedChange: number;
 	#maxAirSpeedChange: number;
@@ -84,6 +87,7 @@ export abstract class PlayerEntity extends Entity {
 		this.lookDir = new phys.Vec3(0, -1, 0);
 
 		this.walkSpeed = walkSpeed;
+		this.initialSpeed = walkSpeed;
 		this.jumpSpeed = jumpSpeed;
 		this.onGround = false;
 		this.#capsuleRadius = capsuleRadius;
@@ -327,10 +331,18 @@ export abstract class PlayerEntity extends Entity {
 							// Only have a cooldown for damage-dealing attacks
 							this.#previousAttackTime = Date.now();
 						}
+
+						const knockback =
+							this.itemInHands?.type == "gamer_sword"
+								? KNOCKBACK_RATIO_GAMER_SWORD
+								: this.itemInHands?.type == "sword"
+									? KNOCKBACK_RATIO_SWORD
+									: KNOCKBACK_RATIO;
+
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100).scale(
-								KNOCKBACK_RATIO,
+								knockback,
 							),
 						);
 						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
@@ -436,6 +448,10 @@ export abstract class PlayerEntity extends Entity {
 
 	setSpeed(speed: number) {
 		this.walkSpeed = speed;
+	}
+
+	resetSpeed() {
+		this.walkSpeed = this.initialSpeed;
 	}
 
 	/** returns 0 if don't, 1 if left, 2 if right */

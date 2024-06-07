@@ -1,3 +1,4 @@
+import { ImageId } from "../assets/images";
 import { ModelId } from "../assets/models";
 import { SoundId } from "../assets/sounds";
 import { EntityId } from "../server/entities/Entity";
@@ -23,7 +24,10 @@ export type ClientMessage =
 	| StartGame
 	| DebugMessages;
 
-export type DebugMessages = { type: "--debug-skip-stage" } | { type: "--debug-tp" } | { type: "--debug-wireframes", val: boolean};
+export type DebugMessages =
+	| { type: "--debug-skip-stage" }
+	| { type: "--debug-tp" }
+	| { type: "--debug-wireframes"; val: boolean };
 
 export type ClientControlMessage = {
 	/**
@@ -265,7 +269,13 @@ export type TextModelObject = {
 	resolution?: number;
 	font?: TextModelFont;
 };
-export type EntityModel = ModelId | EntityModelObject | TextModelObject;
+export type ImageModelObject = {
+	image: ImageId;
+	height: number;
+	offset?: Vector3;
+	rotation?: Quaternion;
+};
+export type EntityModel = ModelId | EntityModelObject | TextModelObject | ImageModelObject;
 
 export type SerializedEntity = {
 	id: EntityId;
