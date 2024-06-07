@@ -25,7 +25,7 @@ const BOSS_ATTACK_COOLDOWN = 50; // ticks
 
 export class BigBossEntity extends PlayerEntity {
 	isBoss = true;
-	initHealth = 100;
+	initHealth = 75;
 
 	previousAttackTick: number;
 	previousShootTick: number;
