@@ -121,7 +121,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#currentTick: number;
 
 	#bossResets: Map<BossEntity, number>;
-	#currentBoss: PlayerEntity | null;
 	#minecart: MinecartEntity | null;
 	#obstacles: StaticEntity[];
 	/**
@@ -145,7 +144,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#currentTick = 0;
 		this.#bossResets = new Map();
 
-		this.#currentBoss = null;
 		this.#minecart = null;
 		this.#obstacles = [];
 
@@ -561,7 +559,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				break;
 			case "boss":
 				entity = new BossEntity(this, [pos[0], pos[1] + 2, pos[2]]);
-				this.#currentBoss = entity;
 				break;
 			default:
 				return null;
@@ -857,6 +854,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (timer <= 0) {
 				this.#bossResets.delete(boss);
 				this.teleportBoss(boss);
+				continue;
 			}
 			this.#bossResets.set(boss, timer);
 		}
