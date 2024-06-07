@@ -2,6 +2,7 @@ import * as phys from "cannon-es";
 import { mat4, quat, vec3 } from "gl-matrix";
 import { GltfParser } from "../../../common/gltf/gltf-parser";
 import { exists } from "../../../common/lib/exists";
+import { Collider } from "../../lib/Collider";
 
 /**
  * Copied from gltf-types and filled in because WebGL isn't available in the
@@ -25,15 +26,9 @@ const componentSizes = {
 	MAT4: 16,
 };
 
-export type MapCollider = {
-	shape: phys.Shape;
-	offset: phys.Vec3;
-	rotation: phys.Quaternion;
-};
-
-export function getColliders(model: GltfParser): MapCollider[] {
+export function getColliders(model: GltfParser): Collider[] {
 	return model.meshes
-		.map((mesh): MapCollider | null => {
+		.map((mesh): Collider | null => {
 			if (!mesh.name) {
 				return null;
 			}

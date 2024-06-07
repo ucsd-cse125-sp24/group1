@@ -269,7 +269,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let sampleIorn2 = new Item(this, "armor", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
 
-		const hueLightCount = 11;
+		const hueLightCount = 9;
 		for (let i = 0; i < hueLightCount; i++) {
 			const radius = 5 + Math.random() * 15;
 			this.#registerEntity(
