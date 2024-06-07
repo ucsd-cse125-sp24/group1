@@ -10,6 +10,7 @@
 import * as phys from "cannon-es";
 import { Body } from "cannon-es";
 import {
+	Action,
 	Attack,
 	ChangeRole,
 	ClientMessage,
@@ -45,6 +46,7 @@ import { CubeEntity } from "./entities/CubeEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
 import { StaticLightEntity } from "./entities/StaticLightEntity";
 import { StaticCubeEntity } from "./entities/StaticCubeEntity";
+import e from "express";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -227,42 +229,63 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(shears);
 
 		let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI);
-		let Furnace = new CraftingTable(this, [14, -3.5, 28], "furnace", [
+		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
+		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
+
+
+		let Furnace = new CraftingTable(this, [-17.7, -3, -24], "furnace", [
 			{ ingredients: ["raw_iron", "wood"], output: "iron" },
-			{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
+			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
 		]);
-		Furnace.body.quaternion = fullSquat;
+		Furnace.body.quaternion = halfSquat;
 		this.#registerEntity(Furnace);
 
-		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
-		let WeaponCrafter = new CraftingTable(this, [-5, -3.5, -29.5], "weapons", [
+		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
 			{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 			{ ingredients: ["iron", "wood"], output: "knife" },
-			{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
-			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-			{ ingredients: ["mushroom", "magic_sauce", "magic_sauce"], output: "gamer_armor" },
 		]);
 		this.#registerEntity(WeaponCrafter);
 
-		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
-		let FletchingTable = new CraftingTable(this, [-19, -3, -24], "fletching", [
+		let FletchingTable = new CraftingTable(this, [-15, -3.5, 26], "fletching", [
 			{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
-			{ ingredients: ["bow", "magic_sauce"], output: "gamer_bow" },
+			{ ingredients: ["iron", "iron", "string", "string"], output: "armor" },
 			//probably should add arrows for when we get actual combat ngl
 		]);
+		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
 
-		let woodSpawner = new Spawner(this, [10, -17.5, 17.5], "wood", "wood", "axe");
+		let SauceTable = new CraftingTable(this, [12.5, -3, 10], "magic_table", [
+			{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
+			{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
+			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
+			//probably should add arrows for when we get actual combat ngl
+		]);
+		SauceTable.body.quaternion = halfSquat;
+		this.#registerEntity(SauceTable);
+
+		
+		let woodSpawner = new Spawner(this, [-5, -3.5, -25.5] , "wood", "wood", "axe");
+		woodSpawner.body.quaternion = halfSquat;
 		this.#registerEntity(woodSpawner);
+
+		let woodSpawner2 = new Spawner(this, [-5, -3.5, -29.5] , "wood2", "wood", "axe");
+		woodSpawner2.body.quaternion = halfSquat;
+		this.#registerEntity(woodSpawner2);
 
 		let oreSpawner = new Spawner(this, [0, -17.5, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
 
+		let oreSpawner2 = new Spawner(this, [10, -17.5, 21], "iron", "raw_iron", "pickaxe");
+		this.#registerEntity(oreSpawner2);
+
 		let stringSpawner = new Spawner(this, [-14.5, -17.5, -20.75], "string", "string", "shears");
 		this.#registerEntity(stringSpawner);
 
-		let mushroomSpawner = new Spawner(this, [-18, -17.5, 4], "mushroom", "mushroom", "knife");
+		let mushroomSpawner = new Spawner(this, [-18, -19, 4], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner);
+
+		let mushroomSpawner2 = new Spawner(this, [-1, -19, 10.5], "mushroom", "mushroom", "knife");
+		this.#registerEntity(mushroomSpawner2);
 
 		let sampleIorn = new Item(this, "knife", [5, 0, 5], "resource");
 		this.#registerEntity(sampleIorn);
@@ -565,6 +588,32 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			player.online = false;
 		}
 	}
+
+	playerEquipArmor(entity: Item, player: PlayerEntity): Action<Use> | null {
+		if(this.getCurrentStage().type == "combat") {
+			if(entity.type == "armor" || entity.type == "gamer_armor") {
+
+				this.addToDeleteQueue(entity.id);
+
+				player.health += entity.type == "armor" ? 3 : 6;
+				
+				return {
+					type: "equip-armor",
+					commit: () => {
+
+						this.playSound("pickup", player.getPos());
+					},
+				};
+			} else {
+
+				console.log("SHOULD NOT BE HERE");
+				return null;
+			}
+
+		}
+		return null;
+	}
+	
 	// #endregion
 
 	/**
