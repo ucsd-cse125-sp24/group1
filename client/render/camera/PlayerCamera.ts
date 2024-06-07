@@ -122,7 +122,7 @@ export class PlayerCamera extends Camera {
 		if (vec3.length(translation) === 0) {
 			return;
 		}
-		vec3.scale(translation, translation, 0.1 / vec3.length(translation));
+		vec3.scale(translation, translation, 0.5 / vec3.length(translation));
 		this.setPosition(vec3.add(vec3.create(), this._position, translation));
 	}
 }

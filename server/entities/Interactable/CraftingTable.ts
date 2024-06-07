@@ -210,7 +210,21 @@ export class CraftingTable extends InteractableEntity {
 			...super.serialize(),
 			model: [
 				...this.model,
-				...Array.from(this.itemList, (item) => item.model).flat(),
+				...Array.from(this.itemList, (item, i) =>
+					item.model.map((model): EntityModel => {
+						if (typeof model === "string") {
+							model = { modelId: model };
+						}
+						const [x, y, z] = model.offset ?? [0, 0, 0];
+						return {
+							...model,
+							offset: [x + (i - (this.itemList.size - 1) / 2), y + 3 + Math.sin(Date.now() / 500) * 0.2, z],
+							rotation: new phys.Quaternion()
+								.setFromAxisAngle(phys.Vec3.UNIT_Y, Date.now() / (2345 + Math.sin(i) * 300))
+								.toArray(),
+						};
+					}),
+				).flat(),
 				{ text: this.#lastMessage, offset: [0, 2, 0], height: 0.1 },
 				{ text: Array.from(this.itemList, (item) => item.type).join(" "), offset: [0, 1.5, 0], height: 0.1 },
 			],
