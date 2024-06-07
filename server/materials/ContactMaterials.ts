@@ -38,7 +38,7 @@ export const ItemGroundCM = new ContactMaterial(GroundMaterial, ItemMaterial, {
 
 export const PlayerSpawnerCM = new ContactMaterial(PlayerMaterial, SpawnerMaterial, {
 	friction: 0.01,
-	restitution: 0.95,
+	restitution: 0.5,
 });
 
 export const ItemSpawnerCM = new ContactMaterial(ItemMaterial, SpawnerMaterial, {

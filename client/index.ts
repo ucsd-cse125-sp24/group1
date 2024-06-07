@@ -82,36 +82,32 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			};
 		case "entire-game-state":
 			entities = Object.values(data.entities).map((entity) => deserialize(engine, entity));
-			colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
-				const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
-				return colliders.map((collider) => ({
-					collider,
-					transform: mat4.multiply(
-						mat4.create(),
-						transform,
-						mat4.fromRotationTranslation(
+			if (data.physicsBodies) {
+				colliders = data.physicsBodies.flatMap(({ position, quaternion, colliders }) => {
+					const transform = mat4.fromRotationTranslation(mat4.create(), quaternion, position);
+					return colliders.map((collider) => ({
+						collider,
+						transform: mat4.multiply(
 							mat4.create(),
-							collider.orientation ?? [0, 0, 0, 1],
-							collider.offset ?? [0, 0, 0],
+							transform,
+							mat4.fromRotationTranslation(
+								mat4.create(),
+								collider.orientation ?? [0, 0, 0, 1],
+								collider.offset ?? [0, 0, 0],
+							),
 						),
-					),
-				}));
-			});
+					}));
+				});
+			}
 
 			const newLights: Record<EntityId, PointLightEntry> = {};
-			for (const entity of Object.values(data.entities)) {
-				let light = entityLights[entity.id];
+			for (const entity of entities) {
+				let light = entityLights[entity.data.id];
 				if (light) {
 					// When the entity loses its light, just disable it in case it gets
 					// reenabled later
-					light.enabled = !!entity.light;
-					if (entity.light) {
-						light.light.position = vec3.add(vec3.create(), entity.position, entity.light.offset ?? [0, 0, 0]);
-						light.light.color = vec3.fromValues(...entity.light.color);
-						light.light.falloff = entity.light.falloff ?? 1;
-						light.light.willMove = entity.light.willMove;
-					}
-				} else if (entity.light) {
+					light.enabled = !!entity.data.light;
+				} else if (entity.data.light) {
 					light = {
 						light: new PointLight(engine, vec3.create(), vec3.create(), 1, false),
 						enabled: true,
@@ -119,13 +115,17 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 				} else {
 					continue;
 				}
-				if (entity.light) {
-					light.light.position = vec3.add(vec3.create(), entity.position, entity.light.offset ?? [0, 0, 0]);
-					light.light.color = vec3.fromValues(...entity.light.color);
-					light.light.falloff = entity.light.falloff ?? 1;
-					light.light.willMove = entity.light.willMove;
+				if (entity.data.light) {
+					light.light.position = vec3.transformMat4(
+						vec3.create(),
+						entity.data.light.offset ?? [0, 0, 0],
+						entity.transform,
+					);
+					light.light.color = vec3.fromValues(...entity.data.light.color);
+					light.light.falloff = entity.data.light.falloff ?? 1;
+					light.light.willMove = entity.data.light.willMove;
 				}
-				newLights[entity.id] = light;
+				newLights[entity.data.id] = light;
 			}
 			entityLights = newLights;
 
@@ -240,7 +240,7 @@ document.addEventListener("click", (e) => {
 		gameUi.hide();
 		pauseMenu.show();
 		inputListener.enabled = false;
-	} else if ((!trapClick && gameState/* && gameState.stage.type !== "lobby"*/) || isStartBtn) {
+	} else if ((!trapClick && gameState) /* && gameState.stage.type !== "lobby"*/ || isStartBtn) {
 		if (lastPointerType === "touch") {
 			gameUi.show();
 			pauseMenu.hide();
@@ -368,6 +368,7 @@ const inputListener = new InputListener({
 		}
 		if (inputs.cycleWireframe && !debugInputs.cycleWireframe) {
 			wireframe = (wireframe + 1) % 3;
+			connection.send({type: "--debug-wireframes", val: wireframe !== 0});
 		}
 		if (inputs.toggleTones && !debugInputs.toggleTones) {
 			tones = !tones;
@@ -470,19 +471,19 @@ const paint = () => {
 	// Set camera position
 	if (!freecam && isFirstPerson) {
 		for (const entity of entities) {
-			entity.hasCamera = entity.data?.id === cameraLockTarget;
+			entity.hasCamera = entity.data.id === cameraLockTarget;
 		}
 	}
 
-	const cameraTarget = entities.find((entity) => entity.data?.id === cameraLockTarget);
-	console.log(camera.getPosition(), camera._orientation);
+	const cameraTarget = entities.find((entity) => entity.data.id === cameraLockTarget);
+	// console.log(camera.getPosition(), camera._orientation);
 	if (cameraTarget && !freecam) {
 		camera.setFree(false);
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
 		// TEMP
 		const dir = camera.getForwardDir();
-		sporeFilterStrength.setTarget(cameraTarget.data?.isSabotaged ? 1 : 0);
-		fov.setTarget(cameraTarget.data?.isTrapped ? Math.PI / 6 : (pauseMenu.options.fov * Math.PI) / 180);
+		sporeFilterStrength.setTarget(cameraTarget.data.isSabotaged ? 1 : 0);
+		fov.setTarget(cameraTarget.data.isTrapped ? Math.PI / 6 : (pauseMenu.options.fov * Math.PI) / 180);
 		if (isFirstPerson) {
 			camera.setPosition(position);
 			if (!camera.canRotate) {
@@ -512,8 +513,8 @@ const paint = () => {
 	// Cast shadows
 	const staticIds = JSON.stringify(
 		[...entities, ...tempEntities]
-			.filter((entity) => entity.data?.isStatic)
-			.map((entity) => [entity.data?.id, entity.data?.position]),
+			.filter((entity) => entity.data.isStatic)
+			.map((entity) => [entity.data.id, entity.data.position]),
 	);
 	let recastStaticShadows = false;
 	if (staticIds !== previousStaticIds) {
