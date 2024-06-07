@@ -107,7 +107,8 @@ export type Use =
 	| "pop-crafter"
 	| "boss:spore"
 	| "boss:place-trap"
-	| "bigboss:";
+	| "bigboss:"
+	| "equip-armor";
 export type Attack =
 	| "hero:shoot-arrow"
 	| "crafting-stage:slap-player"
