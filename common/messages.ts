@@ -13,6 +13,7 @@ export type ServerMessage =
 	| SabotageHero
 	| GameOver
 	| Damage
+	| Shake
 	| PlayParticle;
 
 export type ClientMessage =
@@ -133,6 +134,15 @@ export type Action<ActionType> = {
 };
 
 export type Damage = { type: "damage" };
+
+export type Shake = {
+	type: "shake";
+	/**
+	 * Direction and intensity of shake, because it is added to the forward vector
+	 * of the camera. Perhaps there's a better way to implement camera shake.
+	 */
+	direction: Vector3;
+};
 
 export type GameOver = {
 	type: "game-over";

@@ -60,6 +60,11 @@ export class BigBossEntity extends PlayerEntity {
 		this.chargeTicks = 0;
 	}
 
+	handleLanding(fallHeight: number): void {
+		super.handleLanding(fallHeight);
+		this.game.shakeFromSource(this.getFootPos(), fallHeight / 20, 10, this);
+	}
+
 	attack(): Action<Attack> | null {
 		if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
 			return super.attack();
@@ -85,7 +90,9 @@ export class BigBossEntity extends PlayerEntity {
 					//FOR TESTING
 					//console.log(betterDirection, i);
 
-					entities.push(...this.game.raycast(this.body.position, betterDirection, {}, this).map(({ entity }) => entity));
+					entities.push(
+						...this.game.raycast(this.body.position, betterDirection, {}, this).map(({ entity }) => entity),
+					);
 				}
 
 				for (const entity of entities) {

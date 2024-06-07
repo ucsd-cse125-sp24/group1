@@ -506,6 +506,22 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#server.broadcast({ type: "particle", options });
 	}
 
+	shakeFromSource(source: Vector3 | phys.Vec3, intensity: number, falloff: number, exclude?: Entity): void {
+		if (Array.isArray(source)) {
+			source = new phys.Vec3(...source);
+		}
+		for (const player of this.#players.values()) {
+			// If player entity isn't in the world (because they died), add them back
+			if (player.entity && player.entity !== exclude) {
+				const distance = source.distanceTo(player.entity.body.position) / falloff;
+				const strength = intensity / (distance * distance);
+				if (strength > 0.001) {
+					player.conn.send({ type: "shake", direction: [0, strength, 0] });
+				}
+			}
+		}
+	}
+
 	sabotageHero(id: EntityId) {
 		const target = this.#getPlayerByEntityId(id);
 		if (target && target.entity instanceof HeroEntity) {
@@ -831,6 +847,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					this.playSound("walkLeft", player.entity.getPos());
 				} else {
 					this.playSound("walkRight", player.entity.getPos());
+				}
+				if (player.entity instanceof BigBossEntity) {
+					this.shakeFromSource(player.entity.getFootPos(), 0.02, 5, player.entity);
 				}
 			}
 

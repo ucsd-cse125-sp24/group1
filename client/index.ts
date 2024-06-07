@@ -34,6 +34,7 @@ import { ensureName } from "./ui/components/NamePrompt";
 import { PointLight } from "./render/lights/PointLight";
 import { TempLightModel } from "./render/lights/TempLightModel";
 import { ParticleManager } from "./render/model/ParticleManager";
+import { Vector3 } from "../common/commontypes";
 
 const errorWindow = document.getElementById("error-window");
 if (errorWindow instanceof HTMLDialogElement) {
@@ -174,6 +175,11 @@ const handleMessage = (data: ServerMessage): ClientMessage | undefined => {
 			damageFilterStrength.setValueInstant(1);
 			damageFilterStrength.setTarget(0);
 			break;
+		case "shake":
+			shakeDir = data.direction;
+			shake.setValueInstant(1);
+			shake.setTarget(0);
+			break;
 		default:
 			throw new Error(`Unsupported message type '${data["type"]}'`);
 	}
@@ -312,6 +318,8 @@ const camera = new PlayerCamera(
 // @ts-ignore
 window.camera = camera;
 const fov = new Transition(Math.PI / 3);
+const shake = new Transition(0);
+let shakeDir: Vector3 = [0, 0.05, 0];
 
 let result = vec3.create();
 vec3.add(result, camera.getPosition(), camera.getForwardDir());
@@ -575,7 +583,19 @@ const paint = () => {
 	engine.gl.uniform1f(engine.gltfMaterial.uniform("u_tones"), 5);
 
 	// Draw entities
+	const forwardDir = camera.getForwardDir();
+	const shakeIntensity = shake.getValue();
+	if (shakeIntensity > 0) {
+		camera.setForwardDir(
+			vec3.add(
+				vec3.create(),
+				forwardDir,
+				vec3.scale(vec3.create(), shakeDir, shakeIntensity * (Math.random() * 2 - 1)),
+			),
+		);
+	}
 	const view = camera.getViewProjectionMatrix();
+	camera.setForwardDir(forwardDir);
 	drawModels(
 		view,
 		[...entities, ...tempEntities].flatMap((entity) => entity.getModels("rendering")),

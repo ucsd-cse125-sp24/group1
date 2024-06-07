@@ -36,7 +36,15 @@ export abstract class PlayerEntity extends Entity {
 	displayName = `Player ${this.id}`;
 	isInvulnerableThisTick = false;
 
-	onGround: boolean;
+	onGround = false;
+	/**
+	 * The height from which the entity fell. `null` if not falling.
+	 */
+	#fallHeight: number | null = null;
+	/**
+	 * Whether the player is continuing to get acceleration upwards while holding
+	 * down the jump button.
+	 */
 	jumping = false;
 	lookDir: phys.Vec3;
 	interactionRange: number;
@@ -93,7 +101,6 @@ export abstract class PlayerEntity extends Entity {
 		this.walkSpeed = walkSpeed;
 		this.initialSpeed = walkSpeed;
 		this.jumpSpeed = jumpSpeed;
-		this.onGround = false;
 		this.#capsuleRadius = capsuleRadius;
 		this.#cylinderHeight = capsuleHeight - 2 * capsuleRadius;
 		this.headOffset = this.#capsuleRadius;
@@ -218,14 +225,6 @@ export abstract class PlayerEntity extends Entity {
 		if (movement.jump) {
 			if (!this.jumping && this.#coyoteCounter > 0) {
 				this.game.playSound("jump", this.getPos());
-				this.game.playParticle({
-					spawnCount: 10,
-					color: [234 / 255, 221 / 255, 202 / 255, 0.5],
-					initialPosition: this.getFootPos(),
-					initialVelocity: [0, 1.5, 0],
-					initialVelocityRange: [1.5, 1.5, 1.5],
-					ttl: 1,
-				});
 				this.jumping = true;
 				const boost = currentVelocity.clone();
 				if (boost.length() > 0) boost.normalize();
@@ -243,6 +242,39 @@ export abstract class PlayerEntity extends Entity {
 			this.jumping = false;
 			this.#upwardCounter = 0;
 		}
+
+		const y = this.getPos()[1];
+		if (this.onGround) {
+			if (this.#fallHeight !== null) {
+				// Was falling and just landed
+				const fallHeight = this.#fallHeight - y;
+				this.#fallHeight = null;
+
+				if (fallHeight > 0) {
+					this.handleLanding(fallHeight);
+				}
+			}
+		} else {
+			if (this.#fallHeight === null) {
+				this.#fallHeight = 0;
+			}
+			if (y > this.#fallHeight) {
+				this.#fallHeight = y;
+			}
+		}
+	}
+
+	handleLanding(fallHeight: number): void {
+		const range = this.#capsuleRadius * fallHeight * 3;
+		this.game.playParticle({
+			spawnCount: Math.ceil(range * range),
+			color: [234 / 255, 221 / 255, 202 / 255, 0.5],
+			initialPosition: this.getFootPos(),
+			initialVelocity: [0, 1.5, 0],
+			initialVelocityRange: [range, 1.5, range],
+			ttl: 1,
+		});
+		// TODO: play land sound
 	}
 
 	/**
