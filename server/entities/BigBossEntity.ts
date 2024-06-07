@@ -8,6 +8,7 @@ import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { MinecartEntity } from "./MinecartEntity";
 import { log } from "../net/_tempDebugLog";
+import { Animator, Animation } from "../lib/Animation";
 
 const PLAYER_INTERACTION_RANGE = 12;
 const BOSS_CAPSULE_HEIGHT = 7.5;
@@ -24,20 +25,26 @@ const BOSS_JUMP_SPEED = 10;
 
 const BOSS_ATTACK_COOLDOWN = 50; // ticks
 
+const BIG_BOSS_SCALE: { offset: [number, number, number], rotation: [number, number, number, number]} = {
+	offset: [0, 0, 0] as Vector3,
+	rotation: new Quaternion(0, 0, 0, 1).setFromAxisAngle(new Vec3(0, 1, 0), Math.PI).toArray(),
+} as const;
+
 export class BigBossEntity extends PlayerEntity {
 	isBoss = true;
-	initHealth = 75;
+	initHealth = 60;
 
 	previousAttackTick: number;
 	previousShootTick: number;
 
 	chargeTicks: number;
 
+	animator: Animator;
+
 	constructor(game: Game, footPos: Vector3) {
 		const model = {
 			modelId: "mushroom_king" as const,
-			offset: [0, 0, 0] as Vector3,
-			rotation: new Quaternion(0, 0, 0, 1).setFromAxisAngle(new Vec3(0, 1, 0), Math.PI).toArray(),
+			...BIG_BOSS_SCALE
 		};
 		super(
 			game,
@@ -53,6 +60,13 @@ export class BigBossEntity extends PlayerEntity {
 			PLAYER_INTERACTION_RANGE,
 		);
 		model.offset[1] = this.footOffset;
+
+		this.animator = new Animator({
+			hit: new Animation([
+				{ model: [{...BIG_BOSS_SCALE, modelId: `big_boss_hit1`}], duration: 3 },
+				{ model: [{...BIG_BOSS_SCALE, modelId: `big_boss_hit2`}], duration: 3 },
+			], 2),
+		}, [model]);
 
 		this.previousAttackTick = this.game.getCurrentTick();
 		this.previousShootTick = this.game.getCurrentTick();
@@ -98,6 +112,7 @@ export class BigBossEntity extends PlayerEntity {
 				for (const entity of entities) {
 					if (entity instanceof HeroEntity || entity instanceof MinecartEntity) {
 						if (this.game.getCurrentStage().type === "combat") {
+							this.animator.play("hit")
 							entity.takeDamage(1);
 							log("Minecart taking damage");
 						}
@@ -106,10 +121,10 @@ export class BigBossEntity extends PlayerEntity {
 							new Vec3(this.lookDir.x * 300, Math.abs(this.lookDir.y) * 150 + 50, this.lookDir.z * 300),
 						);
 						this.game.playSound("hit", entity.getPos());
-						//this.animator.play("punch");
+						this.animator.play("hit");
 					} else if (entity instanceof InteractableEntity) {
 						entity.hit(this);
-						//this.animator.play("punch");
+						this.animator.play("hit");
 					}
 				}
 				this.previousAttackTick = this.game.getCurrentTick();
