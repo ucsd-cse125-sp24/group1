@@ -1,7 +1,7 @@
 import { EntityModel } from "../../common/messages";
 
 export type Frame = {
-	model: EntityModel[];
+	model: EntityModel | EntityModel[];
 	duration: number;
 };
 
@@ -16,7 +16,7 @@ export class Animation {
 		this.#duration = frames[0].duration;
 	}
 
-	getModel = () => this.#frames[this.#currentFrame].model;
+	getModel = () => [this.#frames[this.#currentFrame].model].flat(1);
 
 	/**
 	 * Ticks one off of the duration of the current frame

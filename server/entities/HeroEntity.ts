@@ -24,6 +24,8 @@ export class HeroEntity extends PlayerEntity {
 	isBoss = false;
 	initHealth = 3;
 
+	armor: "armor" | "gamer_armor" | undefined;
+
 	constructor(game: Game, footPos: Vector3, model: EntityModel[] = []) {
 		super(
 			game,
@@ -63,8 +65,17 @@ export class HeroEntity extends PlayerEntity {
 		this.isTrapped = false;
 	}
 
+	tick(): void {
+		this.animator.tick();
+		if (this.armor) {
+			this.model = [...this.animator.getModel(), { modelId: this.armor, offset: [0, -1.8, 0], scale: 0.5 }];
+		} else {
+			this.model = this.animator.getModel();
+		}
+	}
+
 	addArmorModel(type: "armor" | "gamer_armor") {
-		this.model.push({ modelId: type, offset: [0, -1.8, 0], scale: 0.5 });
+		this.armor = type;
 	}
 
 	serialize(): SerializedEntity {

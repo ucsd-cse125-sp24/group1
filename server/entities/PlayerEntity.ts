@@ -18,6 +18,10 @@ const BOOST_RATIO = 11.2;
 const KNOCKBACK_RATIO = 1.5;
 const KNOCKBACK_RATIO_SWORD = 3;
 const KNOCKBACK_RATIO_GAMER_SWORD = 10;
+const PLAYER_SCALE: { offset: [number, number, number]; scale: number } = {
+	offset: [0, -1.5, 0],
+	scale: 0.4,
+};
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -110,9 +114,9 @@ export abstract class PlayerEntity extends Entity {
 		// prettier-ignore
 		this.animator = new Animator({
 			slap: new Animation([
-				{ model: ["player_blue_slap1"], duration: 5 },
-				{ model: ["player_blue_slap2"], duration: 5 },
-				{ model: ["player_blue_slap3"], duration: 5 },
+				{ model: {...PLAYER_SCALE, modelId: "player_blue_slap1"}, duration: 2 },
+				{ model: {...PLAYER_SCALE, modelId: "player_blue_slap2"}, duration: 1 },
+				{ model: {...PLAYER_SCALE, modelId: "player_blue_slap3"}, duration: 2 },
 			]),
 			jump: new Animation([
 				{ model: ["chair"], duration: 5 },
@@ -487,7 +491,6 @@ export abstract class PlayerEntity extends Entity {
 
 	tick() {
 		this.animator.tick();
-		this.model = this.animator.getModel();
 	}
 
 	setSpeed(speed: number) {
