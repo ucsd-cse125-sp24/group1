@@ -15,6 +15,7 @@ import { magic_sauce } from "./magic_sauce";
 import { mushroom } from "./mushroom";
 import { pickaxe } from "./pickaxe";
 import { player_blue } from "./player_blue";
+import { player_blue_slap1, player_blue_slap2, player_blue_slap3 } from "./player_blue/slap";
 import { player_green } from "./player_green";
 import { player_red } from "./player_red";
 import { player_yellow } from "./player_yellow";
@@ -68,6 +69,10 @@ export const getModels = (engine: GraphicsEngine) =>
 		mushroom: GltfModelWrapper.from(engine.gltfMaterial, mushroom),
 		pickaxe: GltfModelWrapper.from(engine.gltfMaterial, pickaxe),
 		player_blue: GltfModelWrapper.from(engine.gltfMaterial, player_blue),
+		player_blue_slap1: GltfModelWrapper.from(engine.gltfMaterial, player_blue_slap1),
+		player_blue_slap2: GltfModelWrapper.from(engine.gltfMaterial, player_blue_slap2),
+		player_blue_slap3: GltfModelWrapper.from(engine.gltfMaterial, player_blue_slap3),
+
 		player_green: GltfModelWrapper.from(engine.gltfMaterial, player_green),
 		player_red: GltfModelWrapper.from(engine.gltfMaterial, player_red),
 		player_yellow: GltfModelWrapper.from(engine.gltfMaterial, player_yellow),
