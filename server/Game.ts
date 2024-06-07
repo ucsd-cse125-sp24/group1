@@ -536,6 +536,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (this.#currentBoss) {
 				let randNum = Math.floor(Math.random() * 10) % 7;
 				this.#currentBoss.walkSpeed = 20;
+				if(this.#currentBoss.itemInHands) {
+					this.#currentBoss.itemInHands.unbind();
+				}
 				this.#currentBoss.body.position = new phys.Vec3(
 					SPAWN_LOCATION[randNum][0],
 					SPAWN_LOCATION[randNum][1],
