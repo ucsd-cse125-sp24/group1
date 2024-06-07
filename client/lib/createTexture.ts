@@ -7,7 +7,7 @@ if (!c) {
 	throw new TypeError("Failed to create texture for text textures");
 }
 
-export type TextTexture = {
+export type Texture = {
 	texture: WebGLTexture;
 	width: number;
 	height: number;
@@ -22,7 +22,7 @@ export const createTextTexture = (
 		family = '"Inter", "Helvetica Neue", Helvetica, Arial, sans-serif',
 		weight = "normal",
 	}: TextModelFont = {},
-): TextTexture => {
+): Texture => {
 	const { gl } = utils;
 	const texture = gl.createTexture();
 	if (!texture) {
@@ -31,7 +31,7 @@ export const createTextTexture = (
 	utils.bindTexture(0, "2d", texture);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, 1, height, 0, gl.RED, gl.UNSIGNED_BYTE, null);
 
-	const result: TextTexture = { texture, width: 1, height };
+	const result: Texture = { texture, width: 1, height };
 
 	document.fonts.ready.then(() => {
 		c.font = `${weight} ${height}px/1 ${family}`;
@@ -49,6 +49,33 @@ export const createTextTexture = (
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.generateMipmap(gl.TEXTURE_2D);
 	});
+
+	return result;
+};
+
+export const createImageTexture = (utils: WebGlUtils, url: string): Texture => {
+	const { gl } = utils;
+	const texture = gl.createTexture();
+	if (!texture) {
+		throw new Error("Failed to create image texture object");
+	}
+	utils.bindTexture(0, "2d", texture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, 1, 1, 0, gl.RED, gl.UNSIGNED_BYTE, null);
+
+	const result: Texture = { texture, width: 1, height: 1 };
+
+	fetch(url)
+		.then((r) => (r.ok ? r.blob() : Promise.reject(new Error(`HTTP ${r.status}: ${url} (${r.url})`))))
+		.then(createImageBitmap)
+		.then((image) => {
+			result.width = image.width;
+			result.height = image.height;
+			utils.bindTexture(0, "2d", texture);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.generateMipmap(gl.TEXTURE_2D);
+		});
 
 	return result;
 };
