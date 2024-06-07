@@ -254,11 +254,14 @@ export abstract class PlayerEntity extends Entity {
 			{},
 			this,
 		);
-		if (entities[0] instanceof InteractableEntity) {
-			if (entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
-				return this.game.playerEquipArmor(entities[0], this);
+		if (entities[0]?.entity instanceof InteractableEntity) {
+			if (
+				entities[0].entity instanceof Item &&
+				(entities[0].entity.type == "armor" || entities[0].entity.type == "gamer_armor")
+			) {
+				return this.game.playerEquipArmor(entities[0].entity, this);
 			}
-			return entities[0].interact(this);
+			return entities[0].entity.interact(this);
 		}
 		return null;
 	}
@@ -297,7 +300,7 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 
-		for (const entity of entities) {
+		for (const { entity } of entities) {
 			if (entity instanceof PlayerEntity) {
 				if (entity instanceof BossEntity) {
 					return {

@@ -9,7 +9,6 @@ import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { MinecartEntity } from "./MinecartEntity";
 import { log } from "../net/_tempDebugLog";
 
-
 const PLAYER_INTERACTION_RANGE = 12;
 const BOSS_CAPSULE_HEIGHT = 7.5;
 const BOSS_CAPSULE_RADIUS = 1.5;
@@ -86,7 +85,7 @@ export class BigBossEntity extends PlayerEntity {
 					//FOR TESTING
 					//console.log(betterDirection, i);
 
-					entities.push(...this.game.raycast(this.body.position, dir, {}, this));
+					entities.push(...this.game.raycast(this.body.position, dir, {}, this).map(({ entity }) => entity));
 				}
 
 				for (const entity of entities) {
