@@ -127,7 +127,7 @@ export class BigBossEntity extends PlayerEntity {
 					let dir = quat.vmult(lookDir.scale(6));
 					let betterDirection = this.body.position.vadd(dir);
 
-					this.game.shootArrow(betterDirection, dir.scale(20), 1, [{ modelId: "mushroom" }]);
+					this.game.shootArrow(betterDirection, dir.scale(10), 1, [{ modelId: "mushroom" }]);
 					//console.log(dir, betterDirection, betterDirection.unit(), this.body.position.vadd(betterDirection.unit()), this.getPos());
 				}
 				this.animator.play("pee");
