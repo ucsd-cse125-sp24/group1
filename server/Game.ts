@@ -253,17 +253,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
 		this.#registerEntity(Furnace);
 
-		// TEMP: for testing furnace
-		for (let i = 0; i < 5; i++) {
-			this.#registerEntity(new Item(this, "wood", [-15, -3, -20], "resource"));
-			this.#registerEntity(new Item(this, "raw_iron", [-15, -3, -20], "resource"));
-		}
-
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
 			{ ingredients: ["iron", "iron", "wood"], output: "sword" },
 			{ ingredients: ["iron", "wood"], output: "knife" },
 		]);
 		this.#registerEntity(WeaponCrafter);
+
+		// TEMP: for testing crafter
+		for (let i = 0; i < 5; i++) {
+			this.#registerEntity(new Item(this, "wood", [10, -3, 20], "resource"));
+			this.#registerEntity(new Item(this, "iron", [10, -3, 20], "resource"));
+		}
 
 		let FletchingTable = new CraftingTable(this, [-15, -3.9, 26], "fletching", [
 			{ ingredients: ["wood", "wood", "string", "string"], output: "bow" },
@@ -790,6 +790,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (!player.entity) {
 				continue;
 			}
+			player.entity.isInvulnerableThisTick = false;
 			let inputs = player.input.getInputs();
 			let posedge = player.input.getPosedge();
 
@@ -853,6 +854,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				);
 				log(`Player ${player.id.slice(0, 6)} spawned ${modelId}`);
 			}
+		}
+		if (this.#minecart !== null) {
+			this.#minecart.isInvulnerableThisTick = false;
 		}
 		this.#nextTick();
 	}

@@ -9,7 +9,6 @@ import { Entity } from "./Entity";
 import { Item } from "./Interactable/Item";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { BossEntity } from "./BossEntity";
-import { off } from "process";
 
 const COYOTE_FRAMES = 4;
 const UPWARD_FRAMES = 9;
@@ -29,6 +28,7 @@ export abstract class PlayerEntity extends Entity {
 	/** Minimum time between attacks in milliseconds */
 	attackCooldown: number = 500;
 	displayName = `Player ${this.id}`;
+	isInvulnerableThisTick = false;
 
 	onGround: boolean;
 	jumping = false;
@@ -190,7 +190,9 @@ export abstract class PlayerEntity extends Entity {
 		this.body.applyImpulse(deltaVelocity.scale(this.body.mass));
 
 		if (this.itemInHands instanceof Item) {
-			let offset = this.lookDir.unit().scale(1.5)
+			let offset = this.lookDir
+				.unit()
+				.scale(1.5)
 				.vadd(this.lookDir.cross(rightVector).unit().scale(0.5))
 				.vadd(rightVector.unit().scale(0.75));
 
@@ -249,7 +251,7 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 		if (entities[0] instanceof InteractableEntity) {
-			if(entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
+			if (entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
 				return this.game.playerEquipArmor(entities[0], this);
 			}
 			return entities[0].interact(this);
@@ -371,12 +373,16 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	takeDamage(damage: number): void {
+		if (this.isInvulnerableThisTick) {
+			return;
+		}
 		this.health -= damage;
 		if (this.health <= 0) {
 			this.health = 0;
 			// Die
 			this.game.addToDeleteQueue(this.id);
 		}
+		this.isInvulnerableThisTick = true;
 	}
 
 	serialize(): SerializedEntity {

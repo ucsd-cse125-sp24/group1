@@ -8,6 +8,7 @@ const MAX_HEALTH_RING_SIZE = 25;
 
 export class MinecartEntity extends StaticEntity {
 	health = 100;
+	isInvulnerableThisTick = false;
 
 	constructor(game: Game, position: phys.Vec3) {
 		super(game, position.toArray(), new phys.Box(new phys.Vec3(3, 3, 3)), GroundMaterial, [
@@ -16,12 +17,16 @@ export class MinecartEntity extends StaticEntity {
 	}
 
 	takeDamage(damage: number): void {
+		if (this.isInvulnerableThisTick) {
+			return;
+		}
 		this.health -= damage;
 		if (this.health <= 0) {
 			this.health = 0;
 			// Die
 			this.game.addToDeleteQueue(this.id);
 		}
+		this.isInvulnerableThisTick = true;
 	}
 
 	serialize(): SerializedEntity {
