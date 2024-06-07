@@ -13,13 +13,13 @@ export class TrapEntity extends InteractableEntity {
 	durability: number;
 
 	constructor(game: Game, position: phys.Vec3) {
-		super(game, [{ modelId: "trap", scale: 0.25, offset: [0, -0.2, 0] }]);
+		super(game, [{ modelId: "trap", scale: 0.25, offset: [0, -0.05, 0] }]);
 		this.body = new phys.Body({
 			mass: 100,
 			position,
 			material: ItemMaterial,
 			collisionFilterGroup: this.getBitFlag(),
-			shape: new phys.Box(new phys.Vec3(0.25, 0.25, 0.25)),
+			shape: new phys.Box(new phys.Vec3(0.25, 0.04, 0.25)),
 		});
 		this.trappedPlayerId = null;
 		this.durability = 10;
