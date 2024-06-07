@@ -16,6 +16,8 @@ const WALK_STEP_DIST = 2.4;
 const MAX_HEALTH_RING_SIZE = 25;
 const BOOST_RATIO = 11.2;
 const KNOCKBACK_RATIO = 1.5;
+const KNOCKBACK_RATIO_SWORD = 3;
+const KNOCKBACK_RATIO_GAMER_SWORD = 10;
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -214,9 +216,11 @@ export abstract class PlayerEntity extends Entity {
 				this.game.playSound("jump", this.getPos());
 				this.game.playParticle({
 					spawnCount: 10,
-					color: [1, 0, 0, 0.5],
+					color: [234 / 255, 221 / 255, 202 / 255, 0.5],
 					initialPosition: this.getFootPos(),
-					initialVelocityRange: [1, 1, 1],
+					initialVelocity: [0, 1.5, 0],
+					initialVelocityRange: [1.5, 1.5, 1.5],
+					ttl: 1,
 				});
 				this.jumping = true;
 				const boost = currentVelocity.clone();
@@ -252,11 +256,17 @@ export abstract class PlayerEntity extends Entity {
 			{},
 			this,
 		);
-		if (entities[0] instanceof InteractableEntity) {
-			if (entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
-				return this.game.playerEquipArmor(entities[0], this);
+		if (entities[0]?.entity instanceof InteractableEntity) {
+			if (
+				entities[0].entity instanceof Item &&
+				(entities[0].entity.type == "armor" || entities[0].entity.type == "gamer_armor")
+			) {
+				const action = this.game.playerEquipArmor(entities[0].entity, this);
+				if (action) {
+					return action;
+				}
 			}
-			return entities[0].interact(this);
+			return entities[0].entity.interact(this);
 		}
 		return null;
 	}
@@ -279,7 +289,7 @@ export abstract class PlayerEntity extends Entity {
 						this.game.shootArrow(
 							this.body.position.vadd(lookDir.scale(2)),
 							lookDir.scale(isGamer ? 80 : 40),
-							isGamer ? 6 : 3,
+							isGamer ? 4 : 2,
 							[{ modelId: "donut" }],
 						);
 						//this.animator.play("punch");
@@ -295,12 +305,21 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 
-		for (const entity of entities) {
+		for (const { entity, point } of entities) {
 			if (entity instanceof PlayerEntity) {
 				if (entity instanceof BossEntity) {
 					return {
 						type: "hit-mini-boss",
 						commit: () => {
+							this.game.playParticle({
+								spawnCount: 50,
+								initialPosition: this.getPos(),
+								initialVelocity: [0, 5, 0],
+								initialVelocityRange: [4, 0, 4],
+								color: [255 / 255, 140 / 255, 0, 0.5],
+								ttl: 1,
+							});
+
 							this.game.playerHitBoss(entity);
 							this.game.playDamageFilter(entity.id);
 						},
@@ -328,11 +347,38 @@ export abstract class PlayerEntity extends Entity {
 							this.game.playDamageFilter(entity.id);
 							// Only have a cooldown for damage-dealing attacks
 							this.#previousAttackTime = Date.now();
+
+							this.game.playParticle({
+								spawnCount: 10,
+								size: 20,
+								color: [1, 0, 0, 1],
+								initialPosition: point.toArray(),
+								initialVelocity: [0, 1, 0],
+								initialVelocityRange: [1, 1, 1],
+								ttl: 1,
+							});
+						} else {
+							this.game.playParticle({
+								spawnCount: 10,
+								size: 10,
+								initialPosition: point.toArray(),
+								initialVelocity: [0, 1, 0],
+								initialVelocityRange: [1, 1, 1],
+								ttl: 1,
+							});
 						}
+
+						const knockback =
+							this.itemInHands?.type == "gamer_sword"
+								? KNOCKBACK_RATIO_GAMER_SWORD
+								: this.itemInHands?.type == "sword"
+									? KNOCKBACK_RATIO_SWORD
+									: KNOCKBACK_RATIO;
+
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
 							new phys.Vec3(this.lookDir.x * 100, Math.abs(this.lookDir.y) * 50 + 50, this.lookDir.z * 100).scale(
-								KNOCKBACK_RATIO,
+								knockback,
 							),
 						);
 						if (this.itemInHands?.type == "gamer_sword" || this.itemInHands?.type == "sword")
@@ -341,14 +387,22 @@ export abstract class PlayerEntity extends Entity {
 						this.animator.play("slap");
 					},
 				};
-			} else if (entities[0] instanceof InteractableEntity) {
-				const action = entities[0].hit(this);
+			} else if (entity instanceof InteractableEntity) {
+				const action = entity.hit(this);
 				return action
 					? {
 							...action,
 							commit: () => {
 								action.commit();
 								this.animator.play("slap");
+								this.game.playParticle({
+									spawnCount: 10,
+									size: 10,
+									initialPosition: point.toArray(),
+									initialVelocity: [0, 1, 0],
+									initialVelocityRange: [1, 1, 1],
+									ttl: 1,
+								});
 								// Allow spam-slapping items
 								// this.#previousAttackTime = Date.now();
 							},
@@ -366,10 +420,10 @@ export abstract class PlayerEntity extends Entity {
 		switch (weapon.type) {
 			case "gamer_bow":
 			case "gamer_sword":
-				return 2;
+				return 6;
 			case "bow":
 			case "sword":
-				return 1;
+				return 3;
 		}
 		return 0;
 	}

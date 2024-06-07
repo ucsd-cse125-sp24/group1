@@ -7,7 +7,7 @@ const PLAYER_INTERACTION_RANGE = 8.0; // TEMP, but 2 is too low IMO
 const HERO_CAPSULE_HEIGHT = 2;
 const HERO_CAPSULE_RADIUS = 0.5;
 
-const HERO_WALK_SPEED = 20;
+const HERO_WALK_SPEED = 16;
 /**
  * Maximum change in horizontal velocity that can be caused by the player in one
  * tick
@@ -61,6 +61,10 @@ export class HeroEntity extends PlayerEntity {
 		super.reset();
 		this.isSabotaged = false;
 		this.isTrapped = false;
+	}
+
+	addArmorModel(type: "armor" | "gamer_armor") {
+		this.model.push({ modelId: type, offset: [0, -1.8, 0], scale: 0.5 });
 	}
 
 	serialize(): SerializedEntity {

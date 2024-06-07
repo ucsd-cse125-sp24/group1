@@ -8,7 +8,7 @@ const PLAYER_INTERACTION_RANGE = 2.0;
 const BOSS_CAPSULE_HEIGHT = 1;
 const BOSS_CAPSULE_RADIUS = 0.25;
 
-const BOSS_WALK_SPEED = 25;
+const BOSS_WALK_SPEED = 18;
 /**
  * Maximum change in horizontal velocity that can be caused by the player in one
  * tick
@@ -16,7 +16,7 @@ const BOSS_WALK_SPEED = 25;
 const MAX_BOSS_GROUND_SPEED_CHANGE = 3;
 /** Maximum change in horizontal velocity that can occur while in the air */
 const MAX_BOSS_AIR_SPEED_CHANGE = 1;
-const BOSS_JUMP_SPEED = 10;
+const BOSS_JUMP_SPEED = 8;
 
 export class BossEntity extends PlayerEntity {
 	// Game properties
@@ -61,11 +61,11 @@ export class BossEntity extends PlayerEntity {
 			{},
 			this,
 		);
-		if (entities[0] instanceof HeroEntity && !entities[0].isSabotaged) {
+		if (entities[0]?.entity instanceof HeroEntity && !entities[0].entity.isSabotaged) {
 			return {
 				type: "boss:spore",
 				commit: () => {
-					this.game.sabotageHero(entities[0].id);
+					this.game.sabotageHero(entities[0].entity.id);
 				},
 			};
 		} else if (this.canPlaceTrap) {

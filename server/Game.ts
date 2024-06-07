@@ -92,6 +92,12 @@ const startingToolLocations: Vector3[] = [
 const CRAFTING_STAGE_TIME = 30 * 1000;
 const COMBAT_STAGE_TIME = 120 * 1000;
 
+type EntityRayCastResult = {
+	entity: Entity;
+	point: phys.Vec3;
+	distance: number;
+};
+
 interface NetworkedPlayer {
 	input: PlayerInput;
 	/** `null` if spectating */
@@ -163,15 +169,22 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * @param exclude - Use to prevent players from including themselves in the
 	 * raycast.
 	 */
-	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions, exclude?: Entity): Entity[] {
-		const entities = this.#world
-			.castRay(start, end, rayOptions)
-			.sort((a, b) => a.distance - b.distance)
-			.flatMap(({ body }) => {
-				const entity = body && this.#bodyToEntityMap.get(body);
-				return entity && entity !== exclude ? [entity] : [];
-			});
-		return Array.from(new Set(entities));
+	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions, exclude?: Entity): EntityRayCastResult[] {
+		const entities: Record<EntityId, EntityRayCastResult> = {};
+		for (const result of this.#world.castRay(start, end, rayOptions)) {
+			const entity = result.body && this.#bodyToEntityMap.get(result.body);
+			if (!entity || entity === exclude) {
+				continue;
+			}
+			if (!entities[entity.id] || result.distance < entities[entity.id].distance) {
+				entities[entity.id] = {
+					entity,
+					point: result.hitPointWorld,
+					distance: result.distance,
+				};
+			}
+		}
+		return Object.values(entities).sort((a, b) => a.distance - b.distance);
 	}
 
 	/**
@@ -411,6 +424,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			);
 			this.#registerEntity(entity);
 		}
+		this.#registerEntity(
+			new StaticEntity(this, [0, 70, 0], undefined, GroundMaterial, [{ image: "testTexture", height: 4 }]),
+		);
 	}
 	// #endregion
 
@@ -539,7 +555,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	playerHitBoss(boss: BossEntity) {
 		if (!this.#bossResets.has(boss)) {
 			boss.setSpeed(0);
-			this.#bossResets.set(boss, 50);
+			this.#bossResets.set(boss, 150);
 		}
 	}
 	// #endregion
@@ -622,7 +638,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: false
+				freeRotation: false,
 			});
 		}
 	}
@@ -635,15 +651,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	playerEquipArmor(entity: Item, player: PlayerEntity): Action<Use> | null {
-		if (this.getCurrentStage().type == "combat") {
-			if (entity.type == "armor" || entity.type == "gamer_armor") {
-				this.addToDeleteQueue(entity.id);
-
-				player.health += entity.type == "armor" ? 3 : 6;
-
+		if (this.getCurrentStage().type == "combat" && player instanceof HeroEntity) {
+			const armorType = entity.type;
+			if (armorType == "armor" || armorType == "gamer_armor") {
 				return {
 					type: "equip-armor",
 					commit: () => {
+						this.addToDeleteQueue(entity.id);
+
+						player.health += armorType == "armor" ? 3 : 6;
+						player.addArmorModel(armorType);
+
 						this.playSound("pickup", player.getPos());
 					},
 				};
@@ -830,12 +848,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				} else {
 					// this.playSound("attackFail", player.entity.getPos());
 				}
-				this.playParticle({
-					spawnCount: 100,
-					initialPosition: player.entity.getPos(),
-					initialVelocity: [0, 5, 0],
-					initialVelocityRange: [5, 0, 5],
-				});
 			}
 			if (posedge.emote) {
 				// TEMP: using `emote` key (X) to spawn item above player

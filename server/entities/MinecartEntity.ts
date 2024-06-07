@@ -7,11 +7,11 @@ import { StaticEntity } from "./StaticEntity";
 const MAX_HEALTH_RING_SIZE = 25;
 
 export class MinecartEntity extends StaticEntity {
-	health = 50;
+	health = 40;
 	isInvulnerableThisTick = false;
 
 	constructor(game: Game, position: phys.Vec3) {
-		super(game, position.toArray(), new phys.Box(new phys.Vec3(3, 3, 3)), GroundMaterial, [
+		super(game, position.toArray(), new phys.Box(new phys.Vec3(3, 5, 3)), GroundMaterial, [
 			{ modelId: "minecart", scale: 2 },
 		]);
 	}

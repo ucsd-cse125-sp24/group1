@@ -10,6 +10,7 @@ import { ShaderProgram } from "./ShaderProgram";
 import { WebGlUtils } from "./WebGlUtils";
 import particleVertexSource from "../../shaders/particle.vert";
 import particleFragmentSource from "../../shaders/particle.frag";
+import { getImages } from "../../../assets/images";
 
 /**
  * Handles helper functions for interacting with WebGL.
@@ -52,6 +53,7 @@ class GraphicsEngine extends WebGlUtils {
 		),
 	);
 	models = getModels(this);
+	images = getImages(this);
 
 	_drawCalls = 0;
 

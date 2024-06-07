@@ -7,6 +7,7 @@ import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { MinecartEntity } from "./MinecartEntity";
+import { log } from "../net/_tempDebugLog";
 
 const PLAYER_INTERACTION_RANGE = 12;
 const BOSS_CAPSULE_HEIGHT = 7.5;
@@ -19,7 +20,7 @@ const BOSS_WALK_SPEED = 10;
 const MAX_BOSS_GROUND_SPEED_CHANGE = 2.5;
 /** Maximum change in horizontal velocity that can occur while in the air */
 const MAX_BOSS_AIR_SPEED_CHANGE = 1;
-const BOSS_JUMP_SPEED = 21;
+const BOSS_JUMP_SPEED = 10;
 
 const BOSS_ATTACK_COOLDOWN = 50; // ticks
 
@@ -42,7 +43,7 @@ export class BigBossEntity extends PlayerEntity {
 			game,
 			footPos,
 			[model],
-			10,
+			8,
 			BOSS_CAPSULE_HEIGHT,
 			BOSS_CAPSULE_RADIUS,
 			BOSS_WALK_SPEED,
@@ -84,13 +85,14 @@ export class BigBossEntity extends PlayerEntity {
 					//FOR TESTING
 					//console.log(betterDirection, i);
 
-					entities.push(...this.game.raycast(this.body.position, dir, {}, this));
+					entities.push(...this.game.raycast(this.body.position, betterDirection, {}, this).map(({ entity }) => entity));
 				}
 
 				for (const entity of entities) {
 					if (entity instanceof HeroEntity || entity instanceof MinecartEntity) {
 						if (this.game.getCurrentStage().type === "combat") {
 							entity.takeDamage(1);
+							log("Minecart taking damage");
 						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
@@ -98,8 +100,8 @@ export class BigBossEntity extends PlayerEntity {
 						);
 						this.game.playSound("hit", entity.getPos());
 						//this.animator.play("punch");
-					} else if (entities[0] instanceof InteractableEntity) {
-						entities[0].hit(this);
+					} else if (entity instanceof InteractableEntity) {
+						entity.hit(this);
 						//this.animator.play("punch");
 					}
 				}
