@@ -24,7 +24,7 @@ type RecipeCheckResult =
 			/** No recipes can be satisfied even with more items */ type: "unsatisfiable";
 	  };
 
-export type CrafterType = "furnace" | "weapons" | "fletching";
+export type CrafterType = "furnace" | "weapons" | "fletching" | "magic_table";
 
 let fullSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI);
 let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
@@ -33,11 +33,13 @@ const modelForCrafterType: Record<CrafterType, EntityModel[]> = {
 	furnace: [{ modelId: "furnace", scale: 0.5, offset: [0, -1.5, 0], rotation: fullSquat.toArray() }],
 	weapons: [{ modelId: "anvil", offset: [0, -1.25, 0], rotation: halfSquat.toArray() }],
 	fletching: [{ modelId: "work_station", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
+	magic_table: [{ modelId: "bottle_table", offset: [0, -1.5, 0], rotation: quarterSquat.mult(halfSquat).toArray() }],
 };
 const colliderShapeForCrafterType: Record<CrafterType, phys.Shape> = {
 	furnace: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
 	weapons: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
 	fletching: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5)),
+	magic_table: new phys.Box(new phys.Vec3(1.5, 1.5, 1.5))
 };
 
 export class CraftingTable extends InteractableEntity {

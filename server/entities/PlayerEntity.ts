@@ -229,7 +229,7 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	/**
-	 * @returns true if an interaction occurred, false otherwise. Subclasses can
+	 * @returns Action<Use> if an interaction occurred, null otherwise. Subclasses can
 	 * call this (`super.use()`) and use the return value to determine whether to
 	 * perform subclass-unique actions.
 	 */
@@ -244,6 +244,9 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 		if (entities[0] instanceof InteractableEntity) {
+			if(entities[0] instanceof Item && (entities[0].type == "armor" || entities[0].type == "gamer_armor")) {
+				return this.game.playerEquipArmor(entities[0], this);
+			}
 			return entities[0].interact(this);
 		}
 		return null;
