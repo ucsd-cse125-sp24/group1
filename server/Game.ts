@@ -92,6 +92,12 @@ const startingToolLocations: Vector3[] = [
 const CRAFTING_STAGE_TIME = 30 * 1000;
 const COMBAT_STAGE_TIME = 120 * 1000;
 
+type EntityRayCastResult = {
+	entity: Entity;
+	point: phys.Vec3;
+	distance: number;
+};
+
 interface NetworkedPlayer {
 	input: PlayerInput;
 	/** `null` if spectating */
@@ -163,15 +169,22 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * @param exclude - Use to prevent players from including themselves in the
 	 * raycast.
 	 */
-	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions, exclude?: Entity): Entity[] {
-		const entities = this.#world
-			.castRay(start, end, rayOptions)
-			.sort((a, b) => a.distance - b.distance)
-			.flatMap(({ body }) => {
-				const entity = body && this.#bodyToEntityMap.get(body);
-				return entity && entity !== exclude ? [entity] : [];
-			});
-		return Array.from(new Set(entities));
+	raycast(start: phys.Vec3, end: phys.Vec3, rayOptions: phys.RayOptions, exclude?: Entity): EntityRayCastResult[] {
+		const entities: Record<EntityId, EntityRayCastResult> = {};
+		for (const result of this.#world.castRay(start, end, rayOptions)) {
+			const entity = result.body && this.#bodyToEntityMap.get(result.body);
+			if (!entity || entity === exclude) {
+				continue;
+			}
+			if (!entities[entity.id] || result.distance < entities[entity.id].distance) {
+				entities[entity.id] = {
+					entity,
+					point: result.hitPointWorld,
+					distance: result.distance,
+				};
+			}
+		}
+		return Object.values(entities).sort((a, b) => a.distance - b.distance);
 	}
 
 	/**
@@ -625,7 +638,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: false
+				freeRotation: false,
 			});
 		}
 	}
@@ -834,7 +847,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				} else {
 					// this.playSound("attackFail", player.entity.getPos());
 				}
-				
 			}
 			if (posedge.emote) {
 				// TEMP: using `emote` key (X) to spawn item above player

@@ -61,11 +61,11 @@ export class BossEntity extends PlayerEntity {
 			{},
 			this,
 		);
-		if (entities[0] instanceof HeroEntity && !entities[0].isSabotaged) {
+		if (entities[0]?.entity instanceof HeroEntity && !entities[0].entity.isSabotaged) {
 			return {
 				type: "boss:spore",
 				commit: () => {
-					this.game.sabotageHero(entities[0].id);
+					this.game.sabotageHero(entities[0].entity.id);
 				},
 			};
 		} else if (this.canPlaceTrap) {
