@@ -86,7 +86,7 @@ export class BigBossEntity extends PlayerEntity {
 					//FOR TESTING
 					//console.log(betterDirection, i);
 
-					entities.push(...this.game.raycast(this.body.position, dir, {}, this));
+					entities.push(...this.game.raycast(this.body.position, betterDirection, {}, this));
 				}
 
 				for (const entity of entities) {
