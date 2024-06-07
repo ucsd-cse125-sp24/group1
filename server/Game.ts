@@ -246,11 +246,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 
-		let Furnace = new CraftingTable(this, [-17.7, -3.5, -24], "furnace", [
-			{ ingredients: ["raw_iron", "wood"], output: "iron" },
-			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
-		]);
+		let Furnace = new CraftingTable(
+			this,
+			[-17.7, -3.5, -24],
+			"furnace",
+			[
+				{ ingredients: ["raw_iron", "wood"], output: "iron" },
+				{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
+			],
+			new phys.Vec3(0, 0, 1),
+		);
 		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
+
 		this.#registerEntity(Furnace);
 
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
@@ -273,12 +280,18 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
 
-		let SauceTable = new CraftingTable(this, [12.5, -4, 10], "magic_table", [
-			{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
-			{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
-			{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
-			//probably should add arrows for when we get actual combat ngl
-		]);
+		let SauceTable = new CraftingTable(
+			this,
+			[12.5, -4, 10],
+			"magic_table",
+			[
+				{ ingredients: ["armor", "magic_sauce"], output: "gamer_armor" },
+				{ ingredients: ["bow", "magic_sauce", "magic_sauce"], output: "gamer_bow" },
+				{ ingredients: ["sword", "magic_sauce", "magic_sauce"], output: "gamer_sword" },
+				//probably should add arrows for when we get actual combat ngl
+			],
+			new phys.Vec3(0, 0, 1),
+		);
 		SauceTable.body.quaternion = halfSquat;
 		this.#registerEntity(SauceTable);
 

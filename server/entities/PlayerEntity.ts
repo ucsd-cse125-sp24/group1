@@ -133,10 +133,10 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	checkOnGround(): boolean {
-		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.5, 0, 0));
-		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.5, 0, 0));
-		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.5));
-		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.5));
+		const posFront = this.body.position.vadd(new phys.Vec3(this.#capsuleRadius * 0.6, 0, 0));
+		const posBack = this.body.position.vadd(new phys.Vec3(-this.#capsuleRadius * 0.6, 0, 0));
+		const posLeft = this.body.position.vadd(new phys.Vec3(0, 0, this.#capsuleRadius * 0.6));
+		const posRight = this.body.position.vadd(new phys.Vec3(0, 0, -this.#capsuleRadius * 0.6));
 		const offset = new phys.Vec3(0, this.#cylinderHeight + this.#capsuleRadius + Entity.EPSILON, 0);
 
 		return (
