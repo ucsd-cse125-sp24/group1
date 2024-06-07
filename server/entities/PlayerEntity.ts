@@ -12,7 +12,7 @@ import { BossEntity } from "./BossEntity";
 
 const COYOTE_FRAMES = 4;
 const UPWARD_FRAMES = 9;
-const WALK_STEP_DIST = 2;
+const WALK_STEP_DIST = 2.2;
 const MAX_HEALTH_RING_SIZE = 25;
 const BOOST_RATIO = 11.2;
 const KNOCKBACK_RATIO = 1.5;
