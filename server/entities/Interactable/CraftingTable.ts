@@ -41,8 +41,8 @@ const colliderShapeForCrafterType: Record<CrafterType, Collider[]> = {
 		{ shape: new phys.Box(new phys.Vec3(1.2, 2.2, 2.2)), offset: new phys.Vec3(-0.5, 1, 0) },
 	],
 	weapons: [
-		{ shape: new phys.Box(new phys.Vec3(1.5, 1.45, 1.3)) },
-		{ shape: new phys.Box(new phys.Vec3(2.7, 0.5, 1.3)), offset: new phys.Vec3(0, 0.95, 0) },
+		{ shape: new phys.Box(new phys.Vec3(1.3, 1.45, 1.5)) },
+		{ shape: new phys.Box(new phys.Vec3(1.3, 0.5, 2.7)), offset: new phys.Vec3(0, 0.95, 0) },
 	],
 	fletching: [{ shape: new phys.Box(new phys.Vec3(1.3, 1, 2.5)) }],
 };
@@ -53,7 +53,7 @@ export class CraftingTable extends InteractableEntity {
 	isFurnace: boolean;
 
 	/** Items stored in the crafting table */
-	itemList: Item[];
+	itemList: Set<Item>;
 	/** Recipes that the crafting table can perform */
 	recipes: Recipe[];
 	/** List of potential ingredients for recipes */
@@ -65,7 +65,7 @@ export class CraftingTable extends InteractableEntity {
 	constructor(game: Game, pos: Vector3, type: CrafterType, recipes: Recipe[]) {
 		super(game, modelForCrafterType[type]);
 
-		this.itemList = [];
+		this.itemList = new Set();
 		this.recipes = recipes;
 		this.ingredients = recipes.flatMap((recipe) => recipe.ingredients);
 		this.isFurnace = type === "furnace";
@@ -84,6 +84,8 @@ export class CraftingTable extends InteractableEntity {
 		this.#ejectDir.normalize();
 	}
 
+	#lastMessage = "";
+
 	/**
 	 * Checks `itemList` against the list of `recipes`. There are three cases:
 	 * - A recipe has been satisfied, so produce an output.
@@ -92,7 +94,7 @@ export class CraftingTable extends InteractableEntity {
 	 * - The items cannot satisfy anything, so eject them all.
 	 */
 	#checkRecipes(): RecipeCheckResult {
-		const items = this.itemList.map((item) => item.type);
+		const items = Array.from(this.itemList, (item) => item.type);
 		let potentiallySatisfiable = false;
 		for (const { ingredients, output } of this.recipes) {
 			const unused = [...items];
@@ -102,6 +104,7 @@ export class CraftingTable extends InteractableEntity {
 				const index = unused.indexOf(ingredient);
 				if (index === -1) {
 					missingIngredient = true;
+					continue;
 				}
 				unused.splice(index, 1);
 			}
@@ -111,6 +114,9 @@ export class CraftingTable extends InteractableEntity {
 				// even if more ingredients are added
 				if (unused.length === 0) {
 					potentiallySatisfiable = true;
+					this.#lastMessage = `potentially satisfiable because HAVE[${items.join(" ")}] NEED[${ingredients.join(" ")}]`;
+				} else {
+					this.#lastMessage = `not potentially satisfiable because EXTRA[${unused.join(" ")}]`;
 				}
 			} else {
 				return { type: "satisfied", output };
@@ -146,9 +152,10 @@ export class CraftingTable extends InteractableEntity {
 		return {
 			type: "pop-crafter",
 			commit: () => {
-				let item = this.itemList.pop();
+				let item = Array.from(this.itemList)[0];
 
 				if (item) {
+					this.itemList.delete(item);
 					this.#eject(item);
 					this.game.playSound("popCrafting", this.getPos());
 				} else {
@@ -161,7 +168,7 @@ export class CraftingTable extends InteractableEntity {
 
 	onCollide(otherEntity: Entity): void {
 		if (otherEntity instanceof Item) {
-			if (!otherEntity.canBeAbsorbedByCraftingTable) {
+			if (!otherEntity.canBeAbsorbedByCraftingTable || !otherEntity.heldBy) {
 				return;
 			}
 			if (!this.ingredients.includes(otherEntity.type)) {
@@ -169,13 +176,13 @@ export class CraftingTable extends InteractableEntity {
 			}
 
 			// Absorb the item
-			this.itemList.push(otherEntity);
+			this.itemList.add(otherEntity);
 			this.game.addToDeleteQueue(otherEntity.id);
 
 			const result = this.#checkRecipes();
 			if (result.type === "satisfied") {
 				// Delete ingredients
-				this.itemList = [];
+				this.itemList = new Set();
 				console.log("crafted ", result.output);
 				this.#eject(new Item(this.game, result.output, this.getPos(), "resource"));
 				this.game.playSound("craftingSuccess", this.getPos());
@@ -183,7 +190,7 @@ export class CraftingTable extends InteractableEntity {
 				for (const item of this.itemList) {
 					this.#eject(item);
 				}
-				this.itemList = [];
+				this.itemList = new Set();
 				this.game.playSound("craftingEjectAll", this.getPos());
 			} else {
 				this.game.playSound("craftingPickup", this.getPos());
@@ -194,7 +201,12 @@ export class CraftingTable extends InteractableEntity {
 	serialize(): SerializedEntity {
 		return {
 			...super.serialize(),
-			model: [...this.model, ...this.itemList.flatMap((item) => item.model)],
+			model: [
+				...this.model,
+				...Array.from(this.itemList, (item) => item.model).flat(),
+				{ text: this.#lastMessage, offset: [0, 2, 0], height: 0.1 },
+				{ text: Array.from(this.itemList, (item) => item.type).join(" "), offset: [0, 1.5, 0], height: 0.1 },
+			],
 			light: this.isFurnace
 				? {
 						color: [30 / 360, 0.8, 1 + Math.sin(Date.now() / 1000) * 0.2],
