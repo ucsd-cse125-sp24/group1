@@ -89,7 +89,9 @@ export class BigBossEntity extends PlayerEntity {
 		if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
 			return super.attack();
 		}
-		this.animator.play("hit");
+		if (this.game.getCurrentTick() - this.previousAttackTick > BOSS_ATTACK_COOLDOWN) {
+			this.animator.play("hit");
+		}
 
 		return {
 			type: "combat:damage",
