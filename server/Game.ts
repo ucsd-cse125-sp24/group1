@@ -231,6 +231,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			endTime: Date.now() + CRAFT_STAGE_LENGTH,
 		};
 
+		const signScale = 0.2;
+
 		// Reset players
 		for (const player of this.#players.values()) {
 			if (player.entity) {
@@ -278,6 +280,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			new phys.Vec3(0, 0, 1),
 		);
 		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
+		const furnaceHelp = new StaticCubeEntity(
+			this,
+			[-20, 0, -15],
+			[0.333 * signScale, 7.38 * signScale, 10.851 * signScale],
+			[{ modelId: "furnaceHelp", scale: signScale }],
+		);
+		furnaceHelp.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, 0);
+		this.#registerEntity(furnaceHelp);
 		this.#registerEntity(Furnace);
 
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
@@ -285,8 +295,19 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			{ ingredients: ["iron", "wood"], output: "knife" },
 		]);
 		this.#registerEntity(WeaponCrafter);
+		const anvilHelp = new StaticCubeEntity(
+			this,
+			[13, 2, 29],
+			[0.333 * signScale, 7.38 * signScale, 10.851 * signScale],
+			[{ modelId: "anvilHelp", scale: signScale }],
+		);
+		anvilHelp.body.quaternion = new phys.Quaternion().setFromAxisAngle(
+			phys.Vec3.UNIT_Y,
+			(-Math.PI / 4) * 1.6 + Math.PI,
+		);
+		this.#registerEntity(anvilHelp);
 		this.#registerEntity(
-			new StaticLightEntity(this, [10, 3, 24], {
+			new StaticLightEntity(this, [8, 10, 19], {
 				color: [29 / 360, 0.66, 0.2],
 				falloff: 40,
 			}),
@@ -298,12 +319,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		]);
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
-		const workstation_helpScale = 0.2;
 		const workstationHelp = new StaticCubeEntity(
 			this,
 			[-16, 1, 28],
-			[0.333 * workstation_helpScale, 7.38 * workstation_helpScale, 10.851 * workstation_helpScale],
-			[{ modelId: "workstationHelp", scale: workstation_helpScale }],
+			[0.333 * signScale, 7.38 * signScale, 10.851 * signScale],
+			[{ modelId: "workstationHelp", scale: signScale }],
 		);
 		workstationHelp.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, Math.PI / 4);
 		this.#registerEntity(workstationHelp);
