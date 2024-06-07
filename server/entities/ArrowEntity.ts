@@ -16,7 +16,7 @@ export class ArrowEntity extends Entity {
 			mass: 0.05,
 			position: position,
 			material: ItemMaterial,
-			shape: new phys.Sphere(0.1),
+			shape: new phys.Sphere(1),
 		});
 		this.body.applyImpulse(velocity.scale(this.body.mass));
 		this.damage = damage;
