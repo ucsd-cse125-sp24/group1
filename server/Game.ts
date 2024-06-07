@@ -231,6 +231,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			{ ingredients: ["raw_iron", "wood"], output: "iron" },
 			{ ingredients: ["mushroom", "mushroom", "mushroom"], output: "magic_sauce" },
 		]);
+		Furnace.body.quaternion = fullSquat;
 		this.#registerEntity(Furnace);
 
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
