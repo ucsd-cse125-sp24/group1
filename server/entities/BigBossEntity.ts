@@ -78,11 +78,12 @@ export class BigBossEntity extends PlayerEntity {
 		super.handleLanding(fallHeight);
 		this.game.shakeFromSource(this.getFootPos(), fallHeight / 20, 10, this);
 	}
-
+	
 	attack(): Action<Attack> | null {
 		if (this.game.getCurrentTick() - this.previousAttackTick < BOSS_ATTACK_COOLDOWN) {
 			return super.attack();
 		}
+		this.animator.play("hit");
 
 		return {
 			type: "combat:damage",
@@ -112,7 +113,6 @@ export class BigBossEntity extends PlayerEntity {
 				for (const entity of entities) {
 					if (entity instanceof HeroEntity || entity instanceof MinecartEntity) {
 						if (this.game.getCurrentStage().type === "combat") {
-							this.animator.play("hit")
 							entity.takeDamage(1);
 							log("Minecart taking damage");
 						}
@@ -121,10 +121,8 @@ export class BigBossEntity extends PlayerEntity {
 							new Vec3(this.lookDir.x * 300, Math.abs(this.lookDir.y) * 150 + 50, this.lookDir.z * 300),
 						);
 						this.game.playSound("hit", entity.getPos());
-						this.animator.play("hit");
 					} else if (entity instanceof InteractableEntity) {
 						entity.hit(this);
-						this.animator.play("hit");
 					}
 				}
 				this.previousAttackTick = this.game.getCurrentTick();
@@ -158,6 +156,11 @@ export class BigBossEntity extends PlayerEntity {
 				this.previousShootTick = this.game.getCurrentTick();
 			},
 		};
+	}
+
+	tick() {
+		this.animator.tick();
+		this.model = this.animator.getModel();
 	}
 
 	//TODO
