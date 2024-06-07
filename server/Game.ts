@@ -411,6 +411,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			);
 			this.#registerEntity(entity);
 		}
+		this.#registerEntity(
+			new StaticEntity(this, [0, 70, 0], undefined, GroundMaterial, [{ image: "testTexture", height: 4 }]),
+		);
 	}
 	// #endregion
 

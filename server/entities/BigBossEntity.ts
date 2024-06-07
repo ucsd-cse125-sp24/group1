@@ -42,7 +42,7 @@ export class BigBossEntity extends PlayerEntity {
 			game,
 			footPos,
 			[model],
-			10,
+			8,
 			BOSS_CAPSULE_HEIGHT,
 			BOSS_CAPSULE_RADIUS,
 			BOSS_WALK_SPEED,
