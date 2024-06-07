@@ -42,11 +42,12 @@ import { Spawner } from "./entities/Interactable/Spawner";
 import { TrapEntity } from "./entities/Interactable/TrapEntity";
 import { WebWorker } from "./net/WebWorker";
 import { ArrowEntity } from "./entities/ArrowEntity";
-import { CubeEntity } from "./entities/CubeEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
 import { StaticLightEntity } from "./entities/StaticLightEntity";
 import { StaticCubeEntity } from "./entities/StaticCubeEntity";
-import e from "express";
+import { MinecartEntity } from "./entities/MinecartEntity";
+import { StaticEntity } from "./entities/StaticEntity";
+import { GroundMaterial } from "./materials/SourceMaterials";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -66,12 +67,20 @@ const itemModels: ItemType[] = [
 	"wood",
 ];
 /** Spawn locations of the boss */
-const SPAWN_LOCATION = [[17, -4.17, 13.78], [5.45, -4.17, 29.58], [-19.52, -4.17, 18.27], [-7.65, -18.42,-23.25], [-3.13, -18.42, 6.05], [5.21, -18.42, 4.72], [-1.95, -18.42, 5.92]];
+const SPAWN_LOCATION = [
+	[17, -4.17, 13.78],
+	[5.45, -4.17, 29.58],
+	[-19.52, -4.17, 18.27],
+	[-7.65, -18.42, -23.25],
+	[-3.13, -18.42, 6.05],
+	[5.21, -18.42, 4.72],
+	[-1.95, -18.42, 5.92],
+];
 
 /** Length of the crafting stage in milliseconds */
-const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
+const CRAFT_STAGE_LENGTH = 60 * 1000 * 6; // 5 minute
 /** Length of the combat stage in milliseconds */
-const COMBAT_STAGE_LENGTH = 60 * 1000 * 2; // 0.5 minutes
+const COMBAT_STAGE_LENGTH = 60 * 1000 * 3; // 2 minutes
 
 const startingToolLocations: Vector3[] = [
 	[-3, 0, -9],
@@ -114,6 +123,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	//#bossResets: ([number, BossEntity])[];
 	#currentBoss: PlayerEntity | null;
+	#minecart: MinecartEntity | null;
+	#obstacles: StaticEntity[];
 	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
@@ -136,6 +147,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#bossTimer = 0;
 
 		this.#currentBoss = null;
+		this.#minecart = null;
+		this.#obstacles = [];
 
 		this.#makeLobby();
 
@@ -174,10 +187,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let lobbyFloor = new phys.Body({
 			mass: 0,
 			position: new phys.Vec3(0, 100, 0),
-			shape: new phys.Box(new phys.Vec3(...[20,10,20])), 
-			type: phys.Body.STATIC
+			shape: new phys.Box(new phys.Vec3(...[20, 10, 20])),
+			type: phys.Body.STATIC,
 		});
-		
+
 		this.#world.addBody(lobbyFloor);
 	}
 
@@ -233,7 +246,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let halfSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 2);
 		let quarterSquat = new phys.Quaternion().setFromAxisAngle(new phys.Vec3(0, 1, 0), Math.PI / 4);
 
-
 		let Furnace = new CraftingTable(this, [-17.7, -3, -24], "furnace", [
 			{ ingredients: ["raw_iron", "wood"], output: "iron" },
 			{ ingredients: ["mushroom", "mushroom"], output: "magic_sauce" },
@@ -264,12 +276,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		SauceTable.body.quaternion = halfSquat;
 		this.#registerEntity(SauceTable);
 
-		
-		let woodSpawner = new Spawner(this, [-5, -3.5, -25.5] , "wood", "wood", "axe");
+		let woodSpawner = new Spawner(this, [-5, -3.5, -25.5], "wood", "wood", "axe");
 		woodSpawner.body.quaternion = halfSquat;
 		this.#registerEntity(woodSpawner);
 
-		let woodSpawner2 = new Spawner(this, [-5, -3.5, -29.5] , "wood2", "wood", "axe");
+		let woodSpawner2 = new Spawner(this, [-5, -3.5, -29.5], "wood2", "wood", "axe");
 		woodSpawner2.body.quaternion = halfSquat;
 		this.#registerEntity(woodSpawner2);
 
@@ -293,6 +304,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let sampleIorn2 = new Item(this, "armor", [7, 0, 5], "resource");
 		this.#registerEntity(sampleIorn2);
+
+		this.#minecart = null;
+		this.#obstacles = [];
+		this.#obstacles.push(
+			new StaticEntity(this, [-27, 0, 0], new phys.Box(new phys.Vec3(2, 10, 5)), GroundMaterial, [
+				{ modelId: "rockpile", offset: [0, -5, 0] },
+			]),
+			new StaticEntity(this, [16, 0, 0], new phys.Box(new phys.Vec3(2, 10, 5)), GroundMaterial, [
+				{ modelId: "rockpile", offset: [0, -5, 0], rotation: [0, 1, 0, 0] },
+			]),
+		);
+		for (const entity of this.#obstacles) {
+			this.#registerEntity(entity);
+		}
 
 		const hueLightCount = 9;
 		for (let i = 0; i < hueLightCount; i++) {
@@ -393,6 +418,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				pov: "first-person",
 			});
 		}
+
+		this.#minecart = new MinecartEntity(this, new phys.Vec3(-72, -2, 2));
+		this.addToCreateQueue(this.#minecart);
+		for (const entity of this.#obstacles) {
+			this.addToDeleteQueue(entity.id);
+		}
 	}
 
 	/**
@@ -413,12 +444,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 			}
 		}
-		const endTime = this.#currentStage.type === "lobby" ? 0 : this.#currentStage.endTime;
-		if (!isAnyBossAlive) {
+		const endTime = this.#currentStage.type === "lobby" ? Number.POSITIVE_INFINITY : this.#currentStage.endTime;
+		if (!isAnyBossAlive || Date.now() >= endTime) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
 			this.#currentStage = { type: "lobby", previousWinner: "hero" };
-		} else if (Date.now() >= endTime || !isAnyHeroAlive) {
+		} else if (!isAnyHeroAlive || (this.#minecart && this.#minecart.health <= 0)) {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 			this.#currentStage = { type: "lobby", previousWinner: "boss" };
@@ -479,11 +510,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	resetBoss() {
 		if (this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
-		
+
 			if (this.#currentBoss) {
-				let randNum = (Math.floor(Math.random() * 10)) % 7
+				let randNum = Math.floor(Math.random() * 10) % 7;
 				this.#currentBoss.walkSpeed = 20;
-				this.#currentBoss.body.position = new phys.Vec3(SPAWN_LOCATION[randNum][0], SPAWN_LOCATION[randNum][1], SPAWN_LOCATION[randNum][2]);
+				this.#currentBoss.body.position = new phys.Vec3(
+					SPAWN_LOCATION[randNum][0],
+					SPAWN_LOCATION[randNum][1],
+					SPAWN_LOCATION[randNum][2],
+				);
 			}
 		}
 	}
@@ -520,7 +555,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			pos = [(2 * playerNum - 6) % 12, 115, 0];
 			if (playerNum === 0) {
 				for (let i = 1; i < 5; i++) {
-					this.#createPlayerEntity(i, pos, {type:"change-role",role, skin});
+					this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
 				}
 			}
 		}
@@ -592,30 +627,26 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	playerEquipArmor(entity: Item, player: PlayerEntity): Action<Use> | null {
-		if(this.getCurrentStage().type == "combat") {
-			if(entity.type == "armor" || entity.type == "gamer_armor") {
-
+		if (this.getCurrentStage().type == "combat") {
+			if (entity.type == "armor" || entity.type == "gamer_armor") {
 				this.addToDeleteQueue(entity.id);
 
 				player.health += entity.type == "armor" ? 3 : 6;
-				
+
 				return {
 					type: "equip-armor",
 					commit: () => {
-
 						this.playSound("pickup", player.getPos());
 					},
 				};
 			} else {
-
 				console.log("SHOULD NOT BE HERE");
 				return null;
 			}
-
 		}
 		return null;
 	}
-	
+
 	// #endregion
 
 	/**
