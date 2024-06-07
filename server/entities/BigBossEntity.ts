@@ -7,6 +7,8 @@ import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
 import { MinecartEntity } from "./MinecartEntity";
+import { log } from "../net/_tempDebugLog";
+
 
 const PLAYER_INTERACTION_RANGE = 12;
 const BOSS_CAPSULE_HEIGHT = 7.5;
@@ -91,7 +93,7 @@ export class BigBossEntity extends PlayerEntity {
 					if (entity instanceof HeroEntity || entity instanceof MinecartEntity) {
 						if (this.game.getCurrentStage().type === "combat") {
 							entity.takeDamage(1);
-							console.log("Minecart taking damage");
+							log("Minecart taking damage");
 						}
 						// Apply knockback to player when attacked
 						entity.body.applyImpulse(
