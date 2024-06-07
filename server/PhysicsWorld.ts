@@ -93,7 +93,7 @@ export class PhysicsWorld {
 		this.#world.raycastAll(from, to, rayOptions, (result) => {
 			// Need to clone result because the physics engine will continue to modify
 			// it
-			results.push({ ...result });
+			results.push({ ...result, hitPointWorld: result.hitPointWorld.clone() });
 		});
 		return results;
 	}

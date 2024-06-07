@@ -100,8 +100,8 @@ export class BigBossEntity extends PlayerEntity {
 						);
 						this.game.playSound("hit", entity.getPos());
 						//this.animator.play("punch");
-					} else if (entities[0] instanceof InteractableEntity) {
-						entities[0].hit(this);
+					} else if (entity instanceof InteractableEntity) {
+						entity.hit(this);
 						//this.animator.play("punch");
 					}
 				}

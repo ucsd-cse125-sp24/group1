@@ -300,7 +300,7 @@ export abstract class PlayerEntity extends Entity {
 			this,
 		);
 
-		for (const { entity } of entities) {
+		for (const { entity, point } of entities) {
 			if (entity instanceof PlayerEntity) {
 				if (entity instanceof BossEntity) {
 					return {
@@ -333,6 +333,25 @@ export abstract class PlayerEntity extends Entity {
 							this.game.playDamageFilter(entity.id);
 							// Only have a cooldown for damage-dealing attacks
 							this.#previousAttackTime = Date.now();
+
+							this.game.playParticle({
+								spawnCount: 10,
+								size: 20,
+								color: [1, 0, 0, 1],
+								initialPosition: point.toArray(),
+								initialVelocity: [0, 1, 0],
+								initialVelocityRange: [1, 1, 1],
+								ttl: 1,
+							});
+						} else {
+							this.game.playParticle({
+								spawnCount: 10,
+								size: 10,
+								initialPosition: point.toArray(),
+								initialVelocity: [0, 1, 0],
+								initialVelocityRange: [1, 1, 1],
+								ttl: 1,
+							});
 						}
 
 						const knockback =
@@ -354,14 +373,21 @@ export abstract class PlayerEntity extends Entity {
 						//this.animator.play("punch");
 					},
 				};
-			} else if (entities[0] instanceof InteractableEntity) {
-				const action = entities[0].hit(this);
+			} else if (entity instanceof InteractableEntity) {
+				const action = entity.hit(this);
 				return action
 					? {
 							...action,
 							commit: () => {
 								action.commit();
 								//this.animator.play("punch");
+								this.game.playParticle({
+									spawnCount: 10,
+									size: 10,
+									initialPosition: point.toArray(),
+									initialVelocity: [0, 1, 0],
+									initialVelocityRange: [1, 1, 1],
+								});
 								// Allow spam-slapping items
 								// this.#previousAttackTime = Date.now();
 							},
