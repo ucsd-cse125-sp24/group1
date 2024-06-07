@@ -464,7 +464,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	playerHitBoss(boss: PlayerEntity) {
-		if (this.getBossTimer() < 0) {
+		this.setBossTimer(10);
+		if (this.getBossTimer() > 0) {
 			boss.walkSpeed = 0;
 		}
 	}
