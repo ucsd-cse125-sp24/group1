@@ -309,6 +309,7 @@ export abstract class PlayerEntity extends Entity {
 						);
 						//this.animator.play("punch");
 						this.#previousAttackTime = Date.now();
+						this.game.playSound("arrow", this.getPos());
 					},
 				};
 			}
@@ -450,6 +451,7 @@ export abstract class PlayerEntity extends Entity {
 		}
 		this.health -= damage;
 		if (this.health <= 0) {
+			this.game.playSound("death", this.getPos());
 			this.health = 0;
 			// Die
 			this.game.addToDeleteQueue(this.id);
