@@ -659,6 +659,7 @@ gameUi.listen(inputListener, {
 	left: "left",
 	attack: "attack",
 	use: "use",
+	jump: "jump",
 });
 pauseMenu.listen(connection);
 pauseMenu.options.listen(camera);

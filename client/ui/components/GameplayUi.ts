@@ -12,6 +12,7 @@ type KeyMap<T> = {
 	backward: T;
 	attack: T;
 	use: T;
+	jump: T;
 };
 
 const attackIcons: Attack[] = [
@@ -41,6 +42,7 @@ const useIcons: Use[] = [
 	"boss:spore",
 	"boss:place-trap",
 	"bigboss:",
+	"equip-armor",
 ];
 const useLabels: Record<Use, string> = {
 	"bigboss:shoot-shroom": "Shroom Blast",
@@ -59,6 +61,7 @@ export class GameplayUi {
 	#joystick = elem("div", { className: styles.joystick });
 	#attack = elem("button", { classes: [styles.action, styles.attack, styles.hide] });
 	#use = elem("button", { classes: [styles.action, styles.use, styles.hide] });
+	#jump = elem("button", { classes: [styles.jump], textContent: "Jump" });
 	element = elem("div", {
 		classes: [styles.wrapper, styles.hide, styles.desktop],
 		contents: [
@@ -67,6 +70,7 @@ export class GameplayUi {
 			this.#health.element,
 			elem("button", { classes: [styles.pauseBtn, "mobile-open-pause"], ariaLabel: "Open pause menu" }),
 			this.#joystick,
+			this.#jump,
 			elem("div", { className: styles.guide, contents: [this.#attack, this.#use] }),
 		],
 	});
@@ -146,6 +150,25 @@ export class GameplayUi {
 		};
 		this.#use.addEventListener("pointerup", handleUseEnd);
 		this.#use.addEventListener("pointercancel", handleUseEnd);
+
+		let jumpPointerId: number | null = null;
+		this.#jump.addEventListener("pointerdown", (e) => {
+			if (jumpPointerId !== null) {
+				return;
+			}
+			this.#jump.setPointerCapture(e.pointerId);
+			jumpPointerId = e.pointerId;
+			inputs.handleInput(map.jump, true);
+			e.stopPropagation();
+		});
+		const handleJumpEnd = (e: PointerEvent) => {
+			if (e.pointerId === jumpPointerId) {
+				inputs.handleInput(map.jump, false);
+				jumpPointerId = null;
+			}
+		};
+		this.#jump.addEventListener("pointerup", handleJumpEnd);
+		this.#jump.addEventListener("pointercancel", handleJumpEnd);
 	}
 
 	render(state: EntireGameState, previous?: EntireGameState): void {
