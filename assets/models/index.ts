@@ -53,6 +53,7 @@ import { player_red_walk1, player_red_walk2 } from "./player_red/walk";
 import { player_yellow_walk1, player_yellow_walk2 } from "./player_yellow/walk";
 import { anvilHelp, furnaceHelp, workstationHelp } from "./workstation_help";
 import { big_boss_hit1, big_boss_hit2 } from "./mushroom_king/hit";
+import { map_test } from "./maptest";
 
 export const getModels = (engine: GraphicsEngine) =>
 	({
@@ -142,6 +143,7 @@ export const getModels = (engine: GraphicsEngine) =>
 		minecart: GltfModelWrapper.from(engine.gltfMaterial, minecart),
 
 		map: GltfModelWrapper.from(engine.gltfMaterial, map),
+		"map-test": GltfModelWrapper.from(engine.gltfMaterial, map_test),
 	}) satisfies Record<string, Model>;
 
 export type ModelId = keyof ReturnType<typeof getModels>;

@@ -207,7 +207,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		// this.#world.addBody(lobbyFloor);
 
 		const colliders = getColliders(await mapColliders);
-		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map" }]);
+		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map-test" }]);
 		this.#registerEntity(mapEntity);
 
 		this.#registerEntity(this.#lobbyLight);
