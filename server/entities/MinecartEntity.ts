@@ -12,7 +12,7 @@ export class MinecartEntity extends StaticEntity {
 
 	constructor(game: Game, position: phys.Vec3) {
 		super(game, position.toArray(), new phys.Box(new phys.Vec3(3, 5, 3)), GroundMaterial, [
-			{ modelId: "minecart", scale: 2 },
+			{ modelId: "minecart", scale: 2, offset: [0, 0, 0.5] },
 		]);
 	}
 

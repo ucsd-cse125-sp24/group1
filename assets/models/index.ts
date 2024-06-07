@@ -51,6 +51,8 @@ import { player_blue_walk1, player_blue_walk2 } from "./player_blue/walk";
 import { player_green_walk1, player_green_walk2 } from "./player_green/walk";
 import { player_red_walk1, player_red_walk2 } from "./player_red/walk";
 import { player_yellow_walk1, player_yellow_walk2 } from "./player_yellow/walk";
+import { anvilHelp, furnaceHelp, workstationHelp } from "./workstation_help";
+import { big_boss_hit1, big_boss_hit2 } from "./mushroom_king/hit";
 
 export const getModels = (engine: GraphicsEngine) =>
 	({
@@ -124,8 +126,17 @@ export const getModels = (engine: GraphicsEngine) =>
 		anvil: GltfModelWrapper.from(engine.gltfMaterial, anvil),
 		armor: GltfModelWrapper.from(engine.gltfMaterial, armor),
 		gamer_armor: GltfModelWrapper.from(engine.gltfMaterial, gamer_armor),
+
+		// Mushroom king
 		mushroom_king: GltfModelWrapper.from(engine.gltfMaterial, mushroom_king),
+		big_boss_hit1: GltfModelWrapper.from(engine.gltfMaterial, big_boss_hit1),
+		big_boss_hit2: GltfModelWrapper.from(engine.gltfMaterial, big_boss_hit2),
+
 		trap: GltfModelWrapper.from(engine.gltfMaterial, trap),
+
+		workstationHelp: GltfModelWrapper.from(engine.gltfMaterial, workstationHelp),
+		anvilHelp: GltfModelWrapper.from(engine.gltfMaterial, anvilHelp),
+		furnaceHelp: GltfModelWrapper.from(engine.gltfMaterial, furnaceHelp),
 
 		rockpile: GltfModelWrapper.from(engine.gltfMaterial, rockpile),
 		minecart: GltfModelWrapper.from(engine.gltfMaterial, minecart),

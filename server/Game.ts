@@ -50,21 +50,22 @@ import { StaticEntity } from "./entities/StaticEntity";
 import { GroundMaterial } from "./materials/SourceMaterials";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
+/** Items that can be spawned with the X debug key */
 const itemModels: ItemType[] = [
 	"axe",
-	"bow",
-	"gamer_bow",
-	"gamer_sword",
-	"iron",
+	// "bow",
+	// "gamer_bow",
+	// "gamer_sword",
+	// "iron",
 	"knife",
-	"magic_sauce",
-	"mushroom",
+	// "magic_sauce",
+	// "mushroom",
 	"pickaxe",
-	"raw_iron",
+	// "raw_iron",
 	"shears",
-	"string",
-	"sword",
-	"wood",
+	// "string",
+	// "sword",
+	// "wood",
 ];
 /** Spawn locations of the boss */
 const SPAWN_LOCATION = [
@@ -184,34 +185,53 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		return Object.values(entities).sort((a, b) => a.distance - b.distance);
 	}
 
+	#lobbyLight = new StaticLightEntity(this, [-11, 10, 9], {
+		color: [35 / 360, 0.2, 0.1],
+		falloff: 80,
+	});
+
 	/**
 	 * A function that sets up the game in the Lobby state
 	 */
 	async #makeLobby() {
-		let camera = new CameraEntity(this, [0, 115, 0], [-20, 45, 0], "lobby-camera");
+		let camera = new CameraEntity(this, [-5, 5, 8], [-45, 0, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
-		let lobbyFloor = new phys.Body({
-			mass: 0,
-			position: new phys.Vec3(0, 100, 0),
-			shape: new phys.Box(new phys.Vec3(...[20, 10, 20])),
-			type: phys.Body.STATIC,
-		});
+		// let lobbyFloor = new phys.Body({
+		// 	mass: 0,
+		// 	position: new phys.Vec3(0, 100, 0),
+		// 	shape: new phys.Box(new phys.Vec3(...[20, 10, 20])),
+		// 	type: phys.Body.STATIC,
+		// });
 
-		this.#world.addBody(lobbyFloor);
+		// this.#world.addBody(lobbyFloor);
+
+		const colliders = getColliders(await mapColliders);
+		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map" }]);
+		this.#registerEntity(mapEntity);
+
+		this.#registerEntity(this.#lobbyLight);
 	}
+
+	#debugLight = new StaticLightEntity(this, [0, 70, 0], {
+		color: [202 / 360, 0.1, 2],
+		falloff: 10,
+	});
 
 	// #region startGame
 	/**
 	 * State transition from "lobby" to "crafting"
 	 */
 	async #startGame() {
+		this.#unregisterEntity(this.#lobbyLight);
 		// this.#reset();
 		this.#currentStage = {
 			type: "crafting",
 			startTime: Date.now(),
 			endTime: Date.now() + CRAFT_STAGE_LENGTH,
 		};
+
+		const signScale = 0.2;
 
 		// Reset players
 		for (const player of this.#players.values()) {
@@ -227,10 +247,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				});
 			}
 		}
-
-		const colliders = getColliders(await mapColliders);
-		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map" }]);
-		this.#registerEntity(mapEntity);
 
 		let plane = new PlaneEntity(this, [0, -20, 0], [-1, 0, 0, 1], []);
 		this.#registerEntity(plane);
@@ -264,6 +280,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			new phys.Vec3(0, 0, 1),
 		);
 		Furnace.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, -Math.PI / 2);
+		const furnaceHelp = new StaticCubeEntity(
+			this,
+			[-20, 0, -15],
+			[0.333 * signScale, 7.38 * signScale, 10.851 * signScale],
+			[{ modelId: "furnaceHelp", scale: signScale }],
+		);
+		furnaceHelp.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, 0);
+		this.#registerEntity(furnaceHelp);
 		this.#registerEntity(Furnace);
 
 		let WeaponCrafter = new CraftingTable(this, [12, -3.5, 28], "weapons", [
@@ -271,10 +295,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			{ ingredients: ["iron", "wood"], output: "knife" },
 		]);
 		this.#registerEntity(WeaponCrafter);
+		const anvilHelp = new StaticCubeEntity(
+			this,
+			[13, 2, 29],
+			[0.333 * signScale, 7.38 * signScale, 10.851 * signScale],
+			[{ modelId: "anvilHelp", scale: signScale }],
+		);
+		anvilHelp.body.quaternion = new phys.Quaternion().setFromAxisAngle(
+			phys.Vec3.UNIT_Y,
+			(-Math.PI / 4) * 1.6 + Math.PI,
+		);
+		this.#registerEntity(anvilHelp);
 		this.#registerEntity(
-			new StaticLightEntity(this, [10, 3, 24], {
-				color: [29 / 360, 0.66, 0.94],
-				falloff: 10,
+			new StaticLightEntity(this, [8, 10, 19], {
+				color: [29 / 360, 0.66, 0.2],
+				falloff: 40,
 			}),
 		);
 
@@ -284,8 +319,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		]);
 		FletchingTable.body.quaternion = quarterSquat;
 		this.#registerEntity(FletchingTable);
+		const workstationHelp = new StaticCubeEntity(
+			this,
+			[-16, 1, 28],
+			[0.333 * signScale, 7.38 * signScale, 10.851 * signScale],
+			[{ modelId: "workstationHelp", scale: signScale }],
+		);
+		workstationHelp.body.quaternion = new phys.Quaternion().setFromAxisAngle(phys.Vec3.UNIT_Y, Math.PI / 4);
+		this.#registerEntity(workstationHelp);
 		this.#registerEntity(
-			new StaticLightEntity(this, [-15, 3, 26], {
+			new StaticLightEntity(this, [-9, 9, 22], {
 				color: [29 / 360, 0.66, 0.94],
 				falloff: 10,
 			}),
@@ -321,12 +364,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			}),
 		);
 
-		let oreSpawner = new Spawner(this, [0, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
+		let oreSpawner = new Spawner(this, [-0.3, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
 		this.#registerEntity(
-			new StaticLightEntity(this, [-2, -12, -8], {
-				color: [191 / 360, 0.26, 0.95],
-				falloff: 15,
+			new StaticLightEntity(this, [-2, -15, -8], {
+				color: [220 / 360, 0.8, 0.1],
+				falloff: 60,
 			}),
 		);
 
@@ -342,11 +385,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let mushroomSpawner2 = new Spawner(this, [-1, -19.05, 10.5], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner2);
-
 		this.#registerEntity(
 			new StaticLightEntity(this, [6, -12, 15], {
-				color: [282 / 360, 0.36, 0.98],
-				falloff: 20,
+				color: [282 / 360, 0.8, 0.2],
+				falloff: 50,
 			}),
 		);
 
@@ -359,23 +401,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		// hole
 		this.#registerEntity(
-			new StaticLightEntity(this, [-16, -6, 14], {
-				color: [124 / 360, 0.97, 0.83],
-				falloff: 10,
+			new StaticLightEntity(this, [-16, -12, 15], {
+				color: [124 / 360, 0.97, 0.1],
+				falloff: 40,
 			}),
 		);
 		// stairs
 		this.#registerEntity(
-			new StaticLightEntity(this, [13, 0, -15], {
-				color: [2 / 360, 0.35, 0.99],
-				falloff: 15,
-			}),
-		);
-		// minecart
-		this.#registerEntity(
-			new StaticLightEntity(this, [-75, 16, 1.5], {
-				color: [57 / 360, 0.78, 0.99],
-				falloff: 30,
+			new StaticLightEntity(this, [13, -8, -11], {
+				color: [330 / 360, 0.8, 0.1],
+				falloff: 60,
 			}),
 		);
 
@@ -392,14 +427,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		for (const entity of this.#obstacles) {
 			this.#registerEntity(entity);
 		}
-
-		// Debug room
 		this.#registerEntity(
-			new StaticLightEntity(this, [0, 70, 0], {
-				color: [202 / 360, 0.1, 2],
-				falloff: 10,
+			new StaticLightEntity(this, [25, 3, 1.5], {
+				color: [0 / 360, 0.95, 0.2],
+				falloff: 40,
 			}),
 		);
+
+		// Debug room
+		this.#registerEntity(this.#debugLight);
 		this.#registerEntity(
 			new StaticCubeEntity(this, [0, 50, 0], [20, 4, 20], [{ modelId: "defaultCube", scale: [20, 4, 20] }]),
 		);
@@ -437,9 +473,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			...(["string", "iron", "mushroom", "wood", "wood2"] as const).map(
 				(type) => new Spawner(this, [0, 0, 0], type, "wood", "wood"),
 			),
-			...(["furnace", "weapons", "fletching", "magic_table"] as const).map(
-				(type) => new CraftingTable(this, [0, 0, 0], type, []),
-			),
+			...(
+				[
+					// "furnace",
+					"weapons",
+					"fletching",
+					"magic_table",
+				] as const
+			).map((type) => new CraftingTable(this, [0, 0, 0], type, [])),
 		];
 		for (const [i, entity] of debugSpawnerEntities.entries()) {
 			entity.body.position = new phys.Vec3(
@@ -481,16 +522,24 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#minecart = new MinecartEntity(this, new phys.Vec3(-72, -2, 2));
 		this.addToCreateQueue(this.#minecart);
+		this.addToDeleteQueue(this.#debugLight.id);
 		for (const entity of this.#obstacles) {
 			this.addToDeleteQueue(entity.id);
 		}
+		// minecart
+		this.#registerEntity(
+			new StaticLightEntity(this, [-80, 11, 1.5], {
+				color: [185 / 360, 0.3, 0.2],
+				falloff: 100,
+			}),
+		);
 	}
 
 	/**
 	 * Check whether either side has met their win condition
 	 */
 	#checkGameOver(endTime: number) {
-		let isAnyHeroAlive = true;
+		let isAnyHeroAlive = false;
 		let isAnyBossAlive = false;
 		for (const { entity } of this.#players.values()) {
 			if (entity && entity.health > 0) {
@@ -614,16 +663,25 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#getPlayerByEntityId(id)?.conn.send({ type: "damage" });
 	}
 
-	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+	#createPlayerEntity(
+		playerNum: number,
+		pos: Vector3 | undefined,
+		{ role, skin = "red" }: ChangeRole,
+	): PlayerEntity | null {
 		console.log(playerNum);
-		if (this.#currentStage.type === "lobby") {
-			pos = [(2 * playerNum - 6) % 12, 115, -5];
-			if (playerNum === 0) {
-				for (let i = 1; i < 5; i++) {
-					this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
-				}
-			}
+		if (!pos) {
+			// BUG: if an earlier player becomes a spectator, then players will start stacking on each other
+			const playerCount = Array.from(this.#players.values()).filter(({ entity }) => entity).length;
+			// pos = this.#currentStage.type === "lobby" ? [-5 + (Math.random() * 2 - 1) * 5, -1, -1] : [0, 0, 0];
+			pos = [-5 + Math.floor((playerCount + 1) / 2) * (playerCount % 2 === 1 ? 1 : -1) * 2, -1, -1];
 		}
+		// if (this.#currentStage.type === "lobby") {
+		// 	if (playerNum === 0) {
+		// 		for (let i = 1; i < 5; i++) {
+		// 			this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
+		// 		}
+		// 	}
+		// }
 		let entity;
 		switch (role) {
 			case "hero":
@@ -636,7 +694,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				]);
 				break;
 			case "boss":
-				entity = new BossEntity(this, [pos[0], pos[1] + 2, pos[2]]);
+				entity = new BossEntity(this, [pos[0], pos[1], pos[2]]);
 				break;
 			default:
 				return null;
@@ -762,7 +820,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 				player.entity = this.#createPlayerEntity(
 					this.#createdInputs.indexOf(player.input),
-					oldEntity?.getFootPos() ?? [0, 0, 0],
+					oldEntity?.getFootPos(),
 					data,
 				);
 

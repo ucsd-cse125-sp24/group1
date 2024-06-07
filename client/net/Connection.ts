@@ -107,7 +107,7 @@ export class Connection {
 					const now = Date.now();
 					const upload = data.time - this.#lastPingTime;
 					const download = now - data.time;
-					this.#indicator.textContent = `✅ Connected (${now - this.#lastPingTime}ms roundtrip, ${upload}ms upload, ${download}ms download)`;
+					this.#indicator.textContent = `✅ Connected (${now - this.#lastPingTime}ms)`;
 				}
 				return;
 			case "join-response":
