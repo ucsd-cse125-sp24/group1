@@ -221,14 +221,6 @@ export abstract class PlayerEntity extends Entity {
 		if (movement.jump) {
 			if (!this.jumping && this.#coyoteCounter > 0) {
 				this.game.playSound("jump", this.getPos());
-				this.game.playParticle({
-					spawnCount: 10,
-					color: [234 / 255, 221 / 255, 202 / 255, 0.5],
-					initialPosition: this.getFootPos(),
-					initialVelocity: [0, 1.5, 0],
-					initialVelocityRange: [this.#capsuleRadius * 3, 1.5, this.#capsuleRadius * 3],
-					ttl: 1,
-				});
 				this.jumping = true;
 				const boost = currentVelocity.clone();
 				if (boost.length() > 0) boost.normalize();
@@ -269,6 +261,15 @@ export abstract class PlayerEntity extends Entity {
 	}
 
 	handleLanding(fallHeight: number): void {
+		const range = this.#capsuleRadius * fallHeight * 3;
+		this.game.playParticle({
+			spawnCount: Math.ceil(range * range),
+			color: [234 / 255, 221 / 255, 202 / 255, 0.5],
+			initialPosition: this.getFootPos(),
+			initialVelocity: [0, 1.5, 0],
+			initialVelocityRange: [range, 1.5, range],
+			ttl: 1,
+		});
 		// TODO: play land sound
 	}
 
