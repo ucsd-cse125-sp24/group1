@@ -63,6 +63,8 @@ const itemModels: ItemType[] = [
 	"sword",
 	"wood",
 ];
+/** Spawn locations of the boss */
+const SPAWN_LOCATION = [[17, -4.17, 13.78], [5.45, -4.17, 29.58], [-19.52, -4.17, 18.27], [-7.65, -18.42,-23.25], [-3.13, -18.42, 6.05], [5.21, -18.42, 4.72], [-1.95, -18.42, 5.92]];
 
 /** Length of the crafting stage in milliseconds */
 const CRAFT_STAGE_LENGTH = 60 * 1000 * 5; // 1 minute
@@ -452,9 +454,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	resetBoss() {
 		if (this.#bossTimer == 0) {
 			//spawn the boss at [0, 0, 0] for now
+		
 			if (this.#currentBoss) {
+				let randNum = (Math.random() * 10) % 7
 				this.#currentBoss.walkSpeed = 20;
-				this.#currentBoss.body.position = new phys.Vec3(0, 0, 0);
+				this.#currentBoss.body.position = new phys.Vec3(SPAWN_LOCATION[randNum][0], SPAWN_LOCATION[randNum][1], SPAWN_LOCATION[randNum][2]);
+
 			}
 		}
 	}
