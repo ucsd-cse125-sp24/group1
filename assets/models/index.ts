@@ -44,6 +44,13 @@ import { rockpile } from "./rockpile";
 import { gamer_armor } from "./gamer_armor";
 import { minecart } from "./minecart";
 import { mushroom_king } from "./mushroom_king";
+import { player_green_slap1, player_green_slap2, player_green_slap3 } from "./player_green/slap";
+import { player_red_slap1, player_red_slap2, player_red_slap3 } from "./player_red/slap";
+import { player_yellow_slap1, player_yellow_slap2, player_yellow_slap3 } from "./player_yellow/slap";
+import { player_blue_walk1, player_blue_walk2 } from "./player_blue/walk";
+import { player_green_walk1, player_green_walk2 } from "./player_green/walk";
+import { player_red_walk1, player_red_walk2 } from "./player_red/walk";
+import { player_yellow_walk1, player_yellow_walk2 } from "./player_yellow/walk";
 
 export const getModels = (engine: GraphicsEngine) =>
 	({
@@ -68,14 +75,37 @@ export const getModels = (engine: GraphicsEngine) =>
 		magic_sauce: GltfModelWrapper.from(engine.gltfMaterial, magic_sauce),
 		mushroom: GltfModelWrapper.from(engine.gltfMaterial, mushroom),
 		pickaxe: GltfModelWrapper.from(engine.gltfMaterial, pickaxe),
+
+		// Player Blue
 		player_blue: GltfModelWrapper.from(engine.gltfMaterial, player_blue),
 		player_blue_slap1: GltfModelWrapper.from(engine.gltfMaterial, player_blue_slap1),
 		player_blue_slap2: GltfModelWrapper.from(engine.gltfMaterial, player_blue_slap2),
 		player_blue_slap3: GltfModelWrapper.from(engine.gltfMaterial, player_blue_slap3),
+		player_blue_walk1: GltfModelWrapper.from(engine.gltfMaterial, player_blue_walk1),
+		player_blue_walk2: GltfModelWrapper.from(engine.gltfMaterial, player_blue_walk2),
 
+		// Player Green
 		player_green: GltfModelWrapper.from(engine.gltfMaterial, player_green),
+		player_green_slap1: GltfModelWrapper.from(engine.gltfMaterial, player_green_slap1),
+		player_green_slap2: GltfModelWrapper.from(engine.gltfMaterial, player_green_slap2),
+		player_green_slap3: GltfModelWrapper.from(engine.gltfMaterial, player_green_slap3),
+		player_green_walk1: GltfModelWrapper.from(engine.gltfMaterial, player_green_walk1),
+		player_green_walk2: GltfModelWrapper.from(engine.gltfMaterial, player_green_walk2),
+
 		player_red: GltfModelWrapper.from(engine.gltfMaterial, player_red),
+		player_red_slap1: GltfModelWrapper.from(engine.gltfMaterial, player_red_slap1),
+		player_red_slap2: GltfModelWrapper.from(engine.gltfMaterial, player_red_slap2),
+		player_red_slap3: GltfModelWrapper.from(engine.gltfMaterial, player_red_slap3),
+		player_red_walk1: GltfModelWrapper.from(engine.gltfMaterial, player_red_walk1),
+		player_red_walk2: GltfModelWrapper.from(engine.gltfMaterial, player_red_walk2),
+
 		player_yellow: GltfModelWrapper.from(engine.gltfMaterial, player_yellow),
+		player_yellow_slap1: GltfModelWrapper.from(engine.gltfMaterial, player_yellow_slap1),
+		player_yellow_slap2: GltfModelWrapper.from(engine.gltfMaterial, player_yellow_slap2),
+		player_yellow_slap3: GltfModelWrapper.from(engine.gltfMaterial, player_yellow_slap3),
+		player_yellow_walk1: GltfModelWrapper.from(engine.gltfMaterial, player_yellow_walk1),
+		player_yellow_walk2: GltfModelWrapper.from(engine.gltfMaterial, player_yellow_walk2),
+
 		raw_iron: GltfModelWrapper.from(engine.gltfMaterial, raw_iron),
 		shears: GltfModelWrapper.from(engine.gltfMaterial, shears),
 		string: GltfModelWrapper.from(engine.gltfMaterial, string),

@@ -599,7 +599,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let entity;
 		switch (role) {
 			case "hero":
-				entity = new HeroEntity(this, pos, [
+				entity = new HeroEntity(this, skin, pos, [
 					{
 						modelId: `player_${skin}`,
 						offset: [0, -1.5, 0],

@@ -1,7 +1,7 @@
 import * as phys from "cannon-es";
 import { mat4, quat, vec3 } from "gl-matrix";
 import { MovementInfo, Vector3 } from "../../common/commontypes";
-import { Action, Attack, EntityModel, SerializedEntity, Use } from "../../common/messages";
+import { Action, Attack, EntityModel, SerializedEntity, Skin, Use } from "../../common/messages";
 import { Animation, Animator } from "../lib/Animation";
 import { PlayerMaterial } from "../materials/SourceMaterials";
 import { Game } from "../Game";
@@ -18,10 +18,6 @@ const BOOST_RATIO = 11.2;
 const KNOCKBACK_RATIO = 1.5;
 const KNOCKBACK_RATIO_SWORD = 3;
 const KNOCKBACK_RATIO_GAMER_SWORD = 10;
-const PLAYER_SCALE: { offset: [number, number, number]; scale: number } = {
-	offset: [0, -1.5, 0],
-	scale: 0.4,
-};
 
 export abstract class PlayerEntity extends Entity {
 	isPlayer = true;
@@ -76,9 +72,6 @@ export abstract class PlayerEntity extends Entity {
 	#lastSoundPosition: phys.Vec3;
 	#lastSoundIsLeft: boolean;
 
-	// animator
-	animator: Animator;
-
 	constructor(
 		game: Game,
 		footPos: Vector3,
@@ -117,20 +110,6 @@ export abstract class PlayerEntity extends Entity {
 			material: PlayerMaterial,
 			collisionFilterGroup: this.getBitFlag(),
 		});
-
-		// prettier-ignore
-		this.animator = new Animator({
-			slap: new Animation([
-				{ model: {...PLAYER_SCALE, modelId: "player_blue_slap1"}, duration: 2 },
-				{ model: {...PLAYER_SCALE, modelId: "player_blue_slap2"}, duration: 1 },
-				{ model: {...PLAYER_SCALE, modelId: "player_blue_slap3"}, duration: 2 },
-			]),
-			jump: new Animation([
-				{ model: ["chair"], duration: 5 },
-				{ model: ["donut"], duration: 5 },
-				{ model: ["fish1"], duration: 5 },
-			]),
-		}, model);
 
 		this.#cylinder = new phys.Cylinder(this.#capsuleRadius, this.#capsuleRadius, this.#cylinderHeight, 12);
 		this.#sphereTop = new phys.Sphere(this.#capsuleRadius);
@@ -356,6 +335,7 @@ export abstract class PlayerEntity extends Entity {
 								ttl: 1,
 							});
 
+							this.animator.play("slap");
 							this.game.playerHitBoss(entity);
 							this.game.playDamageFilter(entity.id);
 						},
