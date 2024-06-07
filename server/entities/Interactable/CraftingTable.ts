@@ -70,6 +70,7 @@ export class CraftingTable extends InteractableEntity {
 		this.itemList = new Set();
 		this.recipes = recipes;
 		this.ingredients = recipes.flatMap((recipe) => recipe.ingredients);
+		console.log(type + ": " + this.ingredients);
 		this.isFurnace = type === "furnace";
 
 		this.body = new phys.Body({
@@ -138,12 +139,14 @@ export class CraftingTable extends InteractableEntity {
 		item.canBeAbsorbedByCraftingTable = false;
 		// Move the item to the top of the crafting table (its previous position was
 		// wherever it was before it got absorbed)
-		item.body.position = this.body.position.vadd(new phys.Vec3(0, 1, 0));
-		this.game.addToCreateQueue(item);
 		// launch toward spawn but a little randomized
 		const dir = this.#ejectDir.clone();
 		dir.vadd(new phys.Vec3((Math.random() - 0.5) * 0.2, Math.random() * 0.2 + 0.8, (Math.random() - 0.5) * 0.2));
 		dir.normalize();
+		item.body.position = this.body.position.vadd(new phys.Vec3(0, 3.5, 0)).vadd(dir.scale(3.2));
+		this.game.addToCreateQueue(item);
+
+		// console.log(this.body.position + ": " + dir);
 
 		item.throw(dir.scale(70));
 	}
@@ -170,12 +173,14 @@ export class CraftingTable extends InteractableEntity {
 
 	onCollide(otherEntity: Entity): void {
 		if (otherEntity instanceof Item) {
-			if (!otherEntity.canBeAbsorbedByCraftingTable || !otherEntity.heldBy) {
+			if (!otherEntity.canBeAbsorbedByCraftingTable) {
 				return;
 			}
 			if (!this.ingredients.includes(otherEntity.type)) {
 				return;
 			}
+			// console.log(this.ingredients);
+			// console.log(otherEntity.type);
 
 			// Absorb the item
 			this.itemList.add(otherEntity);
