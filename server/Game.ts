@@ -202,6 +202,11 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#world.addBody(lobbyFloor);
 	}
 
+	#debugLight = new StaticLightEntity(this, [0, 70, 0], {
+		color: [202 / 360, 0.1, 2],
+		falloff: 10,
+	});
+
 	// #region startGame
 	/**
 	 * State transition from "lobby" to "crafting"
@@ -274,8 +279,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(WeaponCrafter);
 		this.#registerEntity(
 			new StaticLightEntity(this, [10, 3, 24], {
-				color: [29 / 360, 0.66, 0.94],
-				falloff: 10,
+				color: [29 / 360, 0.66, 0.2],
+				falloff: 40,
 			}),
 		);
 
@@ -325,9 +330,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let oreSpawner = new Spawner(this, [0, -17.65, -21.5], "iron", "raw_iron", "pickaxe");
 		this.#registerEntity(oreSpawner);
 		this.#registerEntity(
-			new StaticLightEntity(this, [-2, -12, -8], {
-				color: [191 / 360, 0.26, 0.95],
-				falloff: 15,
+			new StaticLightEntity(this, [-2, -15, -8], {
+				color: [220 / 360, 0.8, 0.1],
+				falloff: 60,
 			}),
 		);
 
@@ -343,11 +348,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		let mushroomSpawner2 = new Spawner(this, [-1, -19.05, 10.5], "mushroom", "mushroom", "knife");
 		this.#registerEntity(mushroomSpawner2);
-
 		this.#registerEntity(
 			new StaticLightEntity(this, [6, -12, 15], {
-				color: [282 / 360, 0.36, 0.98],
-				falloff: 20,
+				color: [282 / 360, 0.8, 0.2],
+				falloff: 50,
 			}),
 		);
 
@@ -360,23 +364,16 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		);
 		// hole
 		this.#registerEntity(
-			new StaticLightEntity(this, [-16, -6, 14], {
-				color: [124 / 360, 0.97, 0.83],
-				falloff: 10,
+			new StaticLightEntity(this, [-16, -12, 15], {
+				color: [124 / 360, 0.97, 0.1],
+				falloff: 40,
 			}),
 		);
 		// stairs
 		this.#registerEntity(
-			new StaticLightEntity(this, [13, 0, -15], {
-				color: [2 / 360, 0.35, 0.99],
-				falloff: 15,
-			}),
-		);
-		// minecart
-		this.#registerEntity(
-			new StaticLightEntity(this, [-75, 16, 1.5], {
-				color: [57 / 360, 0.78, 0.99],
-				falloff: 30,
+			new StaticLightEntity(this, [13, -8, -11], {
+				color: [330 / 360, 0.8, 0.1],
+				falloff: 60,
 			}),
 		);
 
@@ -393,14 +390,15 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		for (const entity of this.#obstacles) {
 			this.#registerEntity(entity);
 		}
-
-		// Debug room
 		this.#registerEntity(
-			new StaticLightEntity(this, [0, 70, 0], {
-				color: [202 / 360, 0.1, 2],
-				falloff: 10,
+			new StaticLightEntity(this, [25, 3, 1.5], {
+				color: [0 / 360, 0.95, 0.2],
+				falloff: 40,
 			}),
 		);
+
+		// Debug room
+		this.#registerEntity(this.#debugLight);
 		this.#registerEntity(
 			new StaticCubeEntity(this, [0, 50, 0], [20, 4, 20], [{ modelId: "defaultCube", scale: [20, 4, 20] }]),
 		);
@@ -438,9 +436,14 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			...(["string", "iron", "mushroom", "wood", "wood2"] as const).map(
 				(type) => new Spawner(this, [0, 0, 0], type, "wood", "wood"),
 			),
-			...(["furnace", "weapons", "fletching", "magic_table"] as const).map(
-				(type) => new CraftingTable(this, [0, 0, 0], type, []),
-			),
+			...(
+				[
+					// "furnace",
+					"weapons",
+					"fletching",
+					"magic_table",
+				] as const
+			).map((type) => new CraftingTable(this, [0, 0, 0], type, [])),
 		];
 		for (const [i, entity] of debugSpawnerEntities.entries()) {
 			entity.body.position = new phys.Vec3(
@@ -482,9 +485,17 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 		this.#minecart = new MinecartEntity(this, new phys.Vec3(-72, -2, 2));
 		this.addToCreateQueue(this.#minecart);
+		this.addToDeleteQueue(this.#debugLight.id);
 		for (const entity of this.#obstacles) {
 			this.addToDeleteQueue(entity.id);
 		}
+		// minecart
+		this.#registerEntity(
+			new StaticLightEntity(this, [-80, 11, 1.5], {
+				color: [185 / 360, 0.3, 0.2],
+				falloff: 100,
+			}),
+		);
 	}
 
 	/**
