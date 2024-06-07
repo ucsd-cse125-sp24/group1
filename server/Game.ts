@@ -50,21 +50,22 @@ import { StaticEntity } from "./entities/StaticEntity";
 import { GroundMaterial } from "./materials/SourceMaterials";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
+/** Items that can be spawned with the X debug key */
 const itemModels: ItemType[] = [
 	"axe",
-	"bow",
-	"gamer_bow",
-	"gamer_sword",
-	"iron",
+	// "bow",
+	// "gamer_bow",
+	// "gamer_sword",
+	// "iron",
 	"knife",
-	"magic_sauce",
-	"mushroom",
+	// "magic_sauce",
+	// "mushroom",
 	"pickaxe",
-	"raw_iron",
+	// "raw_iron",
 	"shears",
-	"string",
-	"sword",
-	"wood",
+	// "string",
+	// "sword",
+	// "wood",
 ];
 /** Spawn locations of the boss */
 const SPAWN_LOCATION = [
