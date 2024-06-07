@@ -3,9 +3,9 @@ import { ItemMaterial } from "../materials/SourceMaterials";
 import { Game } from "../Game";
 import { EntityModel } from "../../common/messages";
 import { Entity } from "./Entity";
-import { BossEntity } from "./BossEntity";
 import { MapEntity } from "./map/MapEntity";
 import { PlayerEntity } from "./PlayerEntity";
+import { MinecartEntity } from "./MinecartEntity";
 
 export class ArrowEntity extends Entity {
 	damage: number;
@@ -23,9 +23,10 @@ export class ArrowEntity extends Entity {
 	}
 
 	onCollide(otherEntity: Entity): void {
-		if (otherEntity instanceof PlayerEntity) {
+		if (otherEntity instanceof PlayerEntity || otherEntity instanceof MinecartEntity) {
 			if (this.game.getCurrentStage().type === "combat") {
 				otherEntity.takeDamage(this.damage);
+				this.game.addToDeleteQueue(this.id);
 			}
 		} else if (otherEntity instanceof MapEntity) {
 			this.game.addToDeleteQueue(this.id);
