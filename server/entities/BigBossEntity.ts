@@ -1,11 +1,12 @@
 import { Quaternion, Vec3 } from "cannon-es";
 import { Vector3 } from "../../common/commontypes";
-import { Action, Attack, EntityModel, Use } from "../../common/messages";
+import { Action, Attack, Use } from "../../common/messages";
 import { Game } from "../Game";
 import { HeroEntity } from "./HeroEntity";
 import { PlayerEntity } from "./PlayerEntity";
 import { Entity } from "./Entity";
 import { InteractableEntity } from "./Interactable/InteractableEntity";
+import { MinecartEntity } from "./MinecartEntity";
 
 const PLAYER_INTERACTION_RANGE = 12;
 const BOSS_CAPSULE_HEIGHT = 7.5;
@@ -87,7 +88,7 @@ export class BigBossEntity extends PlayerEntity {
 				}
 
 				for (const entity of entities) {
-					if (entity instanceof HeroEntity) {
+					if (entity instanceof HeroEntity || entity instanceof MinecartEntity) {
 						if (this.game.getCurrentStage().type === "combat") {
 							entity.takeDamage(1);
 						}
@@ -125,11 +126,10 @@ export class BigBossEntity extends PlayerEntity {
 					quat.setFromAxisAngle(new Vec3(0, 1, 0), -2 * (Math.PI / 30) + i * (Math.PI / 30));
 					let dir = quat.vmult(lookDir.scale(6));
 					let betterDirection = this.body.position.vadd(dir);
-					
-                    this.game.shootArrow(betterDirection, dir.scale(30), 1, [{ modelId: "mushroom" }]);
-                    //console.log(dir, betterDirection, betterDirection.unit(), this.body.position.vadd(betterDirection.unit()), this.getPos());                  
 
-                }
+					this.game.shootArrow(betterDirection, dir.scale(30), 1, [{ modelId: "mushroom" }]);
+					//console.log(dir, betterDirection, betterDirection.unit(), this.body.position.vadd(betterDirection.unit()), this.getPos());
+				}
 				this.animator.play("pee");
 				this.previousShootTick = this.game.getCurrentTick();
 			},

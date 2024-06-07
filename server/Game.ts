@@ -45,6 +45,7 @@ import { CubeEntity } from "./entities/CubeEntity";
 import { BigBossEntity } from "./entities/BigBossEntity";
 import { StaticLightEntity } from "./entities/StaticLightEntity";
 import { StaticCubeEntity } from "./entities/StaticCubeEntity";
+import { MinecartEntity } from "./entities/MinecartEntity";
 
 // Note: this only works because ItemType happens to be a subset of ModelId
 const itemModels: ItemType[] = [
@@ -109,6 +110,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	//#bossResets: ([number, BossEntity])[];
 	#currentBoss: PlayerEntity | null;
+	#minecart: MinecartEntity | null;
 	/**
 	 * Treat this as a state machine:
 	 * "lobby" -> "crafting" -> "combat"
@@ -131,6 +133,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#bossTimer = 0;
 
 		this.#currentBoss = null;
+		this.#minecart = null;
 
 		this.#makeLobby();
 
@@ -169,10 +172,10 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		let lobbyFloor = new phys.Body({
 			mass: 0,
 			position: new phys.Vec3(0, 100, 0),
-			shape: new phys.Box(new phys.Vec3(...[20,10,20])), 
-			type: phys.Body.STATIC
+			shape: new phys.Box(new phys.Vec3(...[20, 10, 20])),
+			type: phys.Body.STATIC,
 		});
-		
+
 		this.#world.addBody(lobbyFloor);
 	}
 
@@ -366,6 +369,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				pov: "first-person",
 			});
 		}
+
+		this.#minecart = new MinecartEntity(this, new phys.Vec3(-72, 0, 2));
+		this.addToCreateQueue(this.#minecart);
 	}
 
 	/**
@@ -386,12 +392,12 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				}
 			}
 		}
-		const endTime = this.#currentStage.type === "lobby" ? 0 : this.#currentStage.endTime;
-		if (!isAnyBossAlive) {
+		const endTime = this.#currentStage.type === "lobby" ? Number.POSITIVE_INFINITY : this.#currentStage.endTime;
+		if (!isAnyBossAlive || Date.now() >= endTime) {
 			// Heroes win
 			this.#server.broadcast({ type: "game-over", winner: "heroes" });
 			this.#currentStage = { type: "lobby", previousWinner: "hero" };
-		} else if (Date.now() >= endTime || !isAnyHeroAlive) {
+		} else if (!isAnyHeroAlive || (this.#minecart && this.#minecart.health <= 0)) {
 			// Boss wins
 			this.#server.broadcast({ type: "game-over", winner: "boss" });
 			this.#currentStage = { type: "lobby", previousWinner: "boss" };
@@ -490,7 +496,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			pos = [(2 * playerNum - 6) % 12, 115, 0];
 			if (playerNum === 0) {
 				for (let i = 1; i < 5; i++) {
-					this.#createPlayerEntity(i, pos, {type:"change-role",role, skin});
+					this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
 				}
 			}
 		}
