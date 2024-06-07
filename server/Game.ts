@@ -790,6 +790,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			if (!player.entity) {
 				continue;
 			}
+			player.entity.isInvulnerableThisTick = false;
 			let inputs = player.input.getInputs();
 			let posedge = player.input.getPosedge();
 
@@ -853,6 +854,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				);
 				log(`Player ${player.id.slice(0, 6)} spawned ${modelId}`);
 			}
+		}
+		if (this.#minecart !== null) {
+			this.#minecart.isInvulnerableThisTick = false;
 		}
 		this.#nextTick();
 	}
