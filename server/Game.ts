@@ -185,21 +185,32 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		return Object.values(entities).sort((a, b) => a.distance - b.distance);
 	}
 
+	#lobbyLight = new StaticLightEntity(this, [-11, 10, 9], {
+		color: [35 / 360, 0.2, 0.1],
+		falloff: 80,
+	});
+
 	/**
 	 * A function that sets up the game in the Lobby state
 	 */
 	async #makeLobby() {
-		let camera = new CameraEntity(this, [0, 115, 0], [-20, 45, 0], "lobby-camera");
+		let camera = new CameraEntity(this, [-5, 5, 8], [-45, 0, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
-		let lobbyFloor = new phys.Body({
-			mass: 0,
-			position: new phys.Vec3(0, 100, 0),
-			shape: new phys.Box(new phys.Vec3(...[20, 10, 20])),
-			type: phys.Body.STATIC,
-		});
+		// let lobbyFloor = new phys.Body({
+		// 	mass: 0,
+		// 	position: new phys.Vec3(0, 100, 0),
+		// 	shape: new phys.Box(new phys.Vec3(...[20, 10, 20])),
+		// 	type: phys.Body.STATIC,
+		// });
 
-		this.#world.addBody(lobbyFloor);
+		// this.#world.addBody(lobbyFloor);
+
+		const colliders = getColliders(await mapColliders);
+		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map" }]);
+		this.#registerEntity(mapEntity);
+
+		this.#registerEntity(this.#lobbyLight);
 	}
 
 	#debugLight = new StaticLightEntity(this, [0, 70, 0], {
@@ -212,6 +223,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * State transition from "lobby" to "crafting"
 	 */
 	async #startGame() {
+		this.#unregisterEntity(this.#lobbyLight);
 		// this.#reset();
 		this.#currentStage = {
 			type: "crafting",
@@ -233,10 +245,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				});
 			}
 		}
-
-		const colliders = getColliders(await mapColliders);
-		const mapEntity = new MapEntity(this, [0, -5, 0], colliders, [{ modelId: "map" }]);
-		this.#registerEntity(mapEntity);
 
 		let plane = new PlaneEntity(this, [0, -20, 0], [-1, 0, 0, 1], []);
 		this.#registerEntity(plane);
@@ -626,16 +634,25 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#getPlayerByEntityId(id)?.conn.send({ type: "damage" });
 	}
 
-	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
+	#createPlayerEntity(
+		playerNum: number,
+		pos: Vector3 | undefined,
+		{ role, skin = "red" }: ChangeRole,
+	): PlayerEntity | null {
 		console.log(playerNum);
-		if (this.#currentStage.type === "lobby") {
-			pos = [(2 * playerNum - 6) % 12, 115, -5];
-			if (playerNum === 0) {
-				for (let i = 1; i < 5; i++) {
-					this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
-				}
-			}
+		if (!pos) {
+			// BUG: if an earlier player becomes a spectator, then players will start stacking on each other
+			const playerCount = Array.from(this.#players.values()).filter(({ entity }) => entity).length;
+			// pos = this.#currentStage.type === "lobby" ? [-5 + (Math.random() * 2 - 1) * 5, -1, -1] : [0, 0, 0];
+			pos = [-5 + Math.floor((playerCount + 1) / 2) * (playerCount % 2 === 1 ? 1 : -1) * 2, -1, -1];
 		}
+		// if (this.#currentStage.type === "lobby") {
+		// 	if (playerNum === 0) {
+		// 		for (let i = 1; i < 5; i++) {
+		// 			this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
+		// 		}
+		// 	}
+		// }
 		let entity;
 		switch (role) {
 			case "hero":
@@ -648,7 +665,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				]);
 				break;
 			case "boss":
-				entity = new BossEntity(this, [pos[0], pos[1] + 2, pos[2]]);
+				entity = new BossEntity(this, [pos[0], pos[1], pos[2]]);
 				break;
 			default:
 				return null;
@@ -774,7 +791,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 				player.entity = this.#createPlayerEntity(
 					this.#createdInputs.indexOf(player.input),
-					oldEntity?.getFootPos() ?? [0, 0, 0],
+					oldEntity?.getFootPos(),
 					data,
 				);
 

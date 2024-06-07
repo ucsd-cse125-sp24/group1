@@ -250,7 +250,7 @@ document.addEventListener("click", (e) => {
 		gameUi.hide();
 		pauseMenu.show();
 		inputListener.enabled = false;
-	} else if ((!trapClick && gameState) /* && gameState.stage.type !== "lobby"*/ || isStartBtn) {
+	} else if ((!trapClick && gameState && gameState.stage.type !== "lobby") || isStartBtn) {
 		if (lastPointerType === "touch") {
 			gameUi.show();
 			pauseMenu.hide();
