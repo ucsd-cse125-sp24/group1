@@ -119,9 +119,8 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#toDeleteQueue: EntityId[];
 
 	#currentTick: number;
-	#bossTimer: number;
 
-	//#bossResets: ([number, BossEntity])[];
+	#bossResets: Map<BossEntity, number>;
 	#currentBoss: PlayerEntity | null;
 	#minecart: MinecartEntity | null;
 	#obstacles: StaticEntity[];
@@ -144,7 +143,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#toDeleteQueue = [];
 
 		this.#currentTick = 0;
-		this.#bossTimer = 0;
+		this.#bossResets = new Map();
 
 		this.#currentBoss = null;
 		this.#minecart = null;
@@ -181,7 +180,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	 * A function that sets up the game in the Lobby state
 	 */
 	async #makeLobby() {
-		let camera = new CameraEntity(this, [0, 115, 0], [30, 270, 0], "lobby-camera");
+		let camera = new CameraEntity(this, [0, 115, 0], [-20, 90, 0], "lobby-camera");
 		this.#registerEntity(camera);
 
 		let lobbyFloor = new phys.Body({
@@ -507,30 +506,20 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 		this.#registerEntity(new ArrowEntity(this, position, velocity, damage, mod));
 	}
 
-	resetBoss() {
-		if (this.#bossTimer == 0) {
-			//spawn the boss at [0, 0, 0] for now
-
-			if (this.#currentBoss) {
-				let randNum = Math.floor(Math.random() * 10) % 7;
-				this.#currentBoss.walkSpeed = 20;
-				this.#currentBoss.body.position = new phys.Vec3(
-					SPAWN_LOCATION[randNum][0],
-					SPAWN_LOCATION[randNum][1],
-					SPAWN_LOCATION[randNum][2],
-				);
-			}
-		}
+	teleportBoss(boss: BossEntity) {
+		let randNum = Math.floor(Math.random() * 10) % 7;
+		boss.resetSpeed();
+		boss.body.position = new phys.Vec3(
+			SPAWN_LOCATION[randNum][0],
+			SPAWN_LOCATION[randNum][1],
+			SPAWN_LOCATION[randNum][2],
+		);
 	}
 
-	setBossTimer(delay: number) {
-		this.#bossTimer = delay;
-	}
-
-	playerHitBoss(boss: PlayerEntity) {
-		this.setBossTimer(10);
-		if (this.getBossTimer() > 0) {
-			boss.walkSpeed = 0;
+	playerHitBoss(boss: BossEntity) {
+		if (!this.#bossResets.has(boss)) {
+			boss.setSpeed(0);
+			this.#bossResets.set(boss, 50);
 		}
 	}
 	// #endregion
@@ -552,7 +541,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	#createPlayerEntity(playerNum: number, pos: Vector3, { role, skin = "red" }: ChangeRole): PlayerEntity | null {
 		console.log(playerNum);
 		if (this.#currentStage.type === "lobby") {
-			pos = [(2 * playerNum - 6) % 12, 115, 0];
+			pos = [(2 * playerNum - 6) % 12, 115, -5];
 			if (playerNum === 0) {
 				for (let i = 1; i < 5; i++) {
 					this.#createPlayerEntity(i, pos, { type: "change-role", role, skin });
@@ -614,7 +603,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				type: "camera-lock",
 				entityId: "lobby-camera",
 				pov: "first-person",
-				freeRotation: true,
+				freeRotation: false
 			});
 		}
 	}
@@ -764,7 +753,6 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	// #region Game State
 	getCurrentTick = () => this.#currentTick;
 	getCurrentStage = () => this.#currentStage;
-	getBossTimer = () => this.#bossTimer;
 
 	logTicks(ticks: number, totalDelta: number) {
 		if ("_debugGetActivePlayerCount" in this.#server) {
@@ -850,20 +838,35 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 
 	#nextTick() {
 		this.#currentTick++;
-		this.#bossTimer--;
 
-		this.resetBoss();
+		// Tick the world
 		this.#world.nextTick();
+
+		// Tick the player inputs
 		for (let input of this.#createdInputs) {
 			input.serverTick();
 		}
+
+		// Tick each of the entities
 		for (let entity of this.#entities.values()) {
 			entity.tick();
 		}
+
+		for (let [boss, timer] of this.#bossResets.entries()) {
+			timer--;
+			if (timer <= 0) {
+				this.#bossResets.delete(boss);
+				this.teleportBoss(boss);
+			}
+			this.#bossResets.set(boss, timer);
+		}
+
+		// Run delete jobs
 		if (this.#toCreateQueue.length > 0 || this.#toDeleteQueue.length > 0) {
 			this.clearEntityQueues();
 		}
 
+		// Handle game state changes
 		switch (this.#currentStage.type) {
 			case "crafting": {
 				if (Date.now() >= this.#currentStage.endTime) {

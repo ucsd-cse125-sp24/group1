@@ -37,6 +37,7 @@ export abstract class PlayerEntity extends Entity {
 
 	// movement
 	walkSpeed: number;
+	initialSpeed: number;
 	jumpSpeed: number;
 	#maxGroundSpeedChange: number;
 	#maxAirSpeedChange: number;
@@ -83,6 +84,7 @@ export abstract class PlayerEntity extends Entity {
 		this.lookDir = new phys.Vec3(0, -1, 0);
 
 		this.walkSpeed = walkSpeed;
+		this.initialSpeed = walkSpeed;
 		this.jumpSpeed = jumpSpeed;
 		this.onGround = false;
 		this.#capsuleRadius = capsuleRadius;
@@ -425,6 +427,10 @@ export abstract class PlayerEntity extends Entity {
 
 	setSpeed(speed: number) {
 		this.walkSpeed = speed;
+	}
+
+	resetSpeed() {
+		this.walkSpeed = this.initialSpeed;
 	}
 
 	/** returns 0 if don't, 1 if left, 2 if right */

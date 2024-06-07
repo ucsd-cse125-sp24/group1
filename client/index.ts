@@ -307,6 +307,8 @@ const camera = new PlayerCamera(
 	100,
 	engine,
 );
+// @ts-ignore
+window.camera = camera;
 const fov = new Transition(Math.PI / 3);
 
 let result = vec3.create();
@@ -478,7 +480,7 @@ const paint = () => {
 	}
 
 	const cameraTarget = entities.find((entity) => entity.data?.id === cameraLockTarget);
-	console.log(camera.getPosition(), camera._orientation);
+	
 	if (cameraTarget && !freecam) {
 		camera.setFree(false);
 		const position = mat4.getTranslation(vec3.create(), cameraTarget.transform);
