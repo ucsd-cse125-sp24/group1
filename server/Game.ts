@@ -457,10 +457,9 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 			//spawn the boss at [0, 0, 0] for now
 		
 			if (this.#currentBoss) {
-				let randNum = (Math.random() * 10) % 7
+				let randNum = (Math.floor(Math.random() * 10)) % 7
 				this.#currentBoss.walkSpeed = 20;
 				this.#currentBoss.body.position = new phys.Vec3(SPAWN_LOCATION[randNum][0], SPAWN_LOCATION[randNum][1], SPAWN_LOCATION[randNum][2]);
-
 			}
 		}
 	}
