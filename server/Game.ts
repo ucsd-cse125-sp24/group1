@@ -849,7 +849,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 					this.playSound("walkRight", player.entity.getPos());
 				}
 				if (player.entity instanceof BigBossEntity) {
-					this.shakeFromSource(player.entity.getPos(), 0.02, 5, player.entity);
+					this.shakeFromSource(player.entity.getFootPos(), 0.02, 5, player.entity);
 				}
 			}
 
