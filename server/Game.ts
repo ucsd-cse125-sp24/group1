@@ -614,17 +614,21 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 	}
 
 	trapHero(id: EntityId, position: phys.Vec3) {
-		const target = this.#entities.get(id) as HeroEntity;
-		target.isTrapped = true;
-		target.body.position = position;
-		this.playSound("trapTriggered", position);
+		const target = this.#entities.get(id);
+		if (target instanceof HeroEntity) {
+			target.isTrapped = true;
+			target.body.position = position;
+			this.playSound("trapTriggered", position);
+		}
 	}
 
 	freeHero(heroId: EntityId, trapId: EntityId) {
-		const hero = this.#entities.get(heroId) as HeroEntity;
-		hero.isTrapped = false;
-		this.addToDeleteQueue(trapId);
-		this.playSound("trapEscape", hero.getPos());
+		const hero = this.#entities.get(heroId);
+		if (hero instanceof HeroEntity) {
+			hero.isTrapped = false;
+			this.addToDeleteQueue(trapId);
+			this.playSound("trapEscape", hero.getPos());
+		}
 	}
 
 	shootArrow(position: phys.Vec3, velocity: phys.Vec3, damage: number, mod: EntityModel[]) {
