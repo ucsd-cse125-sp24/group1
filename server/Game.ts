@@ -811,6 +811,7 @@ export class Game implements ServerHandlers<ClientMessage, ServerMessage> {
 				if (player.entity) {
 					player.entity.displayName = data.name;
 				}
+				log(`Player ${conn.id.slice(0, 6)} renamed to "${data.name}"`);
 				break;
 			}
 			case "change-role": {

@@ -178,7 +178,7 @@ export class WsServer implements Server<ClientMessage, ServerMessage> {
 					// New player (or they reconnected with an invalid ID; we treat them like a new player)
 					// Generate a new ID
 					id = [...getRandomValues(new Uint8Array(64))].map((x) => x.toString(16)).join("");
-					log(`New player ${id.slice(0, 6)}`);
+					log(`New player ${id.slice(0, 6)} "${data.name}"`);
 				}
 
 				// Create mapping from the new ID to the WebSocket that is currently alive that belongs to that ID
@@ -194,7 +194,7 @@ export class WsServer implements Server<ClientMessage, ServerMessage> {
 				// Tell the game that they joined
 				this.#game.handlePlayerJoin(connection, data.name);
 
-				console.log(`Player ${id} joined!`);
+				console.log(`Player ${id} "${data.name}" joined!`);
 				// Ok we believe u 🥰 you are the client you say you are
 				connection.send({
 					type: "join-response",
