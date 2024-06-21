@@ -2,7 +2,7 @@
 
 import { displayError } from "../../client/lib/listenErrors";
 
-const file = import("node:fs/promises").then((fs) => fs.open("./public/log.txt", "w")).catch(() => null);
+const file = import("node:fs/promises").then((fs) => fs.open("./public/log2.txt", "w")).catch(() => null);
 
 const encoder = new TextEncoder();
 export function log(line: string) {

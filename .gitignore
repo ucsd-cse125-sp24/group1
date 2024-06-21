@@ -12,6 +12,7 @@ public/*.mp3
 public/*.wav
 public/worker/
 public/log.txt
+public/log2.txt
 dist/
 
 .DS_Store
